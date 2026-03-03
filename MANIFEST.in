@@ -1,0 +1,3 @@
+graft flut/.flutter
+prune flut/.flutter/build
+prune flut/.flutter/.dart_tool

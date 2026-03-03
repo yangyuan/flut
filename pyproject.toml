@@ -1,0 +1,19 @@
+[project]
+name = "flut"
+description = "Flutter, but in Python"
+version = "0.0.1"
+requires-python = ">=3.8"
+readme = "README.md"
+license-files = ["LICENSE"]
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-asyncio"]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["flut*"]
+exclude = ["flut/.flutter*"]
+
