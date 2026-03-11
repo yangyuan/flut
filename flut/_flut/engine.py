@@ -944,7 +944,7 @@ class FlutRealtimeObject(FlutObject):
             value = value._flut_pack()
         else:
             value = _flut_pack_value(value)
-        engine.call_dart_async(
+        result = engine.call_dart(
             "set",
             {
                 "_flut_oid": self._flut_oid,
@@ -952,6 +952,10 @@ class FlutRealtimeObject(FlutObject):
                 "_flut_value": value,
             },
         )
+        if result and "_flut_error" in result:
+            raise RuntimeError(
+                f"Dart set {self._flut_type}.{property} failed: {result['_flut_error']}"
+            )
 
     def _flut_call(self, method: str, *args, **kwargs):
         engine = get_engine()
