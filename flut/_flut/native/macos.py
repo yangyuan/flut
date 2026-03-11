@@ -241,11 +241,14 @@ def _create_flutapp_class():
 
 
 _window_delegate_callback = None
+_window_delegate_should_close_callback = None
 _window_delegate_class = None
+_window_close_handlers = {}
 
 
 def create_window_delegate_class():
     global _window_delegate_class, _window_delegate_callback
+    global _window_delegate_should_close_callback
 
     if _window_delegate_class is not None:
         return _window_delegate_class
@@ -259,7 +262,15 @@ def create_window_delegate_class():
         logger.error("Failed to create delegate class")
         return None
 
+    def window_should_close(self_ptr, cmd_ptr, sender_ptr):
+        handler = _window_close_handlers.get(self_ptr)
+        if handler is not None:
+            return bool(handler())
+        return True
+
     def window_will_close(self_ptr, cmd_ptr, notification_ptr):
+        _window_close_handlers.pop(self_ptr, None)
+
         NSApplication = libobjc.objc_getClass(b"NSApplication")
         shared_app_sel = libobjc.sel_registerName(b"sharedApplication")
         terminate_sel = libobjc.sel_registerName(b"terminate:")
@@ -274,7 +285,17 @@ def create_window_delegate_class():
         )
         terminate(app, terminate_sel, None)
 
+    _window_delegate_should_close_callback = CFUNCTYPE(
+        c_bool, c_void_p, c_void_p, c_void_p
+    )(window_should_close)
     _window_delegate_callback = IMP_VOID(window_will_close)
+
+    libobjc.class_addMethod(
+        _window_delegate_class,
+        sel("windowShouldClose:"),
+        ctypes.cast(_window_delegate_should_close_callback, c_void_p),
+        b"B@:@",
+    )
 
     libobjc.class_addMethod(
         _window_delegate_class,
@@ -614,6 +635,10 @@ class FlutMacOSNative(FlutNative):
         self._last_buffer = None
         self._window = None
         self._window_delegate = None
+        self._icon_image = None
+        self._close_error = None
+        self._close_requested = False
+        self._close_allowed = False
         self._notify_keepalive = []
         self._notify_acked = 0
 
@@ -683,17 +708,50 @@ class FlutMacOSNative(FlutNative):
             msg(arr, "addObject:", ns_item)
         return arr
 
+    def _apply_icon(self, app, icon_path):
+        NSImage = objc_class("NSImage")
+        with self._use_default_icon_path() as default_icon_path:
+            candidates = []
+            if icon_path is not None:
+                candidates.append(icon_path)
+            if default_icon_path is not None and default_icon_path not in candidates:
+                candidates.append(default_icon_path)
+
+            for candidate in candidates:
+                image = msg(
+                    msg(NSImage, "alloc"),
+                    "initWithContentsOfFile:",
+                    self._create_nsstring(candidate),
+                )
+                if image:
+                    self._icon_image = image
+                    msg(app, "setApplicationIconImage:", image)
+                    if self._window is not None:
+                        msg(self._window, "setMiniwindowImage:", image)
+                    return
+
+                if candidate != default_icon_path and default_icon_path is not None:
+                    logger.warning(
+                        "Failed to load icon %s. Falling back to packaged icon.",
+                        candidate,
+                    )
+
+        if icon_path is not None:
+            raise RuntimeError(f"Failed to load icon: {icon_path}")
+
     def _setup_flutter(
         self,
         method_call_handler,
-        assets_path: str,
+        flutter_asset_path: str,
         width: int,
         height: int,
         title: str,
+        icon_path: str | None = None,
+        on_close=None,
         async_mode: bool = False,
     ):
-        if not os.path.exists(assets_path):
-            raise FileNotFoundError(f"Assets path not found: {assets_path}")
+        if not os.path.exists(flutter_asset_path):
+            raise FileNotFoundError(f"Assets path not found: {flutter_asset_path}")
 
         def on_native_callback(request_ptr):
             try:
@@ -770,6 +828,7 @@ class FlutMacOSNative(FlutNative):
         delegate_class = create_window_delegate_class()
         if delegate_class:
             self._window_delegate = msg(msg(delegate_class, "alloc"), "init")
+            _window_close_handlers[self._window_delegate] = on_close
             msg(self._window, "setDelegate:", self._window_delegate)
 
         set_released = ctypes.cast(
@@ -779,6 +838,7 @@ class FlutMacOSNative(FlutNative):
 
         title_str = self._create_nsstring(title)
         msg(self._window, "setTitle:", title_str)
+        self._apply_icon(app, icon_path)
 
         flutter_view = msg(self.flutter_view_controller, "view")
         msg(self._window, "setContentView:", flutter_view)
@@ -807,38 +867,97 @@ class FlutMacOSNative(FlutNative):
         return app
 
     def run(
-        self, method_call_handler, assets_path: str, width: int, height: int, title: str
+        self,
+        method_call_handler,
+        flutter_asset_path: str,
+        width: int,
+        height: int,
+        title: str,
+        icon_path: str | None = None,
+        on_initilized=None,
+        on_close=None,
     ):
+        self._close_error = None
+
+        def handle_close():
+            self._running = False
+            if on_close is None:
+                return True
+            try:
+                on_close()
+            except Exception as exc:
+                if self._close_error is None:
+                    self._close_error = exc
+            return True
+
         app = self._setup_flutter(
-            method_call_handler, assets_path, width, height, title, async_mode=False
+            method_call_handler,
+            flutter_asset_path,
+            width,
+            height,
+            title,
+            icon_path=icon_path,
+            on_close=handle_close,
+            async_mode=False,
         )
         if app is None:
             return False
+        if on_initilized is not None:
+            on_initilized()
         msg(app, "run")
+        if self._close_error is not None:
+            raise self._close_error
         return True
 
     async def run_async(
         self,
         method_call_handler,
-        assets_path: str,
+        flutter_asset_path: str,
         width: int,
         height: int,
         title: str,
+        icon_path: str | None = None,
+        on_initilized=None,
+        on_close=None,
         loop=None,
     ):
+        if loop is None:
+            loop = asyncio.get_running_loop()
+
+        self._close_requested = False
+        self._close_allowed = False
+        self._close_error = None
+
+        def handle_close():
+            if self._close_allowed or on_close is None:
+                self._running = False
+                return True
+            self._close_requested = True
+            return False
+
         app = self._setup_flutter(
-            method_call_handler, assets_path, width, height, title, async_mode=True
+            method_call_handler,
+            flutter_asset_path,
+            width,
+            height,
+            title,
+            icon_path=icon_path,
+            on_close=handle_close,
+            async_mode=True,
         )
         if app is None:
             return False
 
-        if loop is None:
-            loop = asyncio.get_running_loop()
-        await self._run_async_runloop(app, loop)
+        if on_initilized is not None:
+            await on_initilized()
+        await self._run_async_runloop(app, loop, on_close=on_close)
+
+        if self._close_error is not None:
+            raise self._close_error
 
         return True
 
-    async def _run_async_runloop(self, app, loop):
+    async def _run_async_runloop(self, app, loop, on_close=None):
         NSDate = objc_class("NSDate")
         cf = ctypes.CDLL(
             "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation"
@@ -889,9 +1008,33 @@ class FlutMacOSNative(FlutNative):
             while self._running:
                 drain_nsevents()
 
+                if self._close_requested:
+                    self._close_requested = False
+                    if on_close is not None:
+                        try:
+                            await on_close()
+                        except Exception as exc:
+                            if self._close_error is None:
+                                self._close_error = exc
+                    self._close_allowed = True
+                    msg(self._window, "performClose:", c_void_p(0))
+                    continue
+
                 await asyncio.sleep(0)
 
                 drain_nsevents()
+
+                if self._close_requested:
+                    self._close_requested = False
+                    if on_close is not None:
+                        try:
+                            await on_close()
+                        except Exception as exc:
+                            if self._close_error is None:
+                                self._close_error = exc
+                    self._close_allowed = True
+                    msg(self._window, "performClose:", c_void_p(0))
+                    continue
 
                 if not self._running:
                     break
@@ -918,6 +1061,8 @@ class FlutMacOSNative(FlutNative):
 
     def shutdown(self):
         self._running = False
+        if self._window_delegate is not None:
+            _window_close_handlers.pop(self._window_delegate, None)
         if self.flutter_engine:
             msg(self.flutter_engine, "shutDownEngine")
             self.flutter_engine = None

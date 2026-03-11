@@ -6,6 +6,7 @@ import asyncio
 import weakref
 from typing import override
 
+from flut._flut.native.native import FlutNative
 from flut._flut.runtime import flut_unpack
 
 logger = logging.getLogger(__name__)
@@ -184,18 +185,49 @@ class FlutterEngine:
             raise
         logger.info("Flut engine ready")
 
-    def run(self, assets_path, width, height, title):
-        self._native.run(self._handle_method_call, assets_path, width, height, title)
-
-    async def run_async(self, assets_path, width, height, title, loop=None):
-        self._event_loop = loop or asyncio.get_running_loop()
-        await self._native.run_async(
+    def run(
+        self,
+        flutter_asset_path,
+        width,
+        height,
+        title,
+        icon_path=None,
+        on_initilized=None,
+        on_close=None,
+    ):
+        self._native.run(
             self._handle_method_call,
-            assets_path,
+            flutter_asset_path,
             width,
             height,
             title,
-            self._event_loop,
+            icon_path=icon_path,
+            on_initilized=on_initilized,
+            on_close=on_close,
+        )
+
+    async def run_async(
+        self,
+        flutter_asset_path,
+        width,
+        height,
+        title,
+        icon_path=None,
+        on_initilized=None,
+        on_close=None,
+        loop=None,
+    ):
+        self._event_loop = loop or asyncio.get_running_loop()
+        await self._native.run_async(
+            self._handle_method_call,
+            flutter_asset_path,
+            width,
+            height,
+            title,
+            icon_path=icon_path,
+            on_initilized=on_initilized,
+            on_close=on_close,
+            loop=self._event_loop,
         )
 
     def shutdown(self):
@@ -356,51 +388,103 @@ class FlutterEngine:
             return json.dumps({"_flut_error": str(e)}).encode("utf-8")
 
 
-def _get_native_and_assets(assets_path):
-    from .native.native import FlutNative
-
+def _get_native_and_assets(flutter_asset_path):
     native = FlutNative._create()
 
-    if assets_path is None:
-        assets_path = native.get_default_assets_path()
+    if flutter_asset_path is None:
+        flutter_asset_path = native.get_default_assets_path()
         if len(sys.argv) > 1:
-            assets_path = sys.argv[1]
+            flutter_asset_path = sys.argv[1]
 
-    if not os.path.exists(assets_path):
+    if not os.path.exists(flutter_asset_path):
         logger.error(
-            "Assets not found at: %s. Build the Flutter app first.", assets_path
+            "Assets not found at: %s. Build the Flutter app first.",
+            flutter_asset_path,
         )
         return None, None
 
-    return native, assets_path
+    return native, flutter_asset_path
 
 
-def run_app(widget, assets_path=None, width=800, height=600, title="Flut"):
-    native, assets_path = _get_native_and_assets(assets_path)
+def _resolve_icon_path(icon):
+    if icon is None:
+        return None
+
+    icon_path = os.path.abspath(os.path.expanduser(os.fspath(icon)))
+    extension = os.path.splitext(icon_path)[1].lower()
+    if extension not in {".png", ".ico"}:
+        raise ValueError("Icon must be a .png or .ico file.")
+    if not os.path.exists(icon_path):
+        logger.warning(
+            "Icon not found at: %s. Falling back to packaged icon.",
+            icon_path,
+        )
+        return None
+    return icon_path
+
+
+def run_app(
+    widget,
+    flutter_asset_path=None,
+    width=800,
+    height=600,
+    title="Flut",
+    icon=None,
+    on_initilized=None,
+    on_close=None,
+):
+    native, flutter_asset_path = _get_native_and_assets(flutter_asset_path)
     if native is None:
         return None
+    icon_path = _resolve_icon_path(icon)
 
     engine = FlutterEngine(native, widget)
     engine.initialize()
 
     try:
-        engine.run(assets_path, width, height, title)
+        engine.run(
+            flutter_asset_path,
+            width,
+            height,
+            title,
+            icon_path=icon_path,
+            on_initilized=on_initilized,
+            on_close=on_close,
+        )
     finally:
         engine.shutdown()
 
     return engine
 
 
-async def run_app_async(widget, assets_path=None, width=800, height=600, title="Flut"):
-    native, assets_path = _get_native_and_assets(assets_path)
+async def run_app_async(
+    widget,
+    flutter_asset_path=None,
+    width=800,
+    height=600,
+    title="Flut",
+    icon=None,
+    on_initilized=None,
+    on_close=None,
+):
+    native, flutter_asset_path = _get_native_and_assets(flutter_asset_path)
     if native is None:
         return None
+    icon_path = _resolve_icon_path(icon)
 
     engine = FlutterEngine(native, widget)
     engine.initialize()
 
     try:
-        await engine.run_async(assets_path, width, height, title)
+        await engine.run_async(
+            flutter_asset_path,
+            width,
+            height,
+            title,
+            icon_path=icon_path,
+            on_initilized=on_initilized,
+            on_close=on_close,
+        )
     finally:
         engine.shutdown()
 
@@ -944,7 +1028,7 @@ class FlutRealtimeObject(FlutObject):
             value = value._flut_pack()
         else:
             value = _flut_pack_value(value)
-        engine.call_dart_async(
+        result = engine.call_dart(
             "set",
             {
                 "_flut_oid": self._flut_oid,
@@ -952,6 +1036,10 @@ class FlutRealtimeObject(FlutObject):
                 "_flut_value": value,
             },
         )
+        if result and "_flut_error" in result:
+            raise RuntimeError(
+                f"Dart set {self._flut_type}.{property} failed: {result['_flut_error']}"
+            )
 
     def _flut_call(self, method: str, *args, **kwargs):
         engine = get_engine()

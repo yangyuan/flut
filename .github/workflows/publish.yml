@@ -10,18 +10,23 @@ on:
         type: choice
         options:
           - all
-          - all_x64
+          - all-x64
           - source
           - macos
           - windows-x64
           - windows-arm64
           - linux-x64
           - linux-arm64
+      dry_run:
+        description: 'Build distributions without publishing to PyPI'
+        required: true
+        default: false
+        type: boolean
 permissions:
   contents: read
 jobs:
   release-build-source:
-    if: ${{ inputs.target == 'source' || inputs.target == 'all' || inputs.target == 'all_x64' }}
+    if: ${{ inputs.target == 'source' || inputs.target == 'all' || inputs.target == 'all-x64' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +45,7 @@ jobs:
           retention-days: 1
 
   release-build-windows-x64:
-    if: ${{ inputs.target == 'windows-x64' || inputs.target == 'all' || inputs.target == 'all_x64' }}
+    if: ${{ inputs.target == 'windows-x64' || inputs.target == 'all' || inputs.target == 'all-x64' }}
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -84,7 +89,7 @@ jobs:
           retention-days: 1
 
   release-build-macos:
-    if: ${{ inputs.target == 'macos' || inputs.target == 'all' || inputs.target == 'all_x64' }}
+    if: ${{ inputs.target == 'macos' || inputs.target == 'all' || inputs.target == 'all-x64' }}
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -106,7 +111,7 @@ jobs:
           retention-days: 1
 
   release-build-linux-x64:
-    if: ${{ inputs.target == 'linux-x64' || inputs.target == 'all' || inputs.target == 'all_x64' }}
+    if: ${{ inputs.target == 'linux-x64' || inputs.target == 'all' || inputs.target == 'all-x64' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -166,7 +171,7 @@ jobs:
       - release-build-macos
       - release-build-linux-x64
       - release-build-linux-arm64
-    if: ${{ always() && (needs.release-build-source.result == 'success' || needs.release-build-windows-x64.result == 'success' || needs.release-build-windows-arm64.result == 'success' || needs.release-build-macos.result == 'success' || needs.release-build-linux-x64.result == 'success' || needs.release-build-linux-arm64.result == 'success') }}
+    if: ${{ !inputs.dry_run && always() && (needs.release-build-source.result == 'success' || needs.release-build-windows-x64.result == 'success' || needs.release-build-windows-arm64.result == 'success' || needs.release-build-macos.result == 'success' || needs.release-build-linux-x64.result == 'success' || needs.release-build-linux-arm64.result == 'success') }}
     permissions:
       id-token: write
     environment:

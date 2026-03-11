@@ -1,5 +1,7 @@
 # Flut
 
+<img src="https://raw.githubusercontent.com/yangyuan/flut/master/flut/assets/icon.svg" width="64" height="64" alt="flut">
+
 Flutter, but in Python
 
 ## Overview
@@ -169,7 +171,7 @@ The following are implemented with compromises:
 - **Shortcuts / Actions** O(depth) action lookup vs Flutter's O(1). Negligible for typical widget trees.
 - **showDialog** wraps the builder in a StatelessWidget proxy so the dialog's widget tree is built through the standard Dart-initiated build path, enabling callbacks in dialog children to work correctly.
 
-## Development Setup
+## Build
 ```
 cd flut/.flutter
 flutter build windows/macos/linux --no-tree-shake-icons
@@ -178,3 +180,7 @@ flutter build windows/macos/linux --no-tree-shake-icons
 ## License
 
 MIT
+
+## Disclaimer
+
+Flut is an independent project and is not endorsed by, sponsored by, or affiliated with Google LLC. Flutter is a trademark of Google LLC.

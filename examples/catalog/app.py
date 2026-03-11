@@ -411,8 +411,23 @@ class CatalogAppState(State[CatalogApp]):
         )
 
 
+async def _on_catalog_initialized():
+    print("Catalog event: on_initilized")
+
+
+async def _on_catalog_close():
+    print("Catalog event: on_close")
+
+
 async def main():
-    await run_app_async(CatalogApp(), width=1000, height=700, title="Flut Catalog")
+    await run_app_async(
+        CatalogApp(),
+        width=1000,
+        height=700,
+        title="Flut Catalog",
+        on_initilized=_on_catalog_initialized,
+        on_close=_on_catalog_close,
+    )
 
 
 asyncio.run(main())

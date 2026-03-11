@@ -82,8 +82,6 @@ if not gtk or not gobject:
 
 GType = c_size_t
 
-G_APPLICATION_FLAGS_NONE = 0
-
 GTK_WINDOW_TOPLEVEL = 0
 
 G_IO_IN = 1
@@ -96,6 +94,7 @@ EFD_NONBLOCK = 0x800
 EFD_CLOEXEC = 0x80000
 
 GCallback = CFUNCTYPE(None, c_void_p, c_void_p)
+GDeleteEventCallback = CFUNCTYPE(c_int, c_void_p, c_void_p, c_void_p)
 
 GUnixFDSourceFunc = CFUNCTYPE(c_int, c_int, c_uint, c_void_p)
 
@@ -254,6 +253,8 @@ class FlutLinuxNative(FlutNative):
         self._native_callback = None
         self._last_buffer = None
         self._window = None
+        self._close_error = None
+        self._close_requested = False
         self._notify_keepalive = []
         self._notify_acked = 0
 
@@ -304,17 +305,19 @@ class FlutLinuxNative(FlutNative):
     def _setup_flutter(
         self,
         method_call_handler,
-        assets_path: str,
+        flutter_asset_path: str,
         width: int,
         height: int,
         title: str,
+        icon_path: str | None = None,
         async_mode: bool = False,
+        show_window: bool = True,
     ):
         if not self.libflutter:
             self.initialize()
 
-        if not os.path.exists(assets_path):
-            raise FileNotFoundError(f"Assets path not found: {assets_path}")
+        if not os.path.exists(flutter_asset_path):
+            raise FileNotFoundError(f"Assets path not found: {flutter_asset_path}")
 
         mode_str = " (async mode)" if async_mode else ""
 
@@ -342,7 +345,7 @@ class FlutLinuxNative(FlutNative):
 
         self.libflutter.fl_dart_project_set_assets_path.argtypes = [c_void_p, c_char_p]
         self.libflutter.fl_dart_project_set_assets_path(
-            project, assets_path.encode("utf-8")
+            project, flutter_asset_path.encode("utf-8")
         )
 
         icu_path = PATH_FLUT_ICU
@@ -396,67 +399,217 @@ class FlutLinuxNative(FlutNative):
         gtk.gtk_window_set_title.argtypes = [c_void_p, c_char_p]
         gtk.gtk_window_set_title(window, title.encode("utf-8"))
 
+        gtk.gtk_window_set_default_icon_from_file.argtypes = [
+            c_char_p,
+            POINTER(c_void_p),
+        ]
+        gtk.gtk_window_set_default_icon_from_file.restype = c_int
+
+        gtk.gtk_window_set_icon_from_file.argtypes = [
+            c_void_p,
+            c_char_p,
+            POINTER(c_void_p),
+        ]
+        gtk.gtk_window_set_icon_from_file.restype = c_int
+
+        def try_set_icon(candidate):
+            error = c_void_p()
+            ok = gtk.gtk_window_set_default_icon_from_file(
+                candidate.encode("utf-8"),
+                ctypes.byref(error),
+            )
+            if not ok:
+                if error.value and glib is not None:
+                    glib.g_error_free.argtypes = [c_void_p]
+                    glib.g_error_free.restype = None
+                    glib.g_error_free(error)
+                return False
+
+            error = c_void_p()
+            ok = gtk.gtk_window_set_icon_from_file(
+                window,
+                candidate.encode("utf-8"),
+                ctypes.byref(error),
+            )
+            if ok:
+                return True
+            if error.value and glib is not None:
+                glib.g_error_free.argtypes = [c_void_p]
+                glib.g_error_free.restype = None
+                glib.g_error_free(error)
+            return False
+
+        with self._use_default_icon_path() as default_icon_path:
+            candidates = []
+            if icon_path is not None:
+                candidates.append(icon_path)
+            if default_icon_path is not None and default_icon_path not in candidates:
+                candidates.append(default_icon_path)
+
+            for candidate in candidates:
+                if try_set_icon(candidate):
+                    break
+                if candidate != default_icon_path and default_icon_path is not None:
+                    logger.warning(
+                        "Failed to load icon %s. Falling back to packaged icon.",
+                        candidate,
+                    )
+            else:
+                if icon_path is not None:
+                    raise RuntimeError(f"Failed to load icon: {icon_path}")
+
         gtk.gtk_container_add.argtypes = [c_void_p, c_void_p]
         gtk.gtk_container_add(window, fl_view)
 
-        gtk.gtk_widget_show_all.argtypes = [c_void_p]
-        gtk.gtk_widget_show_all(window)
+        if show_window:
+            gtk.gtk_widget_show_all.argtypes = [c_void_p]
+            gtk.gtk_widget_show_all(window)
 
         return window
 
     def run(
-        self, method_call_handler, assets_path: str, width: int, height: int, title: str
+        self,
+        method_call_handler,
+        flutter_asset_path: str,
+        width: int,
+        height: int,
+        title: str,
+        icon_path: str | None = None,
+        on_initilized=None,
+        on_close=None,
     ):
+        self._close_error = None
+
         window = self._setup_flutter(
-            method_call_handler, assets_path, width, height, title, async_mode=False
+            method_call_handler,
+            flutter_asset_path,
+            width,
+            height,
+            title,
+            icon_path=icon_path,
+            async_mode=False,
+            show_window=False,
         )
         if window is None:
             return False
 
+        def on_delete_event(widget, event, data):
+            if on_close is not None:
+                try:
+                    on_close()
+                except Exception as exc:
+                    if self._close_error is None:
+                        self._close_error = exc
+            return 0
+
         def on_destroy(widget, data):
             gtk.gtk_main_quit()
 
+        self._delete_event_cb = GDeleteEventCallback(on_delete_event)
         self._destroy_cb = GCallback(on_destroy)
 
         gobject.g_signal_connect_data.argtypes = [
             c_void_p,
             c_char_p,
-            GCallback,
+            c_void_p,
             c_void_p,
             c_void_p,
             c_int,
         ]
         gobject.g_signal_connect_data(
-            window, b"destroy", self._destroy_cb, None, None, 0
+            window,
+            b"delete-event",
+            ctypes.cast(self._delete_event_cb, c_void_p),
+            None,
+            None,
+            0,
         )
+        gobject.g_signal_connect_data(
+            window,
+            b"destroy",
+            ctypes.cast(self._destroy_cb, c_void_p),
+            None,
+            None,
+            0,
+        )
+
+        gtk.gtk_widget_show_all.argtypes = [c_void_p]
+        gtk.gtk_widget_show_all(window)
 
         self._running = True
 
+        if on_initilized is not None:
+            on_initilized()
+
         gtk.gtk_main()
+        if self._close_error is not None:
+            raise self._close_error
         return True
 
     async def run_async(
         self,
         method_call_handler,
-        assets_path: str,
+        flutter_asset_path: str,
         width: int,
         height: int,
         title: str,
+        icon_path: str | None = None,
+        on_initilized=None,
+        on_close=None,
         loop: asyncio.AbstractEventLoop = None,
     ):
+        if loop is None:
+            loop = asyncio.get_running_loop()
+
+        self._close_requested = False
+
         window = self._setup_flutter(
-            method_call_handler, assets_path, width, height, title, async_mode=True
+            method_call_handler,
+            flutter_asset_path,
+            width,
+            height,
+            title,
+            icon_path=icon_path,
+            async_mode=True,
+            show_window=False,
         )
         if window is None:
             return False
 
-        if loop is None:
-            loop = asyncio.get_running_loop()
+        def on_delete_event(widget, event, data):
+            self._close_requested = True
+            return 1
 
-        await self._run_async_gtk_loop(window, loop)
+        self._delete_event_cb = GDeleteEventCallback(on_delete_event)
+        gobject.g_signal_connect_data.argtypes = [
+            c_void_p,
+            c_char_p,
+            c_void_p,
+            c_void_p,
+            c_void_p,
+            c_int,
+        ]
+        gobject.g_signal_connect_data(
+            window,
+            b"delete-event",
+            ctypes.cast(self._delete_event_cb, c_void_p),
+            None,
+            None,
+            0,
+        )
+
+        gtk.gtk_widget_show_all.argtypes = [c_void_p]
+        gtk.gtk_widget_show_all(window)
+
+        if on_initilized is not None:
+            await on_initilized()
+
+        await self._run_async_gtk_loop(window, loop, on_close=on_close)
         return True
 
-    async def _run_async_gtk_loop(self, window, loop: asyncio.AbstractEventLoop):
+    async def _run_async_gtk_loop(
+        self, window, loop: asyncio.AbstractEventLoop, on_close=None
+    ):
         should_quit = False
 
         def on_destroy(widget, data):
@@ -467,13 +620,18 @@ class FlutLinuxNative(FlutNative):
         gobject.g_signal_connect_data.argtypes = [
             c_void_p,
             c_char_p,
-            GCallback,
+            c_void_p,
             c_void_p,
             c_void_p,
             c_int,
         ]
         gobject.g_signal_connect_data(
-            window, b"destroy", self._destroy_cb, None, None, 0
+            window,
+            b"destroy",
+            ctypes.cast(self._destroy_cb, c_void_p),
+            None,
+            None,
+            0,
         )
 
         bridge = GLibAsyncBridge()
@@ -513,6 +671,15 @@ class FlutLinuxNative(FlutNative):
                 if not drain_gtk():
                     break
 
+                if self._close_requested:
+                    self._close_requested = False
+                    if on_close is not None:
+                        await on_close()
+                    gtk.gtk_widget_hide.argtypes = [c_void_p]
+                    gtk.gtk_widget_hide(window)
+                    should_quit = True
+                    continue
+
                 while process_asyncio_timers():
                     await asyncio.sleep(0)
                     if not drain_gtk():
@@ -537,8 +704,12 @@ class FlutLinuxNative(FlutNative):
     def shutdown(self):
         if self._running:
             if gtk:
-                gtk.gtk_main_quit()
+                gtk.gtk_main_level.argtypes = []
+                gtk.gtk_main_level.restype = c_uint
+                if gtk.gtk_main_level() > 0:
+                    gtk.gtk_main_quit()
             self._running = False
+        self._window = None
 
     @staticmethod
     def get_default_assets_path() -> str:

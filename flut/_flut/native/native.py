@@ -2,6 +2,9 @@ import os
 import sys
 import platform
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
+from importlib.resources import as_file, files
+from typing import Iterator
 
 
 class FlutNative(ABC):
@@ -36,7 +39,32 @@ class FlutNative(ABC):
         pass
 
     @abstractmethod
-    def run(self, method_call_handler, assets_path: str, width: int, height: int):
+    def run(
+        self,
+        method_call_handler,
+        flutter_asset_path: str,
+        width: int,
+        height: int,
+        title: str,
+        icon_path: str | None = None,
+        on_initilized=None,
+        on_close=None,
+    ):
+        pass
+
+    @abstractmethod
+    async def run_async(
+        self,
+        method_call_handler,
+        flutter_asset_path: str,
+        width: int,
+        height: int,
+        title: str,
+        icon_path: str | None = None,
+        on_initilized=None,
+        on_close=None,
+        loop=None,
+    ):
         pass
 
     @abstractmethod
@@ -58,6 +86,23 @@ class FlutNative(ABC):
                 trim_count = len(self._notify_keepalive)
             del self._notify_keepalive[:trim_count]
             self._notify_acked += trim_count
+
+    @staticmethod
+    def get_default_icon() -> bytes | None:
+        icon_resource = files("flut").joinpath("assets/icon.png")
+        if not icon_resource.is_file():
+            return None
+        return icon_resource.read_bytes()
+
+    @staticmethod
+    @contextmanager
+    def _use_default_icon_path() -> Iterator[str | None]:
+        icon_resource = files("flut").joinpath("assets/icon.png")
+        if not icon_resource.is_file():
+            yield None
+            return
+        with as_file(icon_resource) as icon_path:
+            yield os.fspath(icon_path)
 
     @staticmethod
     def get_default_assets_path() -> str:

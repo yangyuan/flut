@@ -1,7 +1,7 @@
 [project]
 name = "flut"
 description = "Flutter, but in Python"
-version = "0.0.1"
+version = "0.0.2"
 requires-python = ">=3.8"
 readme = "README.md"
 license-files = ["LICENSE"]
@@ -16,4 +16,10 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 include = ["flut*"]
 exclude = ["flut/.flutter*"]
+
+[tool.setuptools.package-data]
+flut = ["assets/*.png", "assets/*.svg"]
+
+[project.urls]
+"Homepage" = "https://github.com/yangyuan/flut/"
 

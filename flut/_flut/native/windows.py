@@ -28,7 +28,9 @@ WM_SIZE = 0x0005
 WM_PAINT = 0x000F
 WM_ACTIVATE = 0x0006
 WM_SETFOCUS = 0x0007
+WM_CLOSE = 0x0010
 WM_QUIT = 0x0012
+WM_SETICON = 0x0080
 WS_OVERLAPPEDWINDOW = 0x00CF0000
 WS_VISIBLE = 0x10000000
 WS_CHILD = 0x40000000
@@ -37,6 +39,16 @@ SW_SHOW = 5
 SWP_NOZORDER = 0x0004
 SWP_SHOWWINDOW = 0x0040
 SWP_FRAMECHANGED = 0x0020
+ICON_SMALL = 0
+ICON_BIG = 1
+IMAGE_ICON = 1
+LR_LOADFROMFILE = 0x0010
+SM_CXICON = 11
+SM_CYICON = 12
+SM_CXSMICON = 49
+SM_CYSMICON = 50
+INTERPOLATION_MODE_HIGH_QUALITY_BICUBIC = 7
+PIXEL_FORMAT_32BPP_ARGB = 0x26200A
 
 if ctypes.sizeof(ctypes.c_void_p) == 8:
     LRESULT = ctypes.c_longlong
@@ -76,6 +88,15 @@ class MSG(ctypes.Structure):
         ("time", wintypes.DWORD),
         ("pt", wintypes.POINT),
         ("lPrivate", wintypes.DWORD),
+    ]
+
+
+class GdiplusStartupInput(ctypes.Structure):
+    _fields_ = [
+        ("GdiplusVersion", ctypes.c_uint32),
+        ("DebugEventCallback", ctypes.c_void_p),
+        ("SuppressBackgroundThread", wintypes.BOOL),
+        ("SuppressExternalCodecs", wintypes.BOOL),
     ]
 
 
@@ -216,6 +237,10 @@ class FlutWindowsNative(FlutNative):
         self._notify_keepalive = []
         self._notify_acked = 0
         self._last_buffer = None
+        self._icon_handles = []
+        self._gdiplus = None
+        self._gdiplus_token = ctypes.c_size_t()
+        self._host_class_name = f"FlutterHostWindow_{id(self)}"
 
     def initialize(self):
         if not os.path.exists(self.dll_path):
@@ -238,6 +263,7 @@ class FlutWindowsNative(FlutNative):
 
         self._setup_api()
         self._setup_win32_api()
+        self._setup_gdiplus_api()
 
     def _get_dpi_scale(self):
         try:
@@ -369,14 +395,14 @@ class FlutWindowsNative(FlutNative):
     def _setup_engine(
         self,
         method_call_handler,
-        assets_path: str,
+        flutter_asset_path: str,
         width: int,
         height: int,
         title: str,
         async_mode: bool = False,
     ):
-        if not os.path.exists(assets_path):
-            raise FileNotFoundError(f"Assets path not found: {assets_path}")
+        if not os.path.exists(flutter_asset_path):
+            raise FileNotFoundError(f"Assets path not found: {flutter_asset_path}")
         if not os.path.exists(self.icu_path):
             raise FileNotFoundError(f"ICU data not found: {self.icu_path}")
         if not os.path.exists(PATH_FLUT_AOT):
@@ -387,7 +413,7 @@ class FlutWindowsNative(FlutNative):
         scaled_height = int(height * dpi_scale)
 
         self._props = FlutterDesktopEngineProperties()
-        self._props.assets_path = assets_path
+        self._props.assets_path = flutter_asset_path
         self._props.icu_data_path = self.icu_path
         self._props.aot_library_path = PATH_FLUT_AOT
         self._props.dart_entrypoint = None
@@ -516,8 +542,228 @@ class FlutWindowsNative(FlutNative):
             wintypes.UINT,
         ]
         user32.PeekMessageW.restype = wintypes.BOOL
+        user32.LoadImageW.argtypes = [
+            wintypes.HINSTANCE,
+            wintypes.LPCWSTR,
+            wintypes.UINT,
+            ctypes.c_int,
+            ctypes.c_int,
+            wintypes.UINT,
+        ]
+        user32.LoadImageW.restype = wintypes.HANDLE
+        user32.SendMessageW.argtypes = [
+            wintypes.HWND,
+            wintypes.UINT,
+            wintypes.WPARAM,
+            wintypes.LPARAM,
+        ]
+        user32.SendMessageW.restype = LRESULT
+        user32.DestroyIcon.argtypes = [wintypes.HICON]
+        user32.DestroyIcon.restype = wintypes.BOOL
+        user32.GetSystemMetrics.argtypes = [ctypes.c_int]
+        user32.GetSystemMetrics.restype = ctypes.c_int
 
-    def _create_host_window(self, flutter_hwnd, width, height, title, on_close):
+    def _setup_gdiplus_api(self):
+        self._gdiplus = ctypes.windll.gdiplus
+        self._gdiplus.GdiplusStartup.argtypes = [
+            ctypes.POINTER(ctypes.c_size_t),
+            ctypes.POINTER(GdiplusStartupInput),
+            ctypes.c_void_p,
+        ]
+        self._gdiplus.GdiplusStartup.restype = ctypes.c_uint32
+        self._gdiplus.GdiplusShutdown.argtypes = [ctypes.c_size_t]
+        self._gdiplus.GdiplusShutdown.restype = None
+        self._gdiplus.GdipCreateBitmapFromFile.argtypes = [
+            ctypes.c_wchar_p,
+            ctypes.POINTER(ctypes.c_void_p),
+        ]
+        self._gdiplus.GdipCreateBitmapFromFile.restype = ctypes.c_uint32
+        self._gdiplus.GdipCreateBitmapFromScan0.argtypes = [
+            ctypes.c_int,
+            ctypes.c_int,
+            ctypes.c_int,
+            ctypes.c_int,
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_void_p),
+        ]
+        self._gdiplus.GdipCreateBitmapFromScan0.restype = ctypes.c_uint32
+        self._gdiplus.GdipCreateHICONFromBitmap.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(wintypes.HICON),
+        ]
+        self._gdiplus.GdipCreateHICONFromBitmap.restype = ctypes.c_uint32
+        self._gdiplus.GdipGetImageGraphicsContext.argtypes = [
+            ctypes.c_void_p,
+            ctypes.POINTER(ctypes.c_void_p),
+        ]
+        self._gdiplus.GdipGetImageGraphicsContext.restype = ctypes.c_uint32
+        self._gdiplus.GdipDrawImageRectI.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_void_p,
+            ctypes.c_int,
+            ctypes.c_int,
+            ctypes.c_int,
+            ctypes.c_int,
+        ]
+        self._gdiplus.GdipDrawImageRectI.restype = ctypes.c_uint32
+        self._gdiplus.GdipSetInterpolationMode.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_int,
+        ]
+        self._gdiplus.GdipSetInterpolationMode.restype = ctypes.c_uint32
+        self._gdiplus.GdipDeleteGraphics.argtypes = [ctypes.c_void_p]
+        self._gdiplus.GdipDeleteGraphics.restype = ctypes.c_uint32
+        self._gdiplus.GdipDisposeImage.argtypes = [ctypes.c_void_p]
+        self._gdiplus.GdipDisposeImage.restype = ctypes.c_uint32
+
+        startup_input = GdiplusStartupInput(1, None, False, False)
+        status = self._gdiplus.GdiplusStartup(
+            ctypes.byref(self._gdiplus_token),
+            ctypes.byref(startup_input),
+            None,
+        )
+        if status != 0:
+            raise RuntimeError(f"Failed to initialize GDI+: status {status}")
+
+    def _load_icon_from_png(self, icon_path, width, height):
+        source_bitmap = ctypes.c_void_p()
+        status = self._gdiplus.GdipCreateBitmapFromFile(
+            ctypes.c_wchar_p(icon_path),
+            ctypes.byref(source_bitmap),
+        )
+        if status != 0 or not source_bitmap.value:
+            raise RuntimeError(f"Failed to load PNG icon: {icon_path}")
+
+        scaled_bitmap = ctypes.c_void_p()
+        graphics = ctypes.c_void_p()
+        icon_handle = wintypes.HICON()
+
+        try:
+            status = self._gdiplus.GdipCreateBitmapFromScan0(
+                width,
+                height,
+                0,
+                PIXEL_FORMAT_32BPP_ARGB,
+                None,
+                ctypes.byref(scaled_bitmap),
+            )
+            if status != 0 or not scaled_bitmap.value:
+                raise RuntimeError(f"Failed to allocate icon bitmap: {icon_path}")
+
+            status = self._gdiplus.GdipGetImageGraphicsContext(
+                scaled_bitmap,
+                ctypes.byref(graphics),
+            )
+            if status != 0 or not graphics.value:
+                raise RuntimeError(
+                    f"Failed to create icon graphics context: {icon_path}"
+                )
+
+            self._gdiplus.GdipSetInterpolationMode(
+                graphics,
+                INTERPOLATION_MODE_HIGH_QUALITY_BICUBIC,
+            )
+            status = self._gdiplus.GdipDrawImageRectI(
+                graphics,
+                source_bitmap,
+                0,
+                0,
+                width,
+                height,
+            )
+            if status != 0:
+                raise RuntimeError(f"Failed to scale PNG icon: {icon_path}")
+
+            status = self._gdiplus.GdipCreateHICONFromBitmap(
+                scaled_bitmap,
+                ctypes.byref(icon_handle),
+            )
+            if status != 0 or not icon_handle.value:
+                raise RuntimeError(f"Failed to create icon from PNG: {icon_path}")
+        finally:
+            if graphics.value:
+                self._gdiplus.GdipDeleteGraphics(graphics)
+            if scaled_bitmap.value:
+                self._gdiplus.GdipDisposeImage(scaled_bitmap)
+            self._gdiplus.GdipDisposeImage(source_bitmap)
+
+        return icon_handle.value
+
+    def _load_icon_handles(self, icon_path):
+        with self._use_default_icon_path() as default_icon_path:
+            candidates = []
+            if icon_path is not None:
+                candidates.append(icon_path)
+            if default_icon_path is not None and default_icon_path not in candidates:
+                candidates.append(default_icon_path)
+
+            user32 = ctypes.windll.user32
+            big_width = user32.GetSystemMetrics(SM_CXICON)
+            big_height = user32.GetSystemMetrics(SM_CYICON)
+            small_width = user32.GetSystemMetrics(SM_CXSMICON)
+            small_height = user32.GetSystemMetrics(SM_CYSMICON)
+            last_error = None
+
+            for candidate in candidates:
+                extension = os.path.splitext(candidate)[1].lower()
+                try:
+                    if extension == ".ico":
+                        big_icon_handle = user32.LoadImageW(
+                            None,
+                            candidate,
+                            IMAGE_ICON,
+                            big_width,
+                            big_height,
+                            LR_LOADFROMFILE,
+                        )
+                        small_icon_handle = user32.LoadImageW(
+                            None,
+                            candidate,
+                            IMAGE_ICON,
+                            small_width,
+                            small_height,
+                            LR_LOADFROMFILE,
+                        )
+                        if not big_icon_handle or not small_icon_handle:
+                            raise RuntimeError(f"Failed to load icon: {candidate}")
+                    elif extension == ".png":
+                        big_icon_handle = self._load_icon_from_png(
+                            candidate,
+                            big_width,
+                            big_height,
+                        )
+                        small_icon_handle = self._load_icon_from_png(
+                            candidate,
+                            small_width,
+                            small_height,
+                        )
+                    else:
+                        raise ValueError("Icon must be a .png or .ico file.")
+
+                    self._icon_handles.extend([big_icon_handle, small_icon_handle])
+                    return big_icon_handle, small_icon_handle
+                except Exception as exc:
+                    last_error = exc
+                    if candidate != default_icon_path and default_icon_path is not None:
+                        logger.warning(
+                            "Failed to load icon %s. Falling back to packaged icon.",
+                            candidate,
+                        )
+
+            if last_error is not None:
+                raise last_error
+            return None, None
+
+    def _create_host_window(
+        self,
+        flutter_hwnd,
+        width,
+        height,
+        title,
+        icon_path,
+        on_close,
+        on_destroy,
+    ):
         user32 = ctypes.windll.user32
         kernel32 = ctypes.windll.kernel32
 
@@ -563,16 +809,21 @@ class FlutWindowsNative(FlutNative):
             if msg == WM_SETFOCUS or msg == WM_ACTIVATE:
                 user32.SetFocus(flutter_hwnd)
 
+            if msg == WM_CLOSE:
+                if on_close():
+                    return 0
+
             if msg == WM_DESTROY:
-                on_close()
+                on_destroy()
                 return 0
 
             return user32.DefWindowProcW(host_hwnd, msg, wparam, lparam)
 
         self._wndproc = WNDPROC(_host_wndproc)
 
-        class_name = "FlutterHostWindow"
+        class_name = self._host_class_name
         h_instance = kernel32.GetModuleHandleW(None)
+        big_icon_handle, small_icon_handle = self._load_icon_handles(icon_path)
 
         wndclass = WNDCLASSEX()
         wndclass.cbSize = ctypes.sizeof(WNDCLASSEX)
@@ -581,12 +832,12 @@ class FlutWindowsNative(FlutNative):
         wndclass.cbClsExtra = 0
         wndclass.cbWndExtra = 0
         wndclass.hInstance = h_instance
-        wndclass.hIcon = None
+        wndclass.hIcon = big_icon_handle
         wndclass.hCursor = user32.LoadCursorW(None, 32512)
         wndclass.hbrBackground = None
         wndclass.lpszMenuName = None
         wndclass.lpszClassName = class_name
-        wndclass.hIconSm = None
+        wndclass.hIconSm = small_icon_handle
 
         user32.RegisterClassExW(ctypes.byref(wndclass))
 
@@ -608,6 +859,11 @@ class FlutWindowsNative(FlutNative):
         if not host_hwnd:
             logger.error("Failed to create host window")
             return None
+
+        if big_icon_handle is not None:
+            user32.SendMessageW(host_hwnd, WM_SETICON, ICON_BIG, big_icon_handle)
+        if small_icon_handle is not None:
+            user32.SendMessageW(host_hwnd, WM_SETICON, ICON_SMALL, small_icon_handle)
 
         client_rect = wintypes.RECT()
         user32.GetClientRect(host_hwnd, ctypes.byref(client_rect))
@@ -638,29 +894,79 @@ class FlutWindowsNative(FlutNative):
         return host_hwnd
 
     def run(
-        self, method_call_handler, assets_path: str, width: int, height: int, title: str
+        self,
+        method_call_handler,
+        flutter_asset_path: str,
+        width: int,
+        height: int,
+        title: str,
+        icon_path: str | None = None,
+        on_initilized=None,
+        on_close=None,
     ):
         hwnd, scaled_width, scaled_height, title = self._setup_engine(
-            method_call_handler, assets_path, width, height, title, async_mode=False
+            method_call_handler,
+            flutter_asset_path,
+            width,
+            height,
+            title,
+            async_mode=False,
         )
         if hwnd is None:
             return False
 
-        self._run_message_loop(hwnd, scaled_width, scaled_height, title)
+        close_error = [None]
+        self._run_message_loop(
+            hwnd,
+            scaled_width,
+            scaled_height,
+            title,
+            icon_path,
+            on_initilized,
+            on_close,
+            close_error,
+        )
+        if close_error[0] is not None:
+            raise close_error[0]
         return True
 
-    def _run_message_loop(self, hwnd, width, height, title):
+    def _run_message_loop(
+        self,
+        hwnd,
+        width,
+        height,
+        title,
+        icon_path,
+        on_initilized,
+        on_close,
+        close_error,
+    ):
         user32 = ctypes.windll.user32
+
+        def handle_close():
+            if on_close is None:
+                return False
+            try:
+                on_close()
+            except Exception as exc:
+                if close_error[0] is None:
+                    close_error[0] = exc
+            return False
 
         host_hwnd = self._create_host_window(
             hwnd,
             width,
             height,
             title,
-            on_close=lambda: user32.PostQuitMessage(0),
+            icon_path,
+            on_close=handle_close,
+            on_destroy=lambda: user32.PostQuitMessage(0),
         )
         if not host_hwnd:
             return False
+
+        if on_initilized is not None:
+            on_initilized()
 
         msg = MSG()
         self._running = True
@@ -674,26 +980,25 @@ class FlutWindowsNative(FlutNative):
 
         return True
 
-    def shutdown(self):
-        if self.view_controller:
-            self.flutter.FlutterDesktopViewControllerDestroy(self.view_controller)
-            self.view_controller = None
-            self.engine = None
-        elif self.engine:
-            self.flutter.FlutterDesktopEngineDestroy(self.engine)
-            self.engine = None
-
     async def run_async(
         self,
         method_call_handler,
-        assets_path: str,
+        flutter_asset_path: str,
         width: int,
         height: int,
         title: str,
+        icon_path: str | None = None,
+        on_initilized=None,
+        on_close=None,
         loop: asyncio.AbstractEventLoop = None,
     ):
         hwnd, scaled_width, scaled_height, title = self._setup_engine(
-            method_call_handler, assets_path, width, height, title, async_mode=True
+            method_call_handler,
+            flutter_asset_path,
+            width,
+            height,
+            title,
+            async_mode=True,
         )
         if hwnd is None:
             return False
@@ -702,19 +1007,42 @@ class FlutWindowsNative(FlutNative):
             loop = asyncio.get_running_loop()
 
         await self._run_async_message_loop(
-            hwnd, scaled_width, scaled_height, title, loop
+            hwnd,
+            scaled_width,
+            scaled_height,
+            title,
+            icon_path,
+            on_initilized,
+            on_close,
+            loop,
         )
         return True
 
     async def _run_async_message_loop(
-        self, hwnd, width, height, title, loop: asyncio.AbstractEventLoop
+        self,
+        hwnd,
+        width,
+        height,
+        title,
+        icon_path,
+        on_initilized,
+        on_close,
+        loop: asyncio.AbstractEventLoop,
     ):
         user32 = ctypes.windll.user32
         kernel32 = ctypes.windll.kernel32
 
         should_quit = False
+        close_requested = False
+        close_error = None
+        host_hwnd = None
 
-        def on_close():
+        def handle_close():
+            nonlocal close_requested
+            close_requested = True
+            return True
+
+        def handle_destroy():
             nonlocal should_quit
             should_quit = True
             user32.PostQuitMessage(0)
@@ -724,10 +1052,15 @@ class FlutWindowsNative(FlutNative):
             width,
             height,
             title,
-            on_close=on_close,
+            icon_path,
+            on_close=handle_close,
+            on_destroy=handle_destroy,
         )
         if not host_hwnd:
             return False
+
+        if on_initilized is not None:
+            await on_initilized()
 
         wake_bridge = ProactorWakeEvent()
         wake_event = wake_bridge.setup(loop)
@@ -782,6 +1115,18 @@ class FlutWindowsNative(FlutNative):
                 if should_quit:
                     break
 
+                if close_requested:
+                    close_requested = False
+                    if on_close is not None:
+                        try:
+                            await on_close()
+                        except Exception as exc:
+                            if close_error is None:
+                                close_error = exc
+                    if host_hwnd is not None:
+                        user32.DestroyWindow(host_hwnd)
+                    continue
+
                 had_io = drain_io()
 
                 await asyncio.sleep(0)
@@ -831,7 +1176,26 @@ class FlutWindowsNative(FlutNative):
             drain_io()
             wake_bridge.cleanup()
 
+        if close_error is not None:
+            raise close_error
+
         return True
+
+    def shutdown(self):
+        user32 = ctypes.windll.user32
+        while self._icon_handles:
+            user32.DestroyIcon(self._icon_handles.pop())
+        if self._gdiplus is not None and self._gdiplus_token.value:
+            self._gdiplus.GdiplusShutdown(self._gdiplus_token)
+            self._gdiplus_token = ctypes.c_size_t()
+
+        if self.view_controller:
+            self.flutter.FlutterDesktopViewControllerDestroy(self.view_controller)
+            self.view_controller = None
+            self.engine = None
+        elif self.engine:
+            self.flutter.FlutterDesktopEngineDestroy(self.engine)
+            self.engine = None
 
     @staticmethod
     def get_default_assets_path() -> str:
