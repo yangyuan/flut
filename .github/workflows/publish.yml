@@ -68,7 +68,7 @@ jobs:
 
   release-build-windows-arm64:
     if: ${{ inputs.target == 'windows-arm64' || inputs.target == 'all' }}
-    runs-on: windows-11-arm64
+    runs-on: windows-11-arm
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
