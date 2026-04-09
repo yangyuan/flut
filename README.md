@@ -68,8 +68,9 @@ Create a file `app.py`:
 
 ```python
 from flut import run_app
-from flut.flutter.widgets import StatelessWidget, StatefulWidget, State, Text, Center, Column, Icon, MainAxisAlignment
+from flut.flutter.widgets import StatelessWidget, StatefulWidget, State, Text, Center, Column, Icon
 from flut.flutter.material import MaterialApp, Scaffold, AppBar, FloatingActionButton, Icons, ThemeData, ColorScheme, Colors, Theme
+from flut.flutter.rendering import MainAxisAlignment
 
 
 class MyApp(StatelessWidget):
@@ -150,6 +151,8 @@ from flut import run_app_async
 if __name__ == "__main__":
     asyncio.run(run_app_async(MyApp()))
 ```
+
+For a more complete example, see the [catalog app](https://github.com/yangyuan/flut/tree/master/examples/catalog).
 
 
 ## Flutter Parity
