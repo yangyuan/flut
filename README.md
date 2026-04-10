@@ -2,11 +2,23 @@
 
 <img src="https://raw.githubusercontent.com/yangyuan/flut/master/flut/assets/icon.svg" width="64" height="64" alt="flut">
 
-Flutter, but in Python
+Bring Flutter to Python
 
 ## Overview
 
-Flut is a Python project that exposes Flutter to Python's ecosystem. Flut is designed to honestly expose Flutter's API as closely as possible.
+Flut is a Python project that brings the real Flutter widget system into the Python ecosystem. It is designed to expose Flutter's API as honestly and closely as possible.
+
+### Common Use Cases
+
+Flut is a good fit when you are writing a Python application and need a modern desktop UI, when your project needs to stay in the Python ecosystem, or when you want Flutter's widget model without moving your codebase to Dart.
+
+Typical examples include:
+- A Python data, automation, or AI tool that needs a polished cross-platform desktop interface.
+- Students, researchers, or developers who want to quickly build a desktop proof-of-concept UI while keeping models, inference code, or data pipelines in Python.
+- An internal business application whose networking, domain logic, or integrations already live in Python.
+- A Python enthusiast who wants a UI application that can be installed through the familiar `pip install app` workflow.
+
+Because Flut follows Flutter's API closely, Flutter examples and AI-generated Flutter code can often be adapted to Flut with only straightforward Python syntax changes. The reverse is also true: if you later decide to migrate to Flutter and Dart, you can retain your entire UI structure and design work.
 
 ### True Flutter
 
@@ -36,7 +48,7 @@ Container(
 )
 ```
 
-Under the hood, the real Flutter widget system is used.
+Under the hood, the real Flutter widget system is used. Because Flut closely mirrors Flutter's API, coding agents can transfer their knowledge of Flutter patterns and generate Flut code naturally.
 
 ### State-of-the-Art asyncio Integration
 
@@ -45,12 +57,6 @@ Flut provides a true async integration, bridging asyncio with the Flutter UI thr
 ### No Performance Surprises
 
 The majority of projects using Flut will enjoy near identical performance to Flutter. FFI between Python and Dart does bring additional communication overhead, but the cost is fixed.
-
-## Status
-
-This project is in **Technical Preview**.
-- APIs are subject to change.
-- Not ready for production use.
 
 ## Installation
 
@@ -163,7 +169,6 @@ Flut is a project that brings Flutter to Python. Some features are not applicabl
 - **Mobile Support**
 - **Plugins**
 - **Flutter DevTools**
-- **Hot Reload**
 - **Isolates**
 - **Platform Channels**
 - **Streams/StreamBuilder**
