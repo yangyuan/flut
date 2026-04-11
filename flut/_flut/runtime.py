@@ -62,6 +62,18 @@ def flut_unpack(data) -> Optional[object]:
             from flut.dart.ui import Rect
 
             return Rect._flut_unpack(data)
+        case "Radius":
+            from flut.dart.ui import Radius
+
+            return Radius._flut_unpack(data)
+        case "RRect":
+            from flut.dart.ui import RRect
+
+            return RRect._flut_unpack(data)
+        case "ViewPadding":
+            from flut.dart.ui import ViewPadding
+
+            return ViewPadding._flut_unpack(data)
         case "DragStartDetails":
             from flut.flutter.gestures.drag_details import DragStartDetails
 
@@ -204,6 +216,14 @@ def flut_unpack(data) -> Optional[object]:
             from flut.flutter.painting.edge_insets import EdgeInsets
 
             return EdgeInsets._flut_unpack(data)
+        case "EdgeInsetsGeometry":
+            from flut.flutter.painting.edge_insets import EdgeInsetsGeometry
+
+            return EdgeInsetsGeometry._flut_unpack(data)
+        case "EdgeInsetsDirectional":
+            from flut.flutter.painting.edge_insets import EdgeInsetsDirectional
+
+            return EdgeInsetsDirectional._flut_unpack(data)
         case "ColorScheme":
             from flut.flutter.material.color_scheme import ColorScheme
 

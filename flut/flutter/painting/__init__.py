@@ -1,5 +1,5 @@
 from .text_style import TextStyle
-from .edge_insets import EdgeInsets
+from .edge_insets import EdgeInsets, EdgeInsetsDirectional, EdgeInsetsGeometry
 from .borders import BorderSide, BorderStyle, ShapeBorder, OutlinedBorder
 from .box_border import BoxShape, Border
 from .border_radius import BorderRadius

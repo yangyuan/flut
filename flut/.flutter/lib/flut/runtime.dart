@@ -923,8 +923,12 @@ class FlutRuntime {
     switch (type) {
       case 'Intent':
         return FlutIntent.flutDecode(this, data);
+      case 'EdgeInsetsGeometry':
+        return FlutEdgeInsetsGeometry.flutDecode(this, data);
       case 'EdgeInsets':
         return FlutEdgeInsets.flutDecode(this, data);
+      case 'EdgeInsetsDirectional':
+        return FlutEdgeInsetsDirectional.flutDecode(this, data);
       case 'Alignment':
         return FlutAlignment.flutDecode(this, data);
       case 'AlignmentDirectional':
@@ -1059,10 +1063,16 @@ class FlutRuntime {
         return FlutMatrix4.flutDecode(this, data);
       case 'Size':
         return FlutSize.flutDecode(this, data);
+      case 'Radius':
+        return FlutRadius.flutDecode(this, data);
       case 'Offset':
         return FlutOffset.flutDecode(this, data);
       case 'Rect':
         return FlutRect.flutDecode(this, data);
+      case 'RRect':
+        return FlutRRect.flutDecode(this, data);
+      case 'ViewPadding':
+        return FlutViewPadding.flutDecode(this, data);
       case 'Paint':
         return FlutPaint.flutDecode(this, data);
       case 'Shadow':
@@ -1534,9 +1544,18 @@ class FlutRuntime {
     if (value is BoxShadow) return FlutBoxShadow(value).flutEncode();
     if (value is Shadow) return FlutShadow(value).flutEncode();
     if (value is Size) return FlutSize(value).flutEncode();
+    if (value is Radius) return FlutRadius(value).flutEncode();
     if (value is Offset) return FlutOffset(value).flutEncode();
     if (value is Rect) return FlutRect(value).flutEncode();
+    if (value is RRect) return FlutRRect(value).flutEncode();
+    if (value is ViewPadding) return FlutViewPadding(value).flutEncode();
     if (value is EdgeInsets) return FlutEdgeInsets(value).flutEncode();
+    if (value is EdgeInsetsDirectional) {
+      return FlutEdgeInsetsDirectional(value).flutEncode();
+    }
+    if (value is EdgeInsetsGeometry) {
+      return FlutEdgeInsetsGeometry(value).flutEncode();
+    }
     if (value is ButtonStyle) {
       final wrapper = wrapObject<FlutButtonStyle>(
         value,

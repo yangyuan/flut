@@ -22,7 +22,9 @@ from .ui import (
     PaintingStyle,
     PlaceholderAlignment,
     PointerDeviceKind,
+    Radius,
     Rect,
+    RRect,
     Shader,
     Shadow,
     Size,
@@ -34,4 +36,5 @@ from .ui import (
     TextDirection,
     TextLeadingDistribution,
     TileMode,
+    ViewPadding,
 )

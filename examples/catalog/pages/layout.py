@@ -5,10 +5,14 @@ from flut.dart import (
     BlurStyle,
     Color,
     Duration,
+    Radius,
+    Rect,
+    RRect,
     Size,
     TextAlign,
     TextBaseline,
     PlaceholderAlignment,
+    ViewPadding,
 )
 from flut.dart.ui import Clip, TextDirection, FilterQuality, BlendMode, Offset
 from flut.flutter.widgets import (
@@ -89,6 +93,8 @@ from flut.flutter.painting import (
     BoxDecoration,
     BoxShadow,
     BorderRadius,
+    EdgeInsetsDirectional,
+    EdgeInsetsGeometry,
     TextSpan,
     Axis,
     BoxFit,
@@ -1620,6 +1626,16 @@ class _OverflowBarAlignmentDemoState(State[_OverflowBarAlignmentDemo]):
         )
 
 
+def _contract_metric(label, value):
+    return Padding(
+        padding=EdgeInsets.only(bottom=4),
+        child=Text(
+            f"{label}: {value}",
+            style=TextStyle(fontSize=12, fontFamily=CODE_FONT_FAMILY),
+        ),
+    )
+
+
 class LayoutPage(StatelessWidget):
     def build(self, context):
         tag_labels = [
@@ -1643,6 +1659,24 @@ class LayoutPage(StatelessWidget):
             )
             for label in tag_labels
         ]
+        contract_radius = Radius.elliptical(24, 16)
+        contract_rrect = RRect.fromRectAndRadius(
+            Rect.fromLTWH(0, 0, 200, 108),
+            contract_radius,
+        )
+        contract_view_padding = ViewPadding(
+            left=12,
+            top=20,
+            right=16,
+            bottom=10,
+        )
+        contract_geometry = EdgeInsetsGeometry.fromViewPadding(
+            contract_view_padding,
+            1.0,
+        ).add(EdgeInsetsDirectional.fromSTEB(24, 8, 12, 14))
+        contract_resolved_ltr = contract_geometry.resolve(TextDirection.ltr)
+        contract_resolved_rtl = contract_geometry.resolve(TextDirection.rtl)
+        contract_inner_rrect = contract_resolved_ltr.deflateRRect(contract_rrect)
 
         return CatalogPage(
             title="Layout",
@@ -1885,6 +1919,105 @@ class LayoutPage(StatelessWidget):
                             "Text(f'Pixel ratio: {media.devicePixelRatio:.1f}')\n"
                             "Text(f'Padding: {media.padding}')\n"
                             "Text(f'View insets: {media.viewInsets}')"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="Edge Insets Geometry Contracts",
+                    description=(
+                        "Exercises Radius, RRect, ViewPadding, EdgeInsetsGeometry, "
+                        "and EdgeInsetsDirectional with real geometry calculations."
+                    ),
+                    instruction=(
+                        "The left panel shows the constructed contract values. The "
+                        "right panel applies resolved directional padding to a live box."
+                    ),
+                    visible=Row(
+                        crossAxisAlignment=CrossAxisAlignment.start,
+                        children=[
+                            Expanded(
+                                child=Column(
+                                    crossAxisAlignment=CrossAxisAlignment.start,
+                                    children=[
+                                        _contract_metric("Radius", contract_radius),
+                                        _contract_metric("RRect", contract_rrect),
+                                        _contract_metric(
+                                            "ViewPadding",
+                                            contract_view_padding,
+                                        ),
+                                        _contract_metric(
+                                            "resolve(ltr)",
+                                            contract_resolved_ltr,
+                                        ),
+                                        _contract_metric(
+                                            "resolve(rtl)",
+                                            contract_resolved_rtl,
+                                        ),
+                                        _contract_metric(
+                                            "deflateRRect",
+                                            contract_inner_rrect,
+                                        ),
+                                    ],
+                                ),
+                            ),
+                            SizedBox(width=24),
+                            Expanded(
+                                child=Container(
+                                    height=180.0,
+                                    padding=EdgeInsets.all(16),
+                                    decoration=BoxDecoration(
+                                        color=Color(0xFFF3F7F9),
+                                        border=Border.all(
+                                            color=Color(0xFFCAD6DC),
+                                        ),
+                                        borderRadius=BorderRadius.circular(18),
+                                    ),
+                                    child=Container(
+                                        decoration=BoxDecoration(
+                                            color=Colors.teal.withValues(alpha=0.10),
+                                            borderRadius=BorderRadius.circular(14),
+                                        ),
+                                        child=Padding(
+                                            padding=contract_resolved_rtl,
+                                            child=Container(
+                                                decoration=BoxDecoration(
+                                                    color=Colors.teal,
+                                                    borderRadius=BorderRadius.circular(
+                                                        10
+                                                    ),
+                                                ),
+                                                child=Center(
+                                                    child=Text(
+                                                        "resolved RTL padding",
+                                                        textAlign=TextAlign.center,
+                                                        style=TextStyle(
+                                                            color=Colors.white,
+                                                            fontSize=12,
+                                                            fontWeight=FontWeight.bold,
+                                                        ),
+                                                    ),
+                                                ),
+                                            ),
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ],
+                    ),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "from flut.dart import Radius, Rect, RRect, ViewPadding\n"
+                            "from flut.dart.ui import TextDirection\n"
+                            "from flut.flutter.painting import EdgeInsetsDirectional, EdgeInsetsGeometry\n\n"
+                            "radius = Radius.elliptical(24, 16)\n"
+                            "rrect = RRect.fromRectAndRadius(Rect.fromLTWH(0, 0, 200, 108), radius)\n"
+                            "view_padding = ViewPadding(left=12, top=20, right=16, bottom=10)\n"
+                            "geometry = EdgeInsetsGeometry.fromViewPadding(view_padding, 1.0).add(\n"
+                            "    EdgeInsetsDirectional.fromSTEB(24, 8, 12, 14)\n"
+                            ")\n"
+                            "resolved = geometry.resolve(TextDirection.rtl)\n"
+                            "inner = resolved.deflateRRect(rrect)"
                         ),
                     ),
                 ),

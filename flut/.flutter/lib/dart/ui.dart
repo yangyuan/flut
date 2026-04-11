@@ -476,6 +476,27 @@ class FlutSize extends FlutValueObject {
   }
 }
 
+class FlutRadius extends FlutValueObject {
+  final Radius radius;
+
+  const FlutRadius(this.radius) : super('Radius');
+
+  @override
+  Map<String, dynamic> flutEncode() {
+    final result = flutBaseProps();
+    result['x'] = radius.x;
+    result['y'] = radius.y;
+    return result;
+  }
+
+  static Radius? flutDecode(FlutRuntime runtime, Map<String, dynamic> data) {
+    return Radius.elliptical(
+      runtime.unpackRequiredField<double>(data, 'x'),
+      runtime.unpackRequiredField<double>(data, 'y'),
+    );
+  }
+}
+
 class FlutOffset extends FlutValueObject {
   final Offset offset;
 
@@ -518,6 +539,104 @@ class FlutRect extends FlutValueObject {
       runtime.unpackRequiredField<double>(data, 'top'),
       runtime.unpackRequiredField<double>(data, 'right'),
       runtime.unpackRequiredField<double>(data, 'bottom'),
+    );
+  }
+}
+
+class FlutRRect extends FlutValueObject {
+  final RRect rrect;
+
+  const FlutRRect(this.rrect) : super('RRect');
+
+  @override
+  Map<String, dynamic> flutEncode() {
+    final result = flutBaseProps();
+    result['left'] = rrect.left;
+    result['top'] = rrect.top;
+    result['right'] = rrect.right;
+    result['bottom'] = rrect.bottom;
+    result['tlRadiusX'] = rrect.tlRadiusX;
+    result['tlRadiusY'] = rrect.tlRadiusY;
+    result['trRadiusX'] = rrect.trRadiusX;
+    result['trRadiusY'] = rrect.trRadiusY;
+    result['brRadiusX'] = rrect.brRadiusX;
+    result['brRadiusY'] = rrect.brRadiusY;
+    result['blRadiusX'] = rrect.blRadiusX;
+    result['blRadiusY'] = rrect.blRadiusY;
+    return result;
+  }
+
+  static RRect? flutDecode(FlutRuntime runtime, Map<String, dynamic> data) {
+    return RRect.fromLTRBAndCorners(
+      runtime.unpackRequiredField<double>(data, 'left'),
+      runtime.unpackRequiredField<double>(data, 'top'),
+      runtime.unpackRequiredField<double>(data, 'right'),
+      runtime.unpackRequiredField<double>(data, 'bottom'),
+      topLeft: Radius.elliptical(
+        runtime.unpackRequiredField<double>(data, 'tlRadiusX'),
+        runtime.unpackRequiredField<double>(data, 'tlRadiusY'),
+      ),
+      topRight: Radius.elliptical(
+        runtime.unpackRequiredField<double>(data, 'trRadiusX'),
+        runtime.unpackRequiredField<double>(data, 'trRadiusY'),
+      ),
+      bottomRight: Radius.elliptical(
+        runtime.unpackRequiredField<double>(data, 'brRadiusX'),
+        runtime.unpackRequiredField<double>(data, 'brRadiusY'),
+      ),
+      bottomLeft: Radius.elliptical(
+        runtime.unpackRequiredField<double>(data, 'blRadiusX'),
+        runtime.unpackRequiredField<double>(data, 'blRadiusY'),
+      ),
+    );
+  }
+}
+
+class _FlutViewPadding implements ViewPadding {
+  const _FlutViewPadding({
+    required this.left,
+    required this.top,
+    required this.right,
+    required this.bottom,
+  });
+
+  @override
+  final double left;
+
+  @override
+  final double top;
+
+  @override
+  final double right;
+
+  @override
+  final double bottom;
+}
+
+class FlutViewPadding extends FlutValueObject {
+  final ViewPadding viewPadding;
+
+  const FlutViewPadding(this.viewPadding) : super('ViewPadding');
+
+  @override
+  Map<String, dynamic> flutEncode() {
+    final result = flutBaseProps();
+    result['left'] = viewPadding.left;
+    result['top'] = viewPadding.top;
+    result['right'] = viewPadding.right;
+    result['bottom'] = viewPadding.bottom;
+    return result;
+  }
+
+  static ViewPadding? flutDecode(
+    FlutRuntime runtime,
+    Map<String, dynamic> data,
+  ) {
+    return _FlutViewPadding(
+      left: runtime.unpackRequiredField<double>(data, 'left'),
+      top: runtime.unpackRequiredField<double>(data, 'top'),
+      right: runtime.unpackRequiredField<double>(data, 'right'),
+      bottom: runtime.unpackRequiredField<double>(data, 'bottom'),
     );
   }
 }

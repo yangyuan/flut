@@ -995,7 +995,7 @@ class Offset(_Offset):
     infinite = _Offset(float("inf"), float("inf"))
 
 
-class Rect(FlutValueObject):
+class _Rect(FlutValueObject):
     _flut_type = "Rect"
 
     def __init__(self, left: float, top: float, right: float, bottom: float):
@@ -1005,12 +1005,9 @@ class Rect(FlutValueObject):
         self.right = right
         self.bottom = bottom
 
-    zero = None  # set after class
-    largest = None  # set after class
-
     @staticmethod
-    def _flut_unpack(data: dict) -> "Rect":
-        return Rect(
+    def _flut_unpack(data: dict) -> "_Rect":
+        return _Rect(
             left=_flut_unpack_required_field(data, "left"),
             top=_flut_unpack_required_field(data, "top"),
             right=_flut_unpack_required_field(data, "right"),
@@ -1018,16 +1015,16 @@ class Rect(FlutValueObject):
         )
 
     @staticmethod
-    def fromLTWH(left: float, top: float, width: float, height: float) -> "Rect":
-        return Rect(left, top, left + width, top + height)
+    def fromLTWH(left: float, top: float, width: float, height: float) -> "_Rect":
+        return _Rect(left, top, left + width, top + height)
 
     @staticmethod
-    def fromLTRB(left: float, top: float, right: float, bottom: float) -> "Rect":
-        return Rect(left, top, right, bottom)
+    def fromLTRB(left: float, top: float, right: float, bottom: float) -> "_Rect":
+        return _Rect(left, top, right, bottom)
 
     @staticmethod
-    def fromCircle(*, center, radius: float) -> "Rect":
-        return Rect(
+    def fromCircle(*, center, radius: float) -> "_Rect":
+        return _Rect(
             center.dx - radius,
             center.dy - radius,
             center.dx + radius,
@@ -1035,8 +1032,8 @@ class Rect(FlutValueObject):
         )
 
     @staticmethod
-    def fromCenter(*, center, width: float, height: float) -> "Rect":
-        return Rect(
+    def fromCenter(*, center, width: float, height: float) -> "_Rect":
+        return _Rect(
             center.dx - width / 2,
             center.dy - height / 2,
             center.dx + width / 2,
@@ -1044,8 +1041,8 @@ class Rect(FlutValueObject):
         )
 
     @staticmethod
-    def fromPoints(a, b) -> "Rect":
-        return Rect(
+    def fromPoints(a, b) -> "_Rect":
+        return _Rect(
             min(a.dx, b.dx),
             min(a.dy, b.dy),
             max(a.dx, b.dx),
@@ -1147,47 +1144,47 @@ class Rect(FlutValueObject):
             and offset.dy < self.bottom
         )
 
-    def deflate(self, delta: float) -> "Rect":
+    def deflate(self, delta: float) -> "_Rect":
         return self.inflate(-delta)
 
-    def expandToInclude(self, other: "Rect") -> "Rect":
-        return Rect(
+    def expandToInclude(self, other: "_Rect") -> "_Rect":
+        return _Rect(
             min(self.left, other.left),
             min(self.top, other.top),
             max(self.right, other.right),
             max(self.bottom, other.bottom),
         )
 
-    def inflate(self, delta: float) -> "Rect":
-        return Rect(
+    def inflate(self, delta: float) -> "_Rect":
+        return _Rect(
             self.left - delta, self.top - delta, self.right + delta, self.bottom + delta
         )
 
-    def intersect(self, other: "Rect") -> "Rect":
-        return Rect(
+    def intersect(self, other: "_Rect") -> "_Rect":
+        return _Rect(
             max(self.left, other.left),
             max(self.top, other.top),
             min(self.right, other.right),
             min(self.bottom, other.bottom),
         )
 
-    def overlaps(self, other: "Rect") -> bool:
+    def overlaps(self, other: "_Rect") -> bool:
         if self.right <= other.left or other.right <= self.left:
             return False
         if self.bottom <= other.top or other.bottom <= self.top:
             return False
         return True
 
-    def shift(self, offset) -> "Rect":
-        return Rect(
+    def shift(self, offset) -> "_Rect":
+        return _Rect(
             self.left + offset.dx,
             self.top + offset.dy,
             self.right + offset.dx,
             self.bottom + offset.dy,
         )
 
-    def translate(self, translateX: float, translateY: float) -> "Rect":
-        return Rect(
+    def translate(self, translateX: float, translateY: float) -> "_Rect":
+        return _Rect(
             self.left + translateX,
             self.top + translateY,
             self.right + translateX,
@@ -1199,11 +1196,11 @@ class Rect(FlutValueObject):
         if a is None and b is None:
             return None
         if a is None:
-            return Rect(b.left * t, b.top * t, b.right * t, b.bottom * t)
+            return _Rect(b.left * t, b.top * t, b.right * t, b.bottom * t)
         if b is None:
             s = 1.0 - t
-            return Rect(a.left * s, a.top * s, a.right * s, a.bottom * s)
-        return Rect(
+            return _Rect(a.left * s, a.top * s, a.right * s, a.bottom * s)
+        return _Rect(
             a.left + (b.left - a.left) * t,
             a.top + (b.top - a.top) * t,
             a.right + (b.right - a.right) * t,
@@ -1220,7 +1217,7 @@ class Rect(FlutValueObject):
         return result
 
     def __eq__(self, other):
-        if isinstance(other, Rect):
+        if isinstance(other, _Rect):
             return (
                 self.left == other.left
                 and self.top == other.top
@@ -1236,8 +1233,593 @@ class Rect(FlutValueObject):
         return f"Rect.fromLTRB({self.left}, {self.top}, {self.right}, {self.bottom})"
 
 
-Rect.zero = Rect(0, 0, 0, 0)
-Rect.largest = Rect(-1e9, -1e9, 1e9, 1e9)
+class Rect(_Rect):
+    zero = _Rect(0, 0, 0, 0)
+    largest = _Rect(-1e9, -1e9, 1e9, 1e9)
+
+
+class _Radius(FlutValueObject):
+    _flut_type = "Radius"
+
+    def __init__(self, x: float = 0.0, y: float = 0.0):
+        super().__init__()
+        self.x = x
+        self.y = y
+
+    @staticmethod
+    def circular(radius: float) -> "Radius":
+        return _Radius(radius, radius)
+
+    @staticmethod
+    def elliptical(x: float, y: float) -> "Radius":
+        return _Radius(x, y)
+
+    @staticmethod
+    def _flut_unpack(data: dict) -> "_Radius":
+        return _Radius(
+            x=_flut_unpack_required_field(data, "x"),
+            y=_flut_unpack_required_field(data, "y"),
+        )
+
+    def clamp(
+        self,
+        *,
+        minimum: "_Radius | None" = None,
+        maximum: "_Radius | None" = None,
+    ) -> "Radius":
+        return self.clampValues(
+            minimumX=minimum.x if minimum is not None else None,
+            minimumY=minimum.y if minimum is not None else None,
+            maximumX=maximum.x if maximum is not None else None,
+            maximumY=maximum.y if maximum is not None else None,
+        )
+
+    def clampValues(
+        self,
+        *,
+        minimumX: float | None = None,
+        minimumY: float | None = None,
+        maximumX: float | None = None,
+        maximumY: float | None = None,
+    ) -> "Radius":
+        x = self.x
+        y = self.y
+        if minimumX is not None:
+            x = max(x, minimumX)
+        if minimumY is not None:
+            y = max(y, minimumY)
+        if maximumX is not None:
+            x = min(x, maximumX)
+        if maximumY is not None:
+            y = min(y, maximumY)
+        return _Radius.elliptical(x, y)
+
+    def __add__(self, other: "_Radius") -> "Radius":
+        return _Radius.elliptical(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other: "_Radius") -> "Radius":
+        return _Radius.elliptical(self.x - other.x, self.y - other.y)
+
+    def __neg__(self) -> "Radius":
+        return _Radius.elliptical(-self.x, -self.y)
+
+    def __mul__(self, operand: float) -> "Radius":
+        return _Radius.elliptical(self.x * operand, self.y * operand)
+
+    def __truediv__(self, operand: float) -> "Radius":
+        return _Radius.elliptical(self.x / operand, self.y / operand)
+
+    def __floordiv__(self, operand: float) -> "Radius":
+        return _Radius.elliptical(
+            float(math.trunc(self.x / operand)),
+            float(math.trunc(self.y / operand)),
+        )
+
+    def __mod__(self, operand: float) -> "Radius":
+        return _Radius.elliptical(self.x % operand, self.y % operand)
+
+    @staticmethod
+    def lerp(a: "_Radius | None", b: "_Radius | None", t: float) -> "Radius | None":
+        if a is b:
+            return a
+        if a is None and b is None:
+            return None
+        if a is None:
+            return b * t
+        if b is None:
+            return a * (1.0 - t)
+        return _Radius.elliptical(
+            _lerpDouble(a.x, b.x, t),
+            _lerpDouble(a.y, b.y, t),
+        )
+
+    @override
+    def _flut_pack(self) -> dict:
+        result = self._flut_base_props()
+        result["x"] = _flut_pack_value(self.x)
+        result["y"] = _flut_pack_value(self.y)
+        return result
+
+    def __eq__(self, other):
+        if isinstance(other, _Radius):
+            return self.x == other.x and self.y == other.y
+        return False
+
+    def __hash__(self):
+        return hash((self.x, self.y))
+
+    def __repr__(self):
+        return f"Radius({self.x}, {self.y})"
+
+
+class Radius(_Radius):
+    zero = _Radius(0.0, 0.0)
+
+
+def _point_in_ellipse(
+    x: float,
+    y: float,
+    center_x: float,
+    center_y: float,
+    radius_x: float,
+    radius_y: float,
+) -> bool:
+    if radius_x == 0.0 or radius_y == 0.0:
+        return x == center_x and y == center_y
+    dx = (x - center_x) / radius_x
+    dy = (y - center_y) / radius_y
+    return dx * dx + dy * dy <= 1.0
+
+
+class _RRect(FlutValueObject):
+    _flut_type = "RRect"
+
+    def __init__(
+        self,
+        left: float,
+        top: float,
+        right: float,
+        bottom: float,
+        *,
+        topLeft: Radius = Radius.zero,
+        topRight: Radius = Radius.zero,
+        bottomRight: Radius = Radius.zero,
+        bottomLeft: Radius = Radius.zero,
+    ):
+        super().__init__()
+        self.left = left
+        self.top = top
+        self.right = right
+        self.bottom = bottom
+        self._topLeft = topLeft
+        self._topRight = topRight
+        self._bottomRight = bottomRight
+        self._bottomLeft = bottomLeft
+
+    @staticmethod
+    def _flut_unpack(data: dict) -> "_RRect":
+        return _RRect.fromLTRBAndCorners(
+            _flut_unpack_required_field(data, "left"),
+            _flut_unpack_required_field(data, "top"),
+            _flut_unpack_required_field(data, "right"),
+            _flut_unpack_required_field(data, "bottom"),
+            topLeft=Radius.elliptical(
+                _flut_unpack_required_field(data, "tlRadiusX"),
+                _flut_unpack_required_field(data, "tlRadiusY"),
+            ),
+            topRight=Radius.elliptical(
+                _flut_unpack_required_field(data, "trRadiusX"),
+                _flut_unpack_required_field(data, "trRadiusY"),
+            ),
+            bottomRight=Radius.elliptical(
+                _flut_unpack_required_field(data, "brRadiusX"),
+                _flut_unpack_required_field(data, "brRadiusY"),
+            ),
+            bottomLeft=Radius.elliptical(
+                _flut_unpack_required_field(data, "blRadiusX"),
+                _flut_unpack_required_field(data, "blRadiusY"),
+            ),
+        )
+
+    @staticmethod
+    def fromLTRBAndCorners(
+        left: float,
+        top: float,
+        right: float,
+        bottom: float,
+        *,
+        topLeft: Radius = Radius.zero,
+        topRight: Radius = Radius.zero,
+        bottomRight: Radius = Radius.zero,
+        bottomLeft: Radius = Radius.zero,
+    ) -> "_RRect":
+        return _RRect(
+            left,
+            top,
+            right,
+            bottom,
+            topLeft=topLeft,
+            topRight=topRight,
+            bottomRight=bottomRight,
+            bottomLeft=bottomLeft,
+        )
+
+    @staticmethod
+    def fromLTRBR(
+        left: float, top: float, right: float, bottom: float, radius: Radius
+    ) -> "_RRect":
+        return _RRect.fromLTRBAndCorners(
+            left,
+            top,
+            right,
+            bottom,
+            topLeft=radius,
+            topRight=radius,
+            bottomRight=radius,
+            bottomLeft=radius,
+        )
+
+    @staticmethod
+    def fromLTRBXY(
+        left: float,
+        top: float,
+        right: float,
+        bottom: float,
+        radiusX: float,
+        radiusY: float,
+    ) -> "_RRect":
+        radius = Radius.elliptical(radiusX, radiusY)
+        return _RRect.fromLTRBR(left, top, right, bottom, radius)
+
+    @staticmethod
+    def fromRectAndCorners(
+        rect: Rect,
+        *,
+        topLeft: Radius = Radius.zero,
+        topRight: Radius = Radius.zero,
+        bottomRight: Radius = Radius.zero,
+        bottomLeft: Radius = Radius.zero,
+    ) -> "_RRect":
+        return _RRect.fromLTRBAndCorners(
+            rect.left,
+            rect.top,
+            rect.right,
+            rect.bottom,
+            topLeft=topLeft,
+            topRight=topRight,
+            bottomRight=bottomRight,
+            bottomLeft=bottomLeft,
+        )
+
+    @staticmethod
+    def fromRectAndRadius(rect: Rect, radius: Radius) -> "_RRect":
+        return _RRect.fromLTRBR(rect.left, rect.top, rect.right, rect.bottom, radius)
+
+    @staticmethod
+    def fromRectXY(rect: Rect, radiusX: float, radiusY: float) -> "_RRect":
+        return _RRect.fromLTRBXY(
+            rect.left, rect.top, rect.right, rect.bottom, radiusX, radiusY
+        )
+
+    @property
+    def width(self) -> float:
+        return self.right - self.left
+
+    @property
+    def height(self) -> float:
+        return self.bottom - self.top
+
+    @property
+    def outerRect(self) -> Rect:
+        return Rect.fromLTRB(self.left, self.top, self.right, self.bottom)
+
+    @property
+    def tlRadius(self) -> Radius:
+        return self._topLeft
+
+    @property
+    def trRadius(self) -> Radius:
+        return self._topRight
+
+    @property
+    def brRadius(self) -> Radius:
+        return self._bottomRight
+
+    @property
+    def blRadius(self) -> Radius:
+        return self._bottomLeft
+
+    @property
+    def tlRadiusX(self) -> float:
+        return self._topLeft.x
+
+    @property
+    def tlRadiusY(self) -> float:
+        return self._topLeft.y
+
+    @property
+    def trRadiusX(self) -> float:
+        return self._topRight.x
+
+    @property
+    def trRadiusY(self) -> float:
+        return self._topRight.y
+
+    @property
+    def brRadiusX(self) -> float:
+        return self._bottomRight.x
+
+    @property
+    def brRadiusY(self) -> float:
+        return self._bottomRight.y
+
+    @property
+    def blRadiusX(self) -> float:
+        return self._bottomLeft.x
+
+    @property
+    def blRadiusY(self) -> float:
+        return self._bottomLeft.y
+
+    def contains(self, point: Offset) -> bool:
+        if (
+            point.dx < self.left
+            or point.dx > self.right
+            or point.dy < self.top
+            or point.dy > self.bottom
+        ):
+            return False
+
+        if self.isRect:
+            return True
+
+        x = point.dx
+        y = point.dy
+
+        if self.left + self.tlRadiusX <= x <= self.right - self.trRadiusX:
+            return True
+        if self.left + self.blRadiusX <= x <= self.right - self.brRadiusX:
+            return True
+        if self.top + self.tlRadiusY <= y <= self.bottom - self.blRadiusY:
+            return True
+        if self.top + self.trRadiusY <= y <= self.bottom - self.brRadiusY:
+            return True
+
+        if x < self.left + self.tlRadiusX and y < self.top + self.tlRadiusY:
+            return _point_in_ellipse(
+                x,
+                y,
+                self.left + self.tlRadiusX,
+                self.top + self.tlRadiusY,
+                self.tlRadiusX,
+                self.tlRadiusY,
+            )
+        if x > self.right - self.trRadiusX and y < self.top + self.trRadiusY:
+            return _point_in_ellipse(
+                x,
+                y,
+                self.right - self.trRadiusX,
+                self.top + self.trRadiusY,
+                self.trRadiusX,
+                self.trRadiusY,
+            )
+        if x > self.right - self.brRadiusX and y > self.bottom - self.brRadiusY:
+            return _point_in_ellipse(
+                x,
+                y,
+                self.right - self.brRadiusX,
+                self.bottom - self.brRadiusY,
+                self.brRadiusX,
+                self.brRadiusY,
+            )
+        if x < self.left + self.blRadiusX and y > self.bottom - self.blRadiusY:
+            return _point_in_ellipse(
+                x,
+                y,
+                self.left + self.blRadiusX,
+                self.bottom - self.blRadiusY,
+                self.blRadiusX,
+                self.blRadiusY,
+            )
+
+        return True
+
+    @property
+    def isRect(self) -> bool:
+        return (
+            self.tlRadius == Radius.zero
+            and self.trRadius == Radius.zero
+            and self.brRadius == Radius.zero
+            and self.blRadius == Radius.zero
+        )
+
+    def deflate(self, delta: float) -> "_RRect":
+        inset = Radius.circular(delta)
+        return _RRect.fromLTRBAndCorners(
+            self.left + delta,
+            self.top + delta,
+            self.right - delta,
+            self.bottom - delta,
+            topLeft=(self.tlRadius - inset).clamp(minimum=Radius.zero),
+            topRight=(self.trRadius - inset).clamp(minimum=Radius.zero),
+            bottomRight=(self.brRadius - inset).clamp(minimum=Radius.zero),
+            bottomLeft=(self.blRadius - inset).clamp(minimum=Radius.zero),
+        )
+
+    def inflate(self, delta: float) -> "_RRect":
+        inset = Radius.circular(delta)
+        return _RRect.fromLTRBAndCorners(
+            self.left - delta,
+            self.top - delta,
+            self.right + delta,
+            self.bottom + delta,
+            topLeft=(self.tlRadius + inset).clamp(minimum=Radius.zero),
+            topRight=(self.trRadius + inset).clamp(minimum=Radius.zero),
+            bottomRight=(self.brRadius + inset).clamp(minimum=Radius.zero),
+            bottomLeft=(self.blRadius + inset).clamp(minimum=Radius.zero),
+        )
+
+    def shift(self, offset: Offset) -> "_RRect":
+        return _RRect.fromLTRBAndCorners(
+            self.left + offset.dx,
+            self.top + offset.dy,
+            self.right + offset.dx,
+            self.bottom + offset.dy,
+            topLeft=self.tlRadius,
+            topRight=self.trRadius,
+            bottomRight=self.brRadius,
+            bottomLeft=self.blRadius,
+        )
+
+    @staticmethod
+    def lerp(a: "_RRect | None", b: "_RRect | None", t: float) -> "_RRect | None":
+        if a is b:
+            return a
+        if a is None and b is None:
+            return None
+        if a is None:
+            return _RRect.fromLTRBAndCorners(
+                b.left * t,
+                b.top * t,
+                b.right * t,
+                b.bottom * t,
+                topLeft=Radius.lerp(None, b.tlRadius, t) or Radius.zero,
+                topRight=Radius.lerp(None, b.trRadius, t) or Radius.zero,
+                bottomRight=Radius.lerp(None, b.brRadius, t) or Radius.zero,
+                bottomLeft=Radius.lerp(None, b.blRadius, t) or Radius.zero,
+            )
+        if b is None:
+            scale = 1.0 - t
+            return _RRect.fromLTRBAndCorners(
+                a.left * scale,
+                a.top * scale,
+                a.right * scale,
+                a.bottom * scale,
+                topLeft=Radius.lerp(a.tlRadius, None, t) or Radius.zero,
+                topRight=Radius.lerp(a.trRadius, None, t) or Radius.zero,
+                bottomRight=Radius.lerp(a.brRadius, None, t) or Radius.zero,
+                bottomLeft=Radius.lerp(a.blRadius, None, t) or Radius.zero,
+            )
+        return _RRect.fromLTRBAndCorners(
+            _lerpDouble(a.left, b.left, t),
+            _lerpDouble(a.top, b.top, t),
+            _lerpDouble(a.right, b.right, t),
+            _lerpDouble(a.bottom, b.bottom, t),
+            topLeft=Radius.lerp(a.tlRadius, b.tlRadius, t) or Radius.zero,
+            topRight=Radius.lerp(a.trRadius, b.trRadius, t) or Radius.zero,
+            bottomRight=Radius.lerp(a.brRadius, b.brRadius, t) or Radius.zero,
+            bottomLeft=Radius.lerp(a.blRadius, b.blRadius, t) or Radius.zero,
+        )
+
+    @override
+    def _flut_pack(self) -> dict:
+        result = self._flut_base_props()
+        result["left"] = _flut_pack_value(self.left)
+        result["top"] = _flut_pack_value(self.top)
+        result["right"] = _flut_pack_value(self.right)
+        result["bottom"] = _flut_pack_value(self.bottom)
+        result["tlRadiusX"] = _flut_pack_value(self.tlRadiusX)
+        result["tlRadiusY"] = _flut_pack_value(self.tlRadiusY)
+        result["trRadiusX"] = _flut_pack_value(self.trRadiusX)
+        result["trRadiusY"] = _flut_pack_value(self.trRadiusY)
+        result["brRadiusX"] = _flut_pack_value(self.brRadiusX)
+        result["brRadiusY"] = _flut_pack_value(self.brRadiusY)
+        result["blRadiusX"] = _flut_pack_value(self.blRadiusX)
+        result["blRadiusY"] = _flut_pack_value(self.blRadiusY)
+        return result
+
+    def __eq__(self, other):
+        if isinstance(other, _RRect):
+            return (
+                self.left == other.left
+                and self.top == other.top
+                and self.right == other.right
+                and self.bottom == other.bottom
+                and self.tlRadius == other.tlRadius
+                and self.trRadius == other.trRadius
+                and self.brRadius == other.brRadius
+                and self.blRadius == other.blRadius
+            )
+        return False
+
+    def __hash__(self):
+        return hash(
+            (
+                self.left,
+                self.top,
+                self.right,
+                self.bottom,
+                self.tlRadius,
+                self.trRadius,
+                self.brRadius,
+                self.blRadius,
+            )
+        )
+
+    def __repr__(self):
+        return (
+            f"RRect({self.left}, {self.top}, {self.right}, {self.bottom}, "
+            f"tl={self.tlRadius!r}, tr={self.trRadius!r}, br={self.brRadius!r}, bl={self.blRadius!r})"
+        )
+
+
+class RRect(_RRect):
+    zero = _RRect.fromLTRBAndCorners(0.0, 0.0, 0.0, 0.0)
+
+
+class _ViewPadding(FlutValueObject):
+    _flut_type = "ViewPadding"
+
+    def __init__(
+        self,
+        left: float = 0.0,
+        top: float = 0.0,
+        right: float = 0.0,
+        bottom: float = 0.0,
+    ):
+        super().__init__()
+        self.left = left
+        self.top = top
+        self.right = right
+        self.bottom = bottom
+
+    @staticmethod
+    def _flut_unpack(data: dict) -> "_ViewPadding":
+        return _ViewPadding(
+            left=_flut_unpack_required_field(data, "left"),
+            top=_flut_unpack_required_field(data, "top"),
+            right=_flut_unpack_required_field(data, "right"),
+            bottom=_flut_unpack_required_field(data, "bottom"),
+        )
+
+    @override
+    def _flut_pack(self) -> dict:
+        result = self._flut_base_props()
+        result["left"] = _flut_pack_value(self.left)
+        result["top"] = _flut_pack_value(self.top)
+        result["right"] = _flut_pack_value(self.right)
+        result["bottom"] = _flut_pack_value(self.bottom)
+        return result
+
+    def __eq__(self, other):
+        if isinstance(other, _ViewPadding):
+            return (
+                self.left == other.left
+                and self.top == other.top
+                and self.right == other.right
+                and self.bottom == other.bottom
+            )
+        return False
+
+    def __hash__(self):
+        return hash((self.left, self.top, self.right, self.bottom))
+
+    def __repr__(self):
+        return f"ViewPadding({self.left}, {self.top}, {self.right}, {self.bottom})"
+
+
+class ViewPadding(_ViewPadding):
+    zero = _ViewPadding(0.0, 0.0, 0.0, 0.0)
 
 
 class Paint(FlutValueObject):
