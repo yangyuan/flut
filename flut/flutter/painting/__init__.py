@@ -13,7 +13,7 @@ from .gradient import (
     GradientTransform,
     GradientRotation,
 )
-from .alignment import Alignment, AlignmentDirectional
+from .alignment import Alignment, AlignmentDirectional, AlignmentGeometry
 from .text_span import TextSpan
 from .text_painter import TextWidthBasis, TextOverflow
 from .basic_types import Axis, AxisDirection, VerticalDirection

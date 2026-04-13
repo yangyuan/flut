@@ -81,8 +81,6 @@ class FlutElevatedButton {
     bool? enableFeedback,
     AlignmentGeometry? alignment,
     InteractiveInkFeatureFactory? splashFactory,
-    ButtonLayerBuilder? backgroundBuilder,
-    ButtonLayerBuilder? foregroundBuilder,
   }) {
     return ElevatedButton.styleFrom(
       foregroundColor: foregroundColor,
@@ -111,8 +109,6 @@ class FlutElevatedButton {
       enableFeedback: enableFeedback,
       alignment: alignment,
       splashFactory: splashFactory,
-      backgroundBuilder: backgroundBuilder,
-      foregroundBuilder: foregroundBuilder,
     );
   }
 }

@@ -1,7 +1,55 @@
 from typing import Callable, Optional, override
 
-from flut._flut.engine import _flut_pack_value
+from flut._flut.engine import (
+    FlutAbstractObject,
+    FlutRealtimeObject,
+    _flut_pack_value,
+    call_dart_static,
+)
 from flut.flutter.widgets.framework import Widget
+
+
+class InteractiveInkFeatureFactory(FlutRealtimeObject, FlutAbstractObject):
+    _flut_type = "InteractiveInkFeatureFactory"
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._flut_create()
+
+    def create(
+        self,
+        *,
+        controller: "MaterialInkController",
+        referenceBox: "RenderBox",
+        position: "Offset",
+        color: "Color",
+        textDirection: "TextDirection",
+        containedInkWell: bool = False,
+        rectCallback: "RectCallback | None" = None,
+        borderRadius: "BorderRadius | None" = None,
+        customBorder: "ShapeBorder | None" = None,
+        radius: Optional[float] = None,
+        onRemoved: "Callable[[], None] | None" = None,
+    ) -> "InteractiveInkFeature":
+        raise NotImplementedError
+
+
+class InkSplash:
+    @staticmethod
+    def splashFactory() -> InteractiveInkFeatureFactory:
+        return call_dart_static("InkSplash", "splashFactory")
+
+
+class InkRipple:
+    @staticmethod
+    def splashFactory() -> InteractiveInkFeatureFactory:
+        return call_dart_static("InkRipple", "splashFactory")
+
+
+class NoSplash:
+    @staticmethod
+    def splashFactory() -> InteractiveInkFeatureFactory:
+        return call_dart_static("NoSplash", "splashFactory")
 
 
 class InkWell(Widget):
@@ -30,7 +78,7 @@ class InkWell(Widget):
         highlightColor=None,
         overlayColor=None,
         splashColor=None,
-        splashFactory=None,
+        splashFactory: Optional[InteractiveInkFeatureFactory] = None,
         radius: Optional[float] = None,
         borderRadius=None,
         customBorder=None,

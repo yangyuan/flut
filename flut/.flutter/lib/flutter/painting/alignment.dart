@@ -2,6 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flut/flut/runtime.dart';
 import 'package:flut/flut/object.dart';
 
+class FlutAlignmentGeometry extends FlutValueObject {
+  final AlignmentGeometry alignmentGeometry;
+
+  const FlutAlignmentGeometry(this.alignmentGeometry)
+    : super('AlignmentGeometry');
+
+  @override
+  Map<String, dynamic> flutEncode() {
+    throw UnimplementedError(
+      'Mixed AlignmentGeometry values are not supported yet. '
+      'Only Alignment and AlignmentDirectional are supported.',
+    );
+  }
+}
+
 class FlutAlignment extends FlutValueObject {
   final Alignment alignment;
 
@@ -11,6 +26,7 @@ class FlutAlignment extends FlutValueObject {
   Map<String, dynamic> flutEncode() {
     final result = flutBaseProps();
     result['x'] = alignment.x;
+    result['start'] = 0.0;
     result['y'] = alignment.y;
     return result;
   }
@@ -32,6 +48,7 @@ class FlutAlignmentDirectional extends FlutValueObject {
   @override
   Map<String, dynamic> flutEncode() {
     final result = flutBaseProps();
+    result['x'] = 0.0;
     result['start'] = alignmentDirectional.start;
     result['y'] = alignmentDirectional.y;
     return result;

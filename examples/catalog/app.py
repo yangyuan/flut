@@ -44,6 +44,7 @@ from flut.flutter.material import (
     ThemeData,
     ColorScheme,
     Icons,
+    InkRipple,
     Switch,
     TextField,
     InputDecoration,
@@ -310,6 +311,7 @@ class CatalogAppState(State[CatalogApp]):
                     colorScheme=ColorScheme.fromSeed(
                         seedColor=Colors.blue, brightness=brightness
                     ),
+                    splashFactory=InkRipple.splashFactory(),
                     useMaterial3=True,
                 ),
                 home=Scaffold(

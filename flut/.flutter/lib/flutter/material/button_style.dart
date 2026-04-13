@@ -137,6 +137,11 @@ class FlutButtonStyle with FlutRealtimeObject<ButtonStyle> {
           data,
           'alignment',
         ),
+        splashFactory: runtime
+            .unpackOptionalField<InteractiveInkFeatureFactory>(
+              data,
+              'splashFactory',
+            ),
       ),
     );
   }
@@ -190,10 +195,6 @@ class FlutButtonStyle with FlutRealtimeObject<ButtonStyle> {
         return flutTarget.alignment;
       case 'splashFactory':
         return flutTarget.splashFactory;
-      case 'backgroundBuilder':
-        return flutTarget.backgroundBuilder;
-      case 'foregroundBuilder':
-        return flutTarget.foregroundBuilder;
     }
     throw FlutUnknownPropertyException('ButtonStyle', property);
   }

@@ -29,7 +29,14 @@ from flut.flutter.rendering import (
     HitTestBehavior,
 )
 from flut.flutter.gestures import Velocity
-from flut.flutter.material import Colors, Theme, InkWell, Icons, IconButton
+from flut.flutter.material import (
+    Colors,
+    Theme,
+    InkSplash,
+    InkWell,
+    Icons,
+    IconButton,
+)
 from flut.dart.ui import FontWeight
 from flut.flutter.painting import (
     Axis,
@@ -3036,12 +3043,13 @@ class GesturePage(StatelessWidget):
                 SplitViewTile(
                     title="InkWell splashFactory & radius",
                     description=(
-                        "InkWell with radius=50 and borderRadius=20 for a "
-                        "large centered splash effect."
+                        "InkWell with InkSplash.splashFactory(), radius=50, and "
+                        "borderRadius=20 for a large centered splash effect."
                     ),
                     instruction="Tap the area to see the large splash with rounded border.",
                     visible=InkWell(
                         onTap=lambda: None,
+                        splashFactory=InkSplash.splashFactory(),
                         radius=50,
                         borderRadius=BorderRadius.circular(20),
                         child=Container(
@@ -3058,6 +3066,7 @@ class GesturePage(StatelessWidget):
                         code=(
                             "InkWell(\n"
                             "    onTap=on_tap,\n"
+                            "    splashFactory=InkSplash.splashFactory(),\n"
                             "    radius=50,\n"
                             "    borderRadius=BorderRadius.circular(20),\n"
                             "    child=Container(child=Text('Tap me')),\n"

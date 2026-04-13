@@ -43,6 +43,7 @@ import 'package:flut/flutter/material/elevated_button.dart';
 import 'package:flut/flutter/material/button_style.dart';
 import 'package:flut/flutter/material/floating_action_button.dart';
 import 'package:flut/flutter/material/icon_button.dart';
+import 'package:flut/flutter/material/button_style_button.dart';
 import 'package:flut/flutter/material/ink_well.dart';
 import 'package:flut/flutter/material/progress_indicator.dart';
 import 'package:flut/flutter/material/scaffold.dart';
@@ -261,6 +262,8 @@ class FlutRuntime {
         return FlutWidgetStatesController.flutCreate(this, data);
       case 'ButtonStyle':
         return FlutButtonStyle.flutCreate(this, data);
+      case 'InteractiveInkFeatureFactory':
+        return FlutInteractiveInkFeatureFactory.flutCreate(this, data);
       default:
         throw FlutRuntimeException('Unknown realtime object type: $type');
     }
@@ -607,6 +610,8 @@ class FlutRuntime {
     FlutTooltip.registerStatics(this);
     FlutElevatedButton.registerStatics(this);
     FlutIconButton.registerStatics(this);
+    FlutOutlinedButton.registerStatics(this);
+    FlutInteractiveInkFeatureFactory.registerStatics(this);
     FlutWidgetSpan.registerStatics(this);
     FlutExpansibleController.registerStatics(this);
     FlutClipboard.registerStatics(this);
@@ -871,6 +876,10 @@ class FlutRuntime {
   T? decodeObject<T>(dynamic data) {
     if (data == null) return null;
 
+    if (T == Widget && data is Widget) {
+      return data as T;
+    }
+
     if (data is! Map<String, dynamic>) {
       throw FlutInvalidValueException(T.toString(), data);
     }
@@ -933,6 +942,11 @@ class FlutRuntime {
         return FlutAlignment.flutDecode(this, data);
       case 'AlignmentDirectional':
         return FlutAlignmentDirectional.flutDecode(this, data);
+      case 'AlignmentGeometry':
+        throw UnimplementedError(
+          'AlignmentGeometry decode is not supported yet. '
+          'Decode Alignment or AlignmentDirectional explicitly.',
+        );
       case 'BorderRadius':
         return FlutBorderRadius.flutDecode(this, data);
       case 'BorderStyle':
@@ -1364,6 +1378,8 @@ class FlutRuntime {
         return const FlutPopupMenuPosition().flutDecode(data);
       case 'ListTileControlAffinity':
         return const FlutListTileControlAffinity().flutDecode(data);
+      case 'IconAlignment':
+        return const FlutIconAlignment().flutDecode(data);
       case 'SliderInteraction':
         return const FlutSliderInteraction().flutDecode(data);
       case 'ShowValueIndicator':
@@ -1492,6 +1508,7 @@ class FlutRuntime {
       case 'TransformationController':
       case 'WidgetStatesController':
       case 'ButtonStyle':
+      case 'InteractiveInkFeatureFactory':
         throw FlutRuntimeException(
           '$type is a realtime object. '
           'It must be created via createObject and resolved by OID.',
@@ -1532,6 +1549,17 @@ class FlutRuntime {
       final wrapper = wrapObject<FlutWidgetStateColor>(
         value,
         (oid) => FlutWidgetStateColor.createFromObject(
+          runtime: this,
+          oid: oid,
+          target: value,
+        ),
+      );
+      return wrapper.flutEncode();
+    }
+    if (value is InteractiveInkFeatureFactory) {
+      final wrapper = wrapObject<FlutInteractiveInkFeatureFactory>(
+        value,
+        (oid) => FlutInteractiveInkFeatureFactory.createFromObject(
           runtime: this,
           oid: oid,
           target: value,
@@ -1674,6 +1702,9 @@ class FlutRuntime {
       return FlutAlignmentDirectional(value).flutEncode();
     }
     if (value is Alignment) return FlutAlignment(value).flutEncode();
+    if (value is AlignmentGeometry) {
+      return FlutAlignmentGeometry(value).flutEncode();
+    }
     if (value is IconData) return FlutIconData(value).flutEncode();
     if (value is BorderRadius) return FlutBorderRadius(value).flutEncode();
     if (value is BorderSide) return FlutBorderSide(value).flutEncode();

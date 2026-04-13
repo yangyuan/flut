@@ -1,7 +1,13 @@
 from typing import Optional, override
 
-from flut._flut.engine import named_constructor, _flut_pack_value, call_dart_static
+from flut._flut.engine import (
+    FlutRealtimeObject,
+    named_constructor,
+    _flut_pack_value,
+    call_dart_static,
+)
 from flut.dart.ui import Clip
+from flut.flutter.material.ink_well import InteractiveInkFeatureFactory
 from flut.flutter.widgets.framework import Widget
 
 
@@ -140,9 +146,7 @@ class ElevatedButton(Widget):
         animationDuration=None,
         enableFeedback=None,
         alignment=None,
-        splashFactory=None,
-        backgroundBuilder=None,
-        foregroundBuilder=None,
+        splashFactory: Optional[InteractiveInkFeatureFactory] = None,
     ):
         kwargs = {}
         if foregroundColor is not None:
@@ -201,8 +205,5 @@ class ElevatedButton(Widget):
             kwargs["alignment"] = _flut_pack_value(alignment)
         if splashFactory is not None:
             kwargs["splashFactory"] = _flut_pack_value(splashFactory)
-        if backgroundBuilder is not None:
-            kwargs["backgroundBuilder"] = _flut_pack_value(backgroundBuilder)
-        if foregroundBuilder is not None:
-            kwargs["foregroundBuilder"] = _flut_pack_value(foregroundBuilder)
-        return call_dart_static("ElevatedButton", "styleFrom", **kwargs)
+        result = call_dart_static("ElevatedButton", "styleFrom", **kwargs)
+        return result

@@ -1,6 +1,7 @@
 from .app import MaterialApp, ThemeMode
 from .app_bar import AppBar
 from .button_style import ButtonStyle
+from .button_style_button import IconAlignment
 from .colors import Colors
 from .color_scheme import ColorScheme
 from .elevated_button import ElevatedButton
@@ -14,7 +15,13 @@ from .card import Card
 from .text_field import TextField
 from .input_decorator import InputDecoration, FloatingLabelBehavior
 from .input_border import InputBorder
-from .ink_well import InkWell
+from .ink_well import (
+    InkRipple,
+    InkSplash,
+    InkWell,
+    InteractiveInkFeatureFactory,
+    NoSplash,
+)
 from .icon_button import IconButton
 from .progress_indicator import CircularProgressIndicator, LinearProgressIndicator
 from .divider import Divider

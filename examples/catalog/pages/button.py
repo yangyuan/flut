@@ -1,40 +1,42 @@
 from flut.dart import Color, Size
 from flut.dart.ui import Clip
-from flut.flutter.widgets import (
-    StatefulWidget,
-    StatelessWidget,
-    State,
-    Text,
-    Column,
-    Row,
-    SizedBox,
-    Icon,
-    Container,
-    WidgetStatePropertyAll,
-    Wrap,
-)
-from flut.flutter.rendering import CrossAxisAlignment, BoxConstraints
 from flut.flutter.material import (
     ButtonStyle,
     Colors,
     ElevatedButton,
     FloatingActionButton,
-    Icons,
+    IconAlignment,
     IconButton,
-    TextButton,
+    Icons,
+    NoSplash,
     OutlinedButton,
+    TextButton,
 )
-from flut.dart.ui import FontWeight
 from flut.flutter.painting import (
     Alignment,
-    EdgeInsets,
-    TextStyle,
-    BoxDecoration,
     BorderRadius,
     BorderSide,
+    BoxDecoration,
+    EdgeInsets,
+    TextStyle,
 )
+from flut.flutter.rendering import BoxConstraints, CrossAxisAlignment, MainAxisAlignment
 from flut.flutter.services import SystemMouseCursors
-from widgets import CatalogPage, SplitViewTile, CodeArea
+from flut.flutter.widgets import (
+    Column,
+    Container,
+    Expanded,
+    Icon,
+    Row,
+    SizedBox,
+    State,
+    StatefulWidget,
+    StatelessWidget,
+    Text,
+    WidgetStatePropertyAll,
+    Wrap,
+)
+from widgets import CatalogPage, CodeArea, SplitViewTile
 
 
 class _ElevatedButtonDemo(StatefulWidget):
@@ -56,11 +58,11 @@ class _ElevatedButtonDemoState(State[_ElevatedButtonDemo]):
                     ),
                 ),
                 SizedBox(width=12),
-                ElevatedButton(
+                OutlinedButton(
                     child=Text("Reset"),
                     onPressed=lambda: self.setState(lambda: setattr(self, "count", 0)),
                 ),
-                SizedBox(width=16),
+                SizedBox(width=12),
                 Text(f"Count: {self.count}", style=TextStyle(fontSize=16)),
             ],
         )
@@ -580,6 +582,17 @@ class _IconButtonVariantsDemoState(State[_IconButtonVariantsDemo]):
                             Text("splashRadius=30", style=TextStyle(fontSize=11)),
                         ],
                     ),
+                    SizedBox(width=24),
+                    Column(
+                        children=[
+                            IconButton(
+                                icon=Icon(Icons.blur_off),
+                                splashFactory=NoSplash.splashFactory(),
+                                onPressed=lambda: None,
+                            ),
+                            Text("NoSplash", style=TextStyle(fontSize=11)),
+                        ],
+                    ),
                 ],
             )
         return Row(
@@ -664,6 +677,10 @@ class ButtonPage(StatelessWidget):
                             "    hoverColor=Color(0x44FF9800) if preset == 'overlay' else None,\n"
                             "    disabledColor=Colors.red if preset == 'disabled' else None,\n"
                             "    splashRadius=30.0 if preset == 'disabled' else None,\n"
+                            "    splashFactory=(\n"
+                            "        NoSplash.splashFactory()\n"
+                            "        if preset == 'disabled' else None\n"
+                            "    ),\n"
                             "    constraints=BoxConstraints(minWidth=60, minHeight=60)\n"
                             "        if preset == 'constraints' else None,\n"
                             "    style=ButtonStyle(\n"
@@ -808,6 +825,75 @@ class ButtonPage(StatelessWidget):
                     ),
                 ),
                 SplitViewTile(
+                    title="Builders, alignment & splashFactory",
+                    description=(
+                        "Covers the newer button styling hooks: AlignmentGeometry for content "
+                        "placement and splashFactory for local interaction feedback overrides."
+                    ),
+                    instruction=(
+                        "Compare the left-aligned ButtonStyle example with the right-aligned "
+                        "ElevatedButton.styleFrom example. The second button disables splash "
+                        "feedback locally via NoSplash."
+                    ),
+                    visible=Wrap(
+                        spacing=12,
+                        runSpacing=12,
+                        children=[
+                            ElevatedButton(
+                                child=Text("ButtonStyle aligned"),
+                                onPressed=lambda: None,
+                                style=ButtonStyle(
+                                    minimumSize=WidgetStatePropertyAll(Size(220, 48)),
+                                    alignment=Alignment.centerLeft,
+                                    backgroundColor=WidgetStatePropertyAll(
+                                        Color(0xFF1976D2)
+                                    ),
+                                    foregroundColor=WidgetStatePropertyAll(
+                                        Colors.white
+                                    ),
+                                ),
+                            ),
+                            ElevatedButton(
+                                child=Text("styleFrom no splash"),
+                                onPressed=lambda: None,
+                                style=ElevatedButton.styleFrom(
+                                    fixedSize=Size(220, 48),
+                                    alignment=Alignment.centerRight,
+                                    backgroundColor=Color(0xFF6A1B9A),
+                                    foregroundColor=Colors.white,
+                                    splashFactory=NoSplash.splashFactory(),
+                                ),
+                            ),
+                        ],
+                    ),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "ElevatedButton(\n"
+                            "    child=Text('ButtonStyle aligned'),\n"
+                            "    onPressed=on_tap,\n"
+                            "    style=ButtonStyle(\n"
+                            "        minimumSize=WidgetStatePropertyAll(Size(220, 48)),\n"
+                            "        alignment=Alignment.centerLeft,\n"
+                            "        backgroundColor=WidgetStatePropertyAll(Color(0xFF1976D2)),\n"
+                            "        foregroundColor=WidgetStatePropertyAll(Colors.white),\n"
+                            "    ),\n"
+                            ")\n\n"
+                            "ElevatedButton(\n"
+                            "    child=Text('styleFrom no splash'),\n"
+                            "    onPressed=on_tap,\n"
+                            "    style=ElevatedButton.styleFrom(\n"
+                            "        fixedSize=Size(220, 48),\n"
+                            "        alignment=Alignment.centerRight,\n"
+                            "        splashFactory=NoSplash.splashFactory(),\n"
+                            "        backgroundColor=Color(0xFF6A1B9A),\n"
+                            "        foregroundColor=Colors.white,\n"
+                            "    ),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
                     title="ElevatedButton.icon",
                     description="ElevatedButton.icon() creates a button with a leading icon and a label. iconAlignment controls icon position.",
                     instruction="See buttons with leading icons and text labels.",
@@ -832,6 +918,50 @@ class ButtonPage(StatelessWidget):
                             "ElevatedButton.icon(\n"
                             "    icon=Icon(Icons.send),\n"
                             "    label=Text('Send'),\n"
+                            "    onPressed=on_tap,\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="OutlinedButton.icon + styleFrom",
+                    description="OutlinedButton.icon() combines an icon and label, and OutlinedButton.styleFrom() customizes its outline and icon presentation.",
+                    instruction="Compare the start-aligned outlined button with the end-aligned variant styled through styleFrom().",
+                    visible=Row(
+                        children=[
+                            OutlinedButton.icon(
+                                icon=Icon(Icons.add_task),
+                                label=Text("Create"),
+                                onPressed=lambda: None,
+                            ),
+                            SizedBox(width=12),
+                            OutlinedButton.icon(
+                                icon=Icon(Icons.download),
+                                label=Text("Export"),
+                                iconAlignment=IconAlignment.end,
+                                style=OutlinedButton.styleFrom(
+                                    iconColor=Color(0xFF0B6E4F),
+                                    iconSize=18.0,
+                                    iconAlignment=IconAlignment.end,
+                                    side=BorderSide(color=Color(0xFF0B6E4F)),
+                                ),
+                                onPressed=lambda: None,
+                            ),
+                        ],
+                    ),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "OutlinedButton.icon(\n"
+                            "    icon=Icon(Icons.download),\n"
+                            "    label=Text('Export'),\n"
+                            "    iconAlignment=IconAlignment.end,\n"
+                            "    style=OutlinedButton.styleFrom(\n"
+                            "        iconColor=Color(0xFF0B6E4F),\n"
+                            "        iconSize=18.0,\n"
+                            "        iconAlignment=IconAlignment.end,\n"
+                            "        side=BorderSide(color=Color(0xFF0B6E4F)),\n"
+                            "    ),\n"
                             "    onPressed=on_tap,\n"
                             ")"
                         ),

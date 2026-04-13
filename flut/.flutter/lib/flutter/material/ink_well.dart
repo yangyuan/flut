@@ -1,5 +1,138 @@
 import 'package:flutter/material.dart';
+import 'package:flut/flut/error.dart';
+import 'package:flut/flut/object.dart';
 import 'package:flut/flut/runtime.dart';
+
+class _FlutInteractiveInkFeatureFactory extends InteractiveInkFeatureFactory {
+  @override
+  InteractiveInkFeature create({
+    required MaterialInkController controller,
+    required RenderBox referenceBox,
+    required Offset position,
+    required Color color,
+    required TextDirection textDirection,
+    bool containedInkWell = false,
+    RectCallback? rectCallback,
+    BorderRadius? borderRadius,
+    ShapeBorder? customBorder,
+    double? radius,
+    VoidCallback? onRemoved,
+  }) {
+    throw UnimplementedError(
+      'InteractiveInkFeatureFactory.create is not implementable because InteractiveInkFeature is not tracked in flut_map.yml.',
+    );
+  }
+}
+
+class FlutInteractiveInkFeatureFactory
+    with FlutRealtimeObject<InteractiveInkFeatureFactory> {
+  FlutInteractiveInkFeatureFactory.createFromData({
+    required FlutRuntime runtime,
+    required Map<String, dynamic> data,
+    required InteractiveInkFeatureFactory target,
+  }) {
+    initRealtimeFromData(runtime: runtime, data: data, target: target);
+  }
+
+  FlutInteractiveInkFeatureFactory.createFromObject({
+    required FlutRuntime runtime,
+    required int oid,
+    required InteractiveInkFeatureFactory target,
+  }) {
+    initRealtimeFromObject(
+      runtime: runtime,
+      oid: oid,
+      type: 'InteractiveInkFeatureFactory',
+      target: target,
+    );
+  }
+
+  static FlutInteractiveInkFeatureFactory flutCreate(
+    FlutRuntime runtime,
+    Map<String, dynamic> data,
+  ) {
+    return FlutInteractiveInkFeatureFactory.createFromData(
+      runtime: runtime,
+      data: data,
+      target: _FlutInteractiveInkFeatureFactory(),
+    );
+  }
+
+  @override
+  dynamic getRawProperty(String property) {
+    throw FlutUnknownPropertyException(
+      'InteractiveInkFeatureFactory',
+      property,
+    );
+  }
+
+  @override
+  bool setProperty(String property, dynamic value) {
+    throw FlutUnknownPropertyException(
+      'InteractiveInkFeatureFactory',
+      property,
+    );
+  }
+
+  @override
+  dynamic callMethod(
+    String method,
+    List<dynamic> args,
+    Map<String, dynamic> kwargs,
+  ) {
+    if (method == 'create') {
+      throw UnimplementedError(
+        'InteractiveInkFeatureFactory.create is not implementable because InteractiveInkFeature is not tracked in flut_map.yml.',
+      );
+    }
+    throw FlutUnknownMethodException(method);
+  }
+
+  static void registerStatics(FlutRuntime runtime) {
+    runtime.registerStatic('InkSplash.splashFactory', _inkSplashFactory);
+    runtime.registerStatic('InkRipple.splashFactory', _inkRippleFactory);
+    runtime.registerStatic('NoSplash.splashFactory', _noSplashFactory);
+  }
+
+  static FlutInteractiveInkFeatureFactory _inkSplashFactory(
+    FlutRuntime runtime,
+  ) {
+    return runtime.wrapObject<FlutInteractiveInkFeatureFactory>(
+      InkSplash.splashFactory,
+      (oid) => FlutInteractiveInkFeatureFactory.createFromObject(
+        runtime: runtime,
+        oid: oid,
+        target: InkSplash.splashFactory,
+      ),
+    );
+  }
+
+  static FlutInteractiveInkFeatureFactory _inkRippleFactory(
+    FlutRuntime runtime,
+  ) {
+    return runtime.wrapObject<FlutInteractiveInkFeatureFactory>(
+      InkRipple.splashFactory,
+      (oid) => FlutInteractiveInkFeatureFactory.createFromObject(
+        runtime: runtime,
+        oid: oid,
+        target: InkRipple.splashFactory,
+      ),
+    );
+  }
+
+  static FlutInteractiveInkFeatureFactory _noSplashFactory(
+    FlutRuntime runtime,
+  ) {
+    return runtime.wrapObject<FlutInteractiveInkFeatureFactory>(
+      NoSplash.splashFactory,
+      (oid) => FlutInteractiveInkFeatureFactory.createFromObject(
+        runtime: runtime,
+        oid: oid,
+        target: NoSplash.splashFactory,
+      ),
+    );
+  }
+}
 
 class FlutInkWell {
   FlutInkWell._();

@@ -8,6 +8,7 @@ from flut._flut.engine import (
 from flut._flut.runtime import _flut_unpack_optional_field
 from flut.dart.ui import Brightness, Color, _Offset
 from flut.flutter.material.color_scheme import ColorScheme
+from flut.flutter.material.ink_well import InteractiveInkFeatureFactory
 from flut.flutter.material.text_theme import TextTheme
 
 
@@ -89,7 +90,7 @@ class ThemeData(FlutRealtimeObject):
         materialTapTargetSize=None,
         pageTransitionsTheme=None,
         platform=None,
-        splashFactory=None,
+        splashFactory: Optional[InteractiveInkFeatureFactory] = None,
         useSystemColors: Optional[bool] = None,
         visualDensity=None,
         inputDecorationTheme=None,

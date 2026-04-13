@@ -1,6 +1,7 @@
 from typing import Optional, override
 
 from flut._flut.engine import _flut_pack_value, call_dart_static
+from flut.flutter.material.ink_well import InteractiveInkFeatureFactory
 from flut.flutter.widgets.framework import Widget
 
 
@@ -138,7 +139,7 @@ class IconButton(Widget):
         animationDuration=None,
         enableFeedback=None,
         alignment=None,
-        splashFactory=None,
+        splashFactory: Optional[InteractiveInkFeatureFactory] = None,
     ):
         kwargs = {}
         if foregroundColor is not None:

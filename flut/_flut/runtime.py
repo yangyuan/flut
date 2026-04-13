@@ -252,6 +252,10 @@ def flut_unpack(data) -> Optional[object]:
             from flut.flutter.material.theme_data import ThemeData
 
             return ThemeData._flut_unpack(data)
+        case "InteractiveInkFeatureFactory":
+            from flut.flutter.material.ink_well import InteractiveInkFeatureFactory
+
+            return InteractiveInkFeatureFactory._flut_unpack(data)
         case "TextTheme":
             from flut.flutter.material.text_theme import TextTheme
 
@@ -374,6 +378,11 @@ def flut_unpack(data) -> Optional[object]:
             from flut.flutter.painting.alignment import _AlignmentDirectional
 
             return _AlignmentDirectional._flut_unpack(data)
+        case "AlignmentGeometry":
+            raise NotImplementedError(
+                "AlignmentGeometry decode is not supported yet. "
+                "Decode Alignment or AlignmentDirectional explicitly."
+            )
         case "BorderRadius":
             from flut.flutter.painting.border_radius import BorderRadius
 
