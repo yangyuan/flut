@@ -20,6 +20,10 @@ Typical examples include:
 
 Because Flut follows Flutter's API closely, Flutter examples and AI-generated Flutter code can often be adapted to Flut with only straightforward Python syntax changes. The reverse is also true: if you later decide to migrate to Flutter and Dart, you can retain your entire UI structure and design work.
 
+Please take a look at the [catalog app](https://github.com/yangyuan/flut/tree/master/examples/catalog).
+
+![Flut Catalog](https://raw.githubusercontent.com/yangyuan/flut/master/examples/catalog/screenshot.png)
+
 ### True Flutter
 
 Flutter code maps almost 1:1 from Dart to Python.
@@ -145,6 +149,8 @@ Run it:
 ```bash
 python app.py
 ```
+
+![Flut Demo](https://raw.githubusercontent.com/yangyuan/flut/master/examples/demo/screenshot.png)
 
 For async support:
 
