@@ -3,6 +3,21 @@ import 'package:flut/flut/runtime.dart';
 import 'package:flut/flut/object.dart';
 import 'package:flut/flut/error.dart';
 
+class FlutDynamicSchemeVariant extends FlutEnumObject<DynamicSchemeVariant> {
+  const FlutDynamicSchemeVariant()
+    : super('DynamicSchemeVariant', const {
+        'tonalSpot': DynamicSchemeVariant.tonalSpot,
+        'fidelity': DynamicSchemeVariant.fidelity,
+        'monochrome': DynamicSchemeVariant.monochrome,
+        'neutral': DynamicSchemeVariant.neutral,
+        'vibrant': DynamicSchemeVariant.vibrant,
+        'expressive': DynamicSchemeVariant.expressive,
+        'content': DynamicSchemeVariant.content,
+        'rainbow': DynamicSchemeVariant.rainbow,
+        'fruitSalad': DynamicSchemeVariant.fruitSalad,
+      });
+}
+
 class FlutColorScheme with FlutRealtimeObject<ColorScheme> {
   FlutColorScheme.createFromData({
     required FlutRuntime runtime,
@@ -40,6 +55,160 @@ class FlutColorScheme with FlutRealtimeObject<ColorScheme> {
             brightness: runtime.unpackRequiredField<Brightness>(
               data,
               'brightness',
+            ),
+            dynamicSchemeVariant: runtime
+                .unpackRequiredField<DynamicSchemeVariant>(
+                  data,
+                  'dynamicSchemeVariant',
+                ),
+            contrastLevel: runtime.unpackRequiredField<double>(
+              data,
+              'contrastLevel',
+            ),
+            primary: runtime.unpackOptionalField<Color>(data, 'primary'),
+            onPrimary: runtime.unpackOptionalField<Color>(data, 'onPrimary'),
+            primaryContainer: runtime.unpackOptionalField<Color>(
+              data,
+              'primaryContainer',
+            ),
+            onPrimaryContainer: runtime.unpackOptionalField<Color>(
+              data,
+              'onPrimaryContainer',
+            ),
+            primaryFixed: runtime.unpackOptionalField<Color>(
+              data,
+              'primaryFixed',
+            ),
+            primaryFixedDim: runtime.unpackOptionalField<Color>(
+              data,
+              'primaryFixedDim',
+            ),
+            onPrimaryFixed: runtime.unpackOptionalField<Color>(
+              data,
+              'onPrimaryFixed',
+            ),
+            onPrimaryFixedVariant: runtime.unpackOptionalField<Color>(
+              data,
+              'onPrimaryFixedVariant',
+            ),
+            secondary: runtime.unpackOptionalField<Color>(data, 'secondary'),
+            onSecondary: runtime.unpackOptionalField<Color>(
+              data,
+              'onSecondary',
+            ),
+            secondaryContainer: runtime.unpackOptionalField<Color>(
+              data,
+              'secondaryContainer',
+            ),
+            onSecondaryContainer: runtime.unpackOptionalField<Color>(
+              data,
+              'onSecondaryContainer',
+            ),
+            secondaryFixed: runtime.unpackOptionalField<Color>(
+              data,
+              'secondaryFixed',
+            ),
+            secondaryFixedDim: runtime.unpackOptionalField<Color>(
+              data,
+              'secondaryFixedDim',
+            ),
+            onSecondaryFixed: runtime.unpackOptionalField<Color>(
+              data,
+              'onSecondaryFixed',
+            ),
+            onSecondaryFixedVariant: runtime.unpackOptionalField<Color>(
+              data,
+              'onSecondaryFixedVariant',
+            ),
+            tertiary: runtime.unpackOptionalField<Color>(data, 'tertiary'),
+            onTertiary: runtime.unpackOptionalField<Color>(data, 'onTertiary'),
+            tertiaryContainer: runtime.unpackOptionalField<Color>(
+              data,
+              'tertiaryContainer',
+            ),
+            onTertiaryContainer: runtime.unpackOptionalField<Color>(
+              data,
+              'onTertiaryContainer',
+            ),
+            tertiaryFixed: runtime.unpackOptionalField<Color>(
+              data,
+              'tertiaryFixed',
+            ),
+            tertiaryFixedDim: runtime.unpackOptionalField<Color>(
+              data,
+              'tertiaryFixedDim',
+            ),
+            onTertiaryFixed: runtime.unpackOptionalField<Color>(
+              data,
+              'onTertiaryFixed',
+            ),
+            onTertiaryFixedVariant: runtime.unpackOptionalField<Color>(
+              data,
+              'onTertiaryFixedVariant',
+            ),
+            error: runtime.unpackOptionalField<Color>(data, 'error'),
+            onError: runtime.unpackOptionalField<Color>(data, 'onError'),
+            errorContainer: runtime.unpackOptionalField<Color>(
+              data,
+              'errorContainer',
+            ),
+            onErrorContainer: runtime.unpackOptionalField<Color>(
+              data,
+              'onErrorContainer',
+            ),
+            outline: runtime.unpackOptionalField<Color>(data, 'outline'),
+            outlineVariant: runtime.unpackOptionalField<Color>(
+              data,
+              'outlineVariant',
+            ),
+            surface: runtime.unpackOptionalField<Color>(data, 'surface'),
+            onSurface: runtime.unpackOptionalField<Color>(data, 'onSurface'),
+            surfaceDim: runtime.unpackOptionalField<Color>(data, 'surfaceDim'),
+            surfaceBright: runtime.unpackOptionalField<Color>(
+              data,
+              'surfaceBright',
+            ),
+            surfaceContainerLowest: runtime.unpackOptionalField<Color>(
+              data,
+              'surfaceContainerLowest',
+            ),
+            surfaceContainerLow: runtime.unpackOptionalField<Color>(
+              data,
+              'surfaceContainerLow',
+            ),
+            surfaceContainer: runtime.unpackOptionalField<Color>(
+              data,
+              'surfaceContainer',
+            ),
+            surfaceContainerHigh: runtime.unpackOptionalField<Color>(
+              data,
+              'surfaceContainerHigh',
+            ),
+            surfaceContainerHighest: runtime.unpackOptionalField<Color>(
+              data,
+              'surfaceContainerHighest',
+            ),
+            onSurfaceVariant: runtime.unpackOptionalField<Color>(
+              data,
+              'onSurfaceVariant',
+            ),
+            inverseSurface: runtime.unpackOptionalField<Color>(
+              data,
+              'inverseSurface',
+            ),
+            onInverseSurface: runtime.unpackOptionalField<Color>(
+              data,
+              'onInverseSurface',
+            ),
+            inversePrimary: runtime.unpackOptionalField<Color>(
+              data,
+              'inversePrimary',
+            ),
+            shadow: runtime.unpackOptionalField<Color>(data, 'shadow'),
+            scrim: runtime.unpackOptionalField<Color>(data, 'scrim'),
+            surfaceTint: runtime.unpackOptionalField<Color>(
+              data,
+              'surfaceTint',
             ),
           ),
         );
@@ -267,6 +436,18 @@ class FlutColorScheme with FlutRealtimeObject<ColorScheme> {
         return flutTarget.surface;
       case 'onSurface':
         return flutTarget.onSurface;
+      case 'surfaceDim':
+        return flutTarget.surfaceDim;
+      case 'surfaceBright':
+        return flutTarget.surfaceBright;
+      case 'surfaceContainerLowest':
+        return flutTarget.surfaceContainerLowest;
+      case 'surfaceContainerLow':
+        return flutTarget.surfaceContainerLow;
+      case 'surfaceContainer':
+        return flutTarget.surfaceContainer;
+      case 'surfaceContainerHigh':
+        return flutTarget.surfaceContainerHigh;
       case 'surfaceContainerHighest':
         return flutTarget.surfaceContainerHighest;
       case 'onSurfaceVariant':

@@ -192,7 +192,7 @@ class FlutterEngine:
         height,
         title,
         icon_path=None,
-        on_initilized=None,
+        on_initialized=None,
         on_close=None,
     ):
         self._native.run(
@@ -202,7 +202,7 @@ class FlutterEngine:
             height,
             title,
             icon_path=icon_path,
-            on_initilized=on_initilized,
+            on_initialized=on_initialized,
             on_close=on_close,
         )
 
@@ -213,7 +213,7 @@ class FlutterEngine:
         height,
         title,
         icon_path=None,
-        on_initilized=None,
+        on_initialized=None,
         on_close=None,
         loop=None,
     ):
@@ -225,7 +225,7 @@ class FlutterEngine:
             height,
             title,
             icon_path=icon_path,
-            on_initilized=on_initilized,
+            on_initialized=on_initialized,
             on_close=on_close,
             loop=self._event_loop,
         )
@@ -430,7 +430,7 @@ def run_app(
     height=600,
     title="Flut",
     icon=None,
-    on_initilized=None,
+    on_initialized=None,
     on_close=None,
 ):
     native, flutter_asset_path = _get_native_and_assets(flutter_asset_path)
@@ -448,7 +448,7 @@ def run_app(
             height,
             title,
             icon_path=icon_path,
-            on_initilized=on_initilized,
+            on_initialized=on_initialized,
             on_close=on_close,
         )
     finally:
@@ -464,7 +464,7 @@ async def run_app_async(
     height=600,
     title="Flut",
     icon=None,
-    on_initilized=None,
+    on_initialized=None,
     on_close=None,
 ):
     native, flutter_asset_path = _get_native_and_assets(flutter_asset_path)
@@ -482,7 +482,7 @@ async def run_app_async(
             height,
             title,
             icon_path=icon_path,
-            on_initilized=on_initilized,
+            on_initialized=on_initialized,
             on_close=on_close,
         )
     finally:

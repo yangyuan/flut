@@ -86,6 +86,7 @@ from pages import (
     SliderPage,
     SelectionPage,
     IconPage,
+    ThemePage,
 )
 
 PAGES = [
@@ -94,6 +95,7 @@ PAGES = [
     ("Layout", Icons.dashboard, LayoutPage),
     ("Widget", Icons.widgets, WidgetPage),
     ("Form", Icons.assignment, FormPage),
+    ("Theme", Icons.palette, ThemePage),
     ("Typography", Icons.text_format, TypographyPage),
     ("Button", Icons.smart_button, ButtonPage),
     ("ListView", Icons.list, ListViewPage),
@@ -414,7 +416,7 @@ class CatalogAppState(State[CatalogApp]):
 
 
 async def _on_catalog_initialized():
-    print("Catalog event: on_initilized")
+    print("Catalog event: on_initialized")
 
 
 async def _on_catalog_close():
@@ -427,7 +429,7 @@ async def main():
         width=1000,
         height=700,
         title="Flut Catalog",
-        on_initilized=_on_catalog_initialized,
+        on_initialized=_on_catalog_initialized,
         on_close=_on_catalog_close,
     )
 

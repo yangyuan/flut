@@ -874,7 +874,7 @@ class FlutMacOSNative(FlutNative):
         height: int,
         title: str,
         icon_path: str | None = None,
-        on_initilized=None,
+        on_initialized=None,
         on_close=None,
     ):
         self._close_error = None
@@ -902,8 +902,8 @@ class FlutMacOSNative(FlutNative):
         )
         if app is None:
             return False
-        if on_initilized is not None:
-            on_initilized()
+        if on_initialized is not None:
+            on_initialized()
         msg(app, "run")
         if self._close_error is not None:
             raise self._close_error
@@ -917,7 +917,7 @@ class FlutMacOSNative(FlutNative):
         height: int,
         title: str,
         icon_path: str | None = None,
-        on_initilized=None,
+        on_initialized=None,
         on_close=None,
         loop=None,
     ):
@@ -948,8 +948,8 @@ class FlutMacOSNative(FlutNative):
         if app is None:
             return False
 
-        if on_initilized is not None:
-            await on_initilized()
+        if on_initialized is not None:
+            await on_initialized()
         await self._run_async_runloop(app, loop, on_close=on_close)
 
         if self._close_error is not None:

@@ -951,6 +951,8 @@ class FlutRuntime {
         return FlutBorderRadius.flutDecode(this, data);
       case 'BorderStyle':
         return const FlutBorderStyle().flutDecode(data);
+      case 'DynamicSchemeVariant':
+        return const FlutDynamicSchemeVariant().flutDecode(data);
       case 'FontWeight':
         return FlutFontWeight.flutDecode(this, data);
       case 'BorderSide':

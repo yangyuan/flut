@@ -21,3 +21,4 @@ from .menu import MenuPage
 from .slider import SliderPage
 from .selection import SelectionPage
 from .icon import IconPage
+from .theme import ThemePage

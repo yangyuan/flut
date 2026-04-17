@@ -47,7 +47,7 @@ class FlutNative(ABC):
         height: int,
         title: str,
         icon_path: str | None = None,
-        on_initilized=None,
+        on_initialized=None,
         on_close=None,
     ):
         pass
@@ -61,7 +61,7 @@ class FlutNative(ABC):
         height: int,
         title: str,
         icon_path: str | None = None,
-        on_initilized=None,
+        on_initialized=None,
         on_close=None,
         loop=None,
     ):

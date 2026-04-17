@@ -901,7 +901,7 @@ class FlutWindowsNative(FlutNative):
         height: int,
         title: str,
         icon_path: str | None = None,
-        on_initilized=None,
+        on_initialized=None,
         on_close=None,
     ):
         hwnd, scaled_width, scaled_height, title = self._setup_engine(
@@ -922,7 +922,7 @@ class FlutWindowsNative(FlutNative):
             scaled_height,
             title,
             icon_path,
-            on_initilized,
+            on_initialized,
             on_close,
             close_error,
         )
@@ -937,7 +937,7 @@ class FlutWindowsNative(FlutNative):
         height,
         title,
         icon_path,
-        on_initilized,
+        on_initialized,
         on_close,
         close_error,
     ):
@@ -965,8 +965,8 @@ class FlutWindowsNative(FlutNative):
         if not host_hwnd:
             return False
 
-        if on_initilized is not None:
-            on_initilized()
+        if on_initialized is not None:
+            on_initialized()
 
         msg = MSG()
         self._running = True
@@ -988,7 +988,7 @@ class FlutWindowsNative(FlutNative):
         height: int,
         title: str,
         icon_path: str | None = None,
-        on_initilized=None,
+        on_initialized=None,
         on_close=None,
         loop: asyncio.AbstractEventLoop = None,
     ):
@@ -1012,7 +1012,7 @@ class FlutWindowsNative(FlutNative):
             scaled_height,
             title,
             icon_path,
-            on_initilized,
+            on_initialized,
             on_close,
             loop,
         )
@@ -1025,7 +1025,7 @@ class FlutWindowsNative(FlutNative):
         height,
         title,
         icon_path,
-        on_initilized,
+        on_initialized,
         on_close,
         loop: asyncio.AbstractEventLoop,
     ):
@@ -1059,8 +1059,8 @@ class FlutWindowsNative(FlutNative):
         if not host_hwnd:
             return False
 
-        if on_initilized is not None:
-            await on_initilized()
+        if on_initialized is not None:
+            await on_initialized()
 
         wake_bridge = ProactorWakeEvent()
         wake_event = wake_bridge.setup(loop)

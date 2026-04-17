@@ -1,10 +1,29 @@
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 
 from flut import run_app
-from flut.flutter.widgets import StatelessWidget, StatefulWidget, State, Text, Center, Column, Icon
-from flut.flutter.material import MaterialApp, Scaffold, AppBar, FloatingActionButton, Icons, ThemeData, ColorScheme, Colors, Theme
+from flut.flutter.widgets import (
+    StatelessWidget,
+    StatefulWidget,
+    State,
+    Text,
+    Center,
+    Column,
+    Icon,
+)
+from flut.flutter.material import (
+    MaterialApp,
+    Scaffold,
+    AppBar,
+    FloatingActionButton,
+    Icons,
+    ThemeData,
+    ColorScheme,
+    Colors,
+    Theme,
+)
 from flut.flutter.rendering import MainAxisAlignment
 
 

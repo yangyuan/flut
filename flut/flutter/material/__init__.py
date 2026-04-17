@@ -3,7 +3,7 @@ from .app_bar import AppBar
 from .button_style import ButtonStyle
 from .button_style_button import IconAlignment
 from .colors import Colors
-from .color_scheme import ColorScheme
+from .color_scheme import ColorScheme, DynamicSchemeVariant
 from .elevated_button import ElevatedButton
 from .floating_action_button import FloatingActionButton
 from .icons import Icons
