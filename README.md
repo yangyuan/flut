@@ -20,7 +20,7 @@ Typical examples include:
 
 Because Flut follows Flutter's API closely, Flutter examples and AI-generated Flutter code can often be adapted to Flut with only straightforward Python syntax changes. The reverse is also true: if you later decide to migrate to Flutter and Dart, you can retain your entire UI structure and design work.
 
-Please take a look at the [catalog app](https://github.com/yangyuan/flut/tree/master/examples/catalog).
+Please take a look at the [catalog app](https://github.com/yangyuan/flut/tree/master/examples/catalog), and [Rocky](https://github.com/yangyuan/rocky) — a Python-based desktop AI agent.
 
 ![Flut Catalog](https://raw.githubusercontent.com/yangyuan/flut/master/examples/catalog/screenshot.png)
 
