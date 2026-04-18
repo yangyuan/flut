@@ -27,6 +27,7 @@ from flut.flutter.painting import (
 from flut.dart.ui import (
     TextDirection,
     FontStyle,
+    TextDecoration,
     TextDecorationStyle,
     TextLeadingDistribution,
 )
@@ -540,6 +541,111 @@ class TypographyPage(StatelessWidget):
                             "TextStyle(fontSize=16, wordSpacing=12.0)\n"
                             "TextStyle(fontSize=16, backgroundColor=Colors.yellow)\n"
                             "TextStyle(fontSize=16, height=2.5)"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="TextDecoration",
+                    description=(
+                        "TextDecoration is a bitmask value with four built-in constants — "
+                        "none, underline, overline, lineThrough — that can be combined with "
+                        "the | operator or TextDecoration.combine([...]) to apply multiple "
+                        "lines simultaneously. Pair with decorationColor / decorationStyle / "
+                        "decorationThickness to customize each line."
+                    ),
+                    instruction=(
+                        "Compare each decoration: single lines (underline, overline, "
+                        "lineThrough), the combined underline | overline, and a styled "
+                        "wavy red underline using decorationStyle and decorationColor."
+                    ),
+                    visible=Column(
+                        crossAxisAlignment=CrossAxisAlignment.start,
+                        children=[
+                            Text(
+                                "TextDecoration.none — plain text",
+                                style=TextStyle(
+                                    fontSize=16, decoration=TextDecoration.none
+                                ),
+                            ),
+                            SizedBox(height=8),
+                            Text(
+                                "TextDecoration.underline",
+                                style=TextStyle(
+                                    fontSize=16, decoration=TextDecoration.underline
+                                ),
+                            ),
+                            SizedBox(height=8),
+                            Text(
+                                "TextDecoration.overline",
+                                style=TextStyle(
+                                    fontSize=16, decoration=TextDecoration.overline
+                                ),
+                            ),
+                            SizedBox(height=8),
+                            Text(
+                                "TextDecoration.lineThrough",
+                                style=TextStyle(
+                                    fontSize=16, decoration=TextDecoration.lineThrough
+                                ),
+                            ),
+                            SizedBox(height=8),
+                            Text(
+                                "underline | overline (combined via | operator)",
+                                style=TextStyle(
+                                    fontSize=16,
+                                    decoration=TextDecoration.underline
+                                    | TextDecoration.overline,
+                                ),
+                            ),
+                            SizedBox(height=8),
+                            Text(
+                                "TextDecoration.combine([underline, lineThrough])",
+                                style=TextStyle(
+                                    fontSize=16,
+                                    decoration=TextDecoration.combine(
+                                        [
+                                            TextDecoration.underline,
+                                            TextDecoration.lineThrough,
+                                        ]
+                                    ),
+                                ),
+                            ),
+                            SizedBox(height=8),
+                            Text(
+                                "Wavy red underline (decorationStyle + decorationColor)",
+                                style=TextStyle(
+                                    fontSize=16,
+                                    decoration=TextDecoration.underline,
+                                    decorationStyle=TextDecorationStyle.wavy,
+                                    decorationColor=Colors.red,
+                                    decorationThickness=2.0,
+                                ),
+                            ),
+                        ],
+                    ),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "TextStyle(decoration=TextDecoration.underline)\n"
+                            "TextStyle(decoration=TextDecoration.overline)\n"
+                            "TextStyle(decoration=TextDecoration.lineThrough)\n\n"
+                            "# Combine multiple decorations\n"
+                            "TextStyle(\n"
+                            "    decoration=TextDecoration.underline | TextDecoration.overline,\n"
+                            ")\n"
+                            "TextStyle(\n"
+                            "    decoration=TextDecoration.combine([\n"
+                            "        TextDecoration.underline,\n"
+                            "        TextDecoration.lineThrough,\n"
+                            "    ]),\n"
+                            ")\n\n"
+                            "# Style the decoration line\n"
+                            "TextStyle(\n"
+                            "    decoration=TextDecoration.underline,\n"
+                            "    decorationStyle=TextDecorationStyle.wavy,\n"
+                            "    decorationColor=Colors.red,\n"
+                            "    decorationThickness=2.0,\n"
+                            ")"
                         ),
                     ),
                 ),

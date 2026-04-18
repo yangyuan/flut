@@ -63,6 +63,11 @@ class FlutTextStyle extends FlutValueObject {
     if (textStyle.fontFamilyFallback != null) {
       result['fontFamilyFallback'] = textStyle.fontFamilyFallback;
     }
+    if (textStyle.decoration != null) {
+      result['decoration'] = FlutTextDecoration(
+        textStyle.decoration!,
+      ).flutEncode();
+    }
     if (textStyle.decorationColor != null) {
       result['decorationColor'] = FlutColor(
         textStyle.decorationColor!,
@@ -113,6 +118,10 @@ class FlutTextStyle extends FlutValueObject {
       fontFamilyFallback: runtime.unpackOptionalField<List<String>>(
         data,
         'fontFamilyFallback',
+      ),
+      decoration: runtime.unpackOptionalField<TextDecoration>(
+        data,
+        'decoration',
       ),
       decorationColor: runtime.unpackOptionalField<Color>(
         data,

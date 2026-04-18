@@ -32,6 +32,7 @@ from .ui import (
     StrokeJoin,
     TextAlign,
     TextBaseline,
+    TextDecoration,
     TextDecorationStyle,
     TextDirection,
     TextLeadingDistribution,

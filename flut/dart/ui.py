@@ -2112,3 +2112,46 @@ class TextDecorationStyle(FlutEnumObject):
 class TextLeadingDistribution(FlutEnumObject):
     proportional: "TextLeadingDistribution"
     even: "TextLeadingDistribution"
+
+
+class _TextDecoration(FlutValueObject):
+    _flut_type = "TextDecoration"
+
+    def __init__(self, mask: int):
+        super().__init__()
+        self._mask = mask
+
+    @override
+    def _flut_pack(self) -> dict:
+        result = self._flut_base_props()
+        result["mask"] = _flut_pack_value(self._mask)
+        return result
+
+    @staticmethod
+    def _flut_unpack(data: dict) -> "_TextDecoration":
+        return _TextDecoration(_flut_unpack_required_field(data, "mask"))
+
+    def contains(self, other: "_TextDecoration") -> bool:
+        return (self._mask | other._mask) == self._mask
+
+    def __or__(self, other: "_TextDecoration") -> "_TextDecoration":
+        return _TextDecoration(self._mask | other._mask)
+
+
+class TextDecoration(_TextDecoration):
+    def __init__(self, *args, **kwargs):
+        raise TypeError(
+            "TextDecoration has no default constructor. Use TextDecoration.combine()."
+        )
+
+    @staticmethod
+    def combine(decorations: "list[_TextDecoration]") -> "_TextDecoration":
+        mask = 0
+        for d in decorations:
+            mask |= d._mask
+        return _TextDecoration(mask)
+
+    none = _TextDecoration(0x0)
+    underline = _TextDecoration(0x1)
+    overline = _TextDecoration(0x2)
+    lineThrough = _TextDecoration(0x4)

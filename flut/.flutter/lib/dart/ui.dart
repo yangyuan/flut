@@ -388,6 +388,35 @@ class FlutFontWeight extends FlutValueObject {
   }
 }
 
+class FlutTextDecoration extends FlutValueObject {
+  final TextDecoration decoration;
+
+  const FlutTextDecoration(this.decoration) : super('TextDecoration');
+
+  @override
+  Map<String, dynamic> flutEncode() {
+    final result = flutBaseProps();
+    int mask = 0;
+    if (decoration.contains(TextDecoration.underline)) mask |= 0x1;
+    if (decoration.contains(TextDecoration.overline)) mask |= 0x2;
+    if (decoration.contains(TextDecoration.lineThrough)) mask |= 0x4;
+    result['mask'] = mask;
+    return result;
+  }
+
+  static TextDecoration? flutDecode(
+    FlutRuntime runtime,
+    Map<String, dynamic> data,
+  ) {
+    final mask = runtime.unpackRequiredField<int>(data, 'mask');
+    final parts = <TextDecoration>[];
+    if (mask & 0x1 != 0) parts.add(TextDecoration.underline);
+    if (mask & 0x2 != 0) parts.add(TextDecoration.overline);
+    if (mask & 0x4 != 0) parts.add(TextDecoration.lineThrough);
+    return parts.isEmpty ? TextDecoration.none : TextDecoration.combine(parts);
+  }
+}
+
 class FlutBlendMode extends FlutEnumObject<BlendMode> {
   const FlutBlendMode()
     : super('BlendMode', const {

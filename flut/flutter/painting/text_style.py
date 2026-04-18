@@ -1,7 +1,15 @@
 from typing import Optional, override
 from flut._flut.engine import FlutValueObject, _flut_pack_value
 from flut._flut.runtime import _flut_unpack_optional_field, _flut_unpack_required_field
-from flut.dart.ui import Color, FontWeight, TextBaseline
+from flut.dart.ui import (
+    Color,
+    FontStyle,
+    FontWeight,
+    TextBaseline,
+    TextDecoration,
+    TextDecorationStyle,
+    TextLeadingDistribution,
+)
 
 
 class TextStyle(FlutValueObject):
@@ -15,21 +23,21 @@ class TextStyle(FlutValueObject):
         backgroundColor: Optional[Color] = None,
         fontSize: Optional[float] = None,
         fontWeight: Optional[FontWeight] = None,
-        fontStyle=None,
+        fontStyle: Optional[FontStyle] = None,
         letterSpacing: Optional[float] = None,
         wordSpacing: Optional[float] = None,
         textBaseline: Optional[TextBaseline] = None,
         height: Optional[float] = None,
-        leadingDistribution=None,
+        leadingDistribution: Optional[TextLeadingDistribution] = None,
         locale=None,
         foreground=None,
         background=None,
         shadows: Optional[list] = None,
         fontFeatures: Optional[list] = None,
         fontVariations: Optional[list] = None,
-        decoration=None,
+        decoration: Optional[TextDecoration] = None,
         decorationColor: Optional[Color] = None,
-        decorationStyle=None,
+        decorationStyle: Optional[TextDecorationStyle] = None,
         decorationThickness: Optional[float] = None,
         debugLabel: Optional[str] = None,
         fontFamily: Optional[str] = None,

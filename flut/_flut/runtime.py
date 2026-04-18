@@ -542,6 +542,10 @@ def flut_unpack(data) -> Optional[object]:
             from flut.dart.ui import TextDecorationStyle
 
             return TextDecorationStyle._flut_unpack(data)
+        case "TextDecoration":
+            from flut.dart.ui import _TextDecoration
+
+            return _TextDecoration._flut_unpack(data)
         case "TextLeadingDistribution":
             from flut.dart.ui import TextLeadingDistribution
 

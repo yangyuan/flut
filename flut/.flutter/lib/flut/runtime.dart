@@ -955,6 +955,8 @@ class FlutRuntime {
         return const FlutDynamicSchemeVariant().flutDecode(data);
       case 'FontWeight':
         return FlutFontWeight.flutDecode(this, data);
+      case 'TextDecoration':
+        return FlutTextDecoration.flutDecode(this, data);
       case 'BorderSide':
         return FlutBorderSide.flutDecode(this, data);
       case 'Border':
@@ -1694,6 +1696,7 @@ class FlutRuntime {
     if (value is KeyEvent) return FlutKeyEvent(value).flutEncode();
     if (value is Duration) return FlutDuration(value).flutEncode();
     if (value is FontWeight) return FlutFontWeight(value).flutEncode();
+    if (value is TextDecoration) return FlutTextDecoration(value).flutEncode();
     if (value is LogicalKeyboardKey) {
       return FlutLogicalKeyboardKey(value).flutEncode();
     }
