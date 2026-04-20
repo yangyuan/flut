@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flut/flut/error.dart';
 import 'package:flut/flut/runtime.dart';
 
@@ -53,7 +52,6 @@ mixin FlutRealtimeObject<T extends Object> {
   late final int flutOid;
   late final String flutType;
   late final T flutTarget;
-  final Map<int, VoidCallback> listenersByCid = {};
 
   void initRealtimeFromData({
     required FlutRuntime runtime,

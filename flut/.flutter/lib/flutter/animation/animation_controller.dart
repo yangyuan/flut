@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flut/flut/runtime.dart';
 import 'package:flut/flut/object.dart';
 import 'package:flut/flut/error.dart';
+import 'package:flut/flutter/animation/animation.dart';
 
 class FlutAnimationBehavior extends FlutEnumObject<AnimationBehavior> {
   const FlutAnimationBehavior()
@@ -11,27 +12,18 @@ class FlutAnimationBehavior extends FlutEnumObject<AnimationBehavior> {
       });
 }
 
-class FlutAnimationController with FlutRealtimeObject<AnimationController> {
+class FlutAnimationController extends FlutAnimation<AnimationController> {
   FlutAnimationController.createFromData({
-    required FlutRuntime runtime,
-    required Map<String, dynamic> data,
-    required AnimationController target,
-  }) {
-    initRealtimeFromData(runtime: runtime, data: data, target: target);
-  }
+    required super.runtime,
+    required super.data,
+    required super.target,
+  }) : super.createFromData();
 
   FlutAnimationController.createFromObject({
-    required FlutRuntime runtime,
-    required int oid,
-    required AnimationController target,
-  }) {
-    initRealtimeFromObject(
-      runtime: runtime,
-      oid: oid,
-      type: 'AnimationController',
-      target: target,
-    );
-  }
+    required super.runtime,
+    required super.oid,
+    required super.target,
+  }) : super.createFromObject(type: 'AnimationController');
 
   static FlutRealtimeObject flutCreate(
     FlutRuntime runtime,
@@ -67,10 +59,6 @@ class FlutAnimationController with FlutRealtimeObject<AnimationController> {
   @override
   dynamic getRawProperty(String property) {
     switch (property) {
-      case 'value':
-        return flutTarget.value;
-      case 'status':
-        return flutTarget.status;
       case 'isAnimating':
         return flutTarget.isAnimating;
       case 'duration':
@@ -78,7 +66,7 @@ class FlutAnimationController with FlutRealtimeObject<AnimationController> {
       case 'reverseDuration':
         return flutTarget.reverseDuration;
     }
-    throw FlutUnknownPropertyException('AnimationController', property);
+    return super.getRawProperty(property);
   }
 
   @override
@@ -94,7 +82,7 @@ class FlutAnimationController with FlutRealtimeObject<AnimationController> {
         flutTarget.reverseDuration = value as Duration?;
         return true;
     }
-    return false;
+    return super.setProperty(property, value);
   }
 
   @override
@@ -133,7 +121,13 @@ class FlutAnimationController with FlutRealtimeObject<AnimationController> {
           curve: kwargs['curve'] as Curve? ?? Curves.linear,
         );
         return null;
+      case 'dispose':
+        clearTrackedListeners();
+        clearTrackedStatusListeners();
+        flutTarget.dispose();
+        flutDispose();
+        return null;
     }
-    throw FlutUnknownMethodException(method);
+    return super.callMethod(method, args, kwargs);
   }
 }

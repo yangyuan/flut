@@ -382,31 +382,11 @@ class FlutFfiNative implements FlutNative {
       return {'_flut_error': 'Object not found', '_flut_oid': oid};
     }
 
-    if (method == 'dispose') {
-      final listeners = obj.listenersByCid;
-      if (listeners.isNotEmpty && obj.flutTarget is ChangeNotifier) {
-        final cn = obj.flutTarget as ChangeNotifier;
-        for (final cb in listeners.values) {
-          cn.removeListener(cb);
-        }
-        listeners.clear();
-      }
-      try {
-        (obj.flutTarget as dynamic).dispose();
-      } catch (_) {}
-      if (flutRuntime.objectRegistry.containsKey(oid)) {
-        obj.flutDispose();
-      }
-      return {'_flut_value': null};
-    }
-
-    int? lastResolvedCid;
     final resolvedArgs = args.map((arg) {
       if (arg is Map<String, dynamic>) {
         if (arg['_flut_type'] == 'Callable') {
           final callable = FlutCallableRef.flutDecode(flutRuntime, arg);
           if (callable != null) {
-            lastResolvedCid = callable.cid;
             return flutRuntime.adaptCallableByType(callable);
           }
         }
@@ -419,26 +399,6 @@ class FlutFfiNative implements FlutNative {
       }
       return arg;
     }).toList();
-
-    if (method == 'addListener' && obj.flutTarget is ChangeNotifier) {
-      final cb = resolvedArgs[0] as VoidCallback;
-      (obj.flutTarget as ChangeNotifier).addListener(cb);
-      if (lastResolvedCid != null) {
-        obj.listenersByCid[lastResolvedCid!] = cb;
-      }
-      return {'_flut_value': null};
-    }
-
-    if (method == 'removeListener' && obj.flutTarget is ChangeNotifier) {
-      final cidArg = resolvedArgs[0];
-      if (cidArg is int) {
-        final cb = obj.listenersByCid.remove(cidArg);
-        if (cb != null) {
-          (obj.flutTarget as ChangeNotifier).removeListener(cb);
-        }
-      }
-      return {'_flut_value': null};
-    }
 
     final resolvedKwargs = kwargs.map((key, value) {
       if (value is Map<String, dynamic>) {

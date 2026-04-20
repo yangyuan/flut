@@ -87,6 +87,7 @@ from pages import (
     SelectionPage,
     IconPage,
     ThemePage,
+    ListenablePage,
 )
 
 PAGES = [
@@ -107,6 +108,7 @@ PAGES = [
     ("Navigation", Icons.navigation, NavigationPage),
     ("Gesture", Icons.open_with, GesturePage),
     ("Animation", Icons.animation, AnimationPage),
+    ("Listenable", Icons.notifications_active, ListenablePage),
     ("Canvas", Icons.brush, CanvasPage),
     ("Asset", Icons.image, AssetPage),
     ("Focus", Icons.keyboard, FocusPage),

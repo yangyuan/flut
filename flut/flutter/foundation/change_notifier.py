@@ -50,6 +50,17 @@ class ValueListenable(Listenable):
 class ChangeNotifier(FlutRealtimeObject, Listenable):
     _flut_type = "ChangeNotifier"
 
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        original_init = cls.__init__
+
+        def __init__(self, *args, **kw):
+            original_init(self, *args, **kw)
+            if self._flut_oid is None:
+                self._flut_create()
+
+        cls.__init__ = __init__
+
     def __init__(self):
         FlutRealtimeObject.__init__(self)
 

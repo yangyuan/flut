@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flut/flut/object.dart';
 import 'package:flut/flut/runtime.dart';
 import 'package:flut/flut/error.dart';
+import 'package:flut/flutter/foundation/change_notifier.dart';
 
 class FlutWidgetState extends FlutEnumObject<WidgetState> {
   const FlutWidgetState()
@@ -254,27 +255,18 @@ class FlutWidgetStateProperty extends WidgetStateProperty<dynamic>
 }
 
 class FlutWidgetStatesController
-    with FlutRealtimeObject<WidgetStatesController> {
+    extends FlutChangeNotifier<WidgetStatesController> {
   FlutWidgetStatesController.createFromData({
-    required FlutRuntime runtime,
-    required Map<String, dynamic> data,
-    required WidgetStatesController target,
-  }) {
-    initRealtimeFromData(runtime: runtime, data: data, target: target);
-  }
+    required super.runtime,
+    required super.data,
+    required super.target,
+  }) : super.createFromData();
 
   FlutWidgetStatesController.createFromObject({
-    required FlutRuntime runtime,
-    required int oid,
-    required WidgetStatesController target,
-  }) {
-    initRealtimeFromObject(
-      runtime: runtime,
-      oid: oid,
-      type: 'WidgetStatesController',
-      target: target,
-    );
-  }
+    required super.runtime,
+    required super.oid,
+    required super.target,
+  }) : super.createFromObject(type: 'WidgetStatesController');
 
   static FlutWidgetStatesController flutCreate(
     FlutRuntime runtime,
@@ -296,7 +288,7 @@ class FlutWidgetStatesController
       case 'value':
         return flutTarget.value;
     }
-    throw FlutUnknownPropertyException('WidgetStatesController', property);
+    return super.getRawProperty(property);
   }
 
   @override
@@ -306,7 +298,7 @@ class FlutWidgetStatesController
         flutTarget.value = value as Set<WidgetState>;
         return true;
     }
-    return false;
+    return super.setProperty(property, value);
   }
 
   @override
@@ -320,6 +312,6 @@ class FlutWidgetStatesController
         flutTarget.update(args[0] as WidgetState, args[1] as bool);
         return null;
     }
-    throw FlutUnknownMethodException(method);
+    return super.callMethod(method, args, kwargs);
   }
 }

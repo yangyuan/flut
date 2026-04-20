@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flut/flut/object.dart';
 import 'package:flut/flut/runtime.dart';
-import 'package:flut/flut/error.dart';
+import 'package:flut/flutter/foundation/change_notifier.dart';
 
 class _FlutTextEditingController extends TextEditingController {
   final FlutRuntime _runtime;
@@ -42,14 +41,13 @@ class _FlutTextEditingController extends TextEditingController {
   }
 }
 
-class FlutTextEditingController with FlutRealtimeObject<TextEditingController> {
+class FlutTextEditingController
+    extends FlutChangeNotifier<TextEditingController> {
   FlutTextEditingController.createFromData({
-    required FlutRuntime runtime,
-    required Map<String, dynamic> data,
-    required TextEditingController target,
-  }) {
-    initRealtimeFromData(runtime: runtime, data: data, target: target);
-  }
+    required super.runtime,
+    required super.data,
+    required super.target,
+  }) : super.createFromData();
 
   static FlutTextEditingController flutCreate(
     FlutRuntime runtime,
@@ -74,11 +72,8 @@ class FlutTextEditingController with FlutRealtimeObject<TextEditingController> {
     switch (property) {
       case 'text':
         return flutTarget.text;
-      case 'hasListeners':
-        // ignore: invalid_use_of_protected_member
-        return flutTarget.hasListeners;
     }
-    throw FlutUnknownPropertyException('TextEditingController', property);
+    return super.getRawProperty(property);
   }
 
   @override
@@ -88,7 +83,7 @@ class FlutTextEditingController with FlutRealtimeObject<TextEditingController> {
         flutTarget.text = (value as String?) ?? '';
         return true;
     }
-    throw FlutUnknownPropertyException('TextEditingController', property);
+    return super.setProperty(property, value);
   }
 
   @override
@@ -101,11 +96,7 @@ class FlutTextEditingController with FlutRealtimeObject<TextEditingController> {
       case 'clear':
         flutTarget.clear();
         return null;
-      case 'notifyListeners':
-        // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
-        flutTarget.notifyListeners();
-        return null;
     }
-    throw FlutUnknownMethodException(method);
+    return super.callMethod(method, args, kwargs);
   }
 }

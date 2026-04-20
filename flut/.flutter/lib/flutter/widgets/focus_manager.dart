@@ -1,33 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flut/flut/object.dart';
 import 'package:flut/flut/runtime.dart';
-import 'package:flut/flut/error.dart';
+import 'package:flut/flutter/foundation/change_notifier.dart';
 
 class _FlutFocusNode extends FocusNode {
   _FlutFocusNode({required FlutRuntime runtime, super.onKeyEvent});
 }
 
-class FlutFocusNode with FlutRealtimeObject<FocusNode> {
+class FlutFocusNode extends FlutChangeNotifier<FocusNode> {
   FlutFocusNode.createFromData({
-    required FlutRuntime runtime,
-    required Map<String, dynamic> data,
-    required FocusNode target,
-  }) {
-    initRealtimeFromData(runtime: runtime, data: data, target: target);
-  }
+    required super.runtime,
+    required super.data,
+    required super.target,
+  }) : super.createFromData();
 
   FlutFocusNode.createFromObject({
-    required FlutRuntime runtime,
-    required int oid,
-    required FocusNode target,
-  }) {
-    initRealtimeFromObject(
-      runtime: runtime,
-      oid: oid,
-      type: 'FocusNode',
-      target: target,
-    );
-  }
+    required super.runtime,
+    required super.oid,
+    required super.target,
+  }) : super.createFromObject(type: 'FocusNode');
 
   static FlutFocusNode flutCreate(
     FlutRuntime runtime,
@@ -54,11 +45,8 @@ class FlutFocusNode with FlutRealtimeObject<FocusNode> {
         return flutTarget.hasPrimaryFocus;
       case 'onKeyEvent':
         return flutTarget.onKeyEvent;
-      case 'hasListeners':
-        // ignore: invalid_use_of_protected_member
-        return flutTarget.hasListeners;
     }
-    throw FlutUnknownPropertyException('FocusNode', property);
+    return super.getRawProperty(property);
   }
 
   @override
@@ -68,7 +56,7 @@ class FlutFocusNode with FlutRealtimeObject<FocusNode> {
         flutTarget.onKeyEvent = value as FocusOnKeyEventCallback?;
         return true;
     }
-    throw FlutUnknownPropertyException('FocusNode', property);
+    return super.setProperty(property, value);
   }
 
   @override
@@ -85,31 +73,22 @@ class FlutFocusNode with FlutRealtimeObject<FocusNode> {
         flutTarget.unfocus();
         return null;
     }
-    throw FlutUnknownMethodException(method);
+    return super.callMethod(method, args, kwargs);
   }
 }
 
-class FlutFocusScopeNode with FlutRealtimeObject<FocusScopeNode> {
+class FlutFocusScopeNode extends FlutChangeNotifier<FocusScopeNode> {
   FlutFocusScopeNode.createFromData({
-    required FlutRuntime runtime,
-    required Map<String, dynamic> data,
-    required FocusScopeNode target,
-  }) {
-    initRealtimeFromData(runtime: runtime, data: data, target: target);
-  }
+    required super.runtime,
+    required super.data,
+    required super.target,
+  }) : super.createFromData();
 
   FlutFocusScopeNode.createFromObject({
-    required FlutRuntime runtime,
-    required int oid,
-    required FocusScopeNode target,
-  }) {
-    initRealtimeFromObject(
-      runtime: runtime,
-      oid: oid,
-      type: 'FocusScopeNode',
-      target: target,
-    );
-  }
+    required super.runtime,
+    required super.oid,
+    required super.target,
+  }) : super.createFromObject(type: 'FocusScopeNode');
 
   static FlutRealtimeObject flutCreate(
     FlutRuntime runtime,
@@ -151,11 +130,8 @@ class FlutFocusScopeNode with FlutRealtimeObject<FocusScopeNode> {
         return flutTarget.hasPrimaryFocus;
       case 'onKeyEvent':
         return flutTarget.onKeyEvent;
-      case 'hasListeners':
-        // ignore: invalid_use_of_protected_member
-        return flutTarget.hasListeners;
     }
-    throw FlutUnknownPropertyException('FocusScopeNode', property);
+    return super.getRawProperty(property);
   }
 
   @override
@@ -165,7 +141,7 @@ class FlutFocusScopeNode with FlutRealtimeObject<FocusScopeNode> {
         flutTarget.onKeyEvent = value as FocusOnKeyEventCallback?;
         return true;
     }
-    throw FlutUnknownPropertyException('FocusScopeNode', property);
+    return super.setProperty(property, value);
   }
 
   @override
@@ -182,7 +158,7 @@ class FlutFocusScopeNode with FlutRealtimeObject<FocusScopeNode> {
         flutTarget.unfocus();
         return null;
     }
-    throw FlutUnknownMethodException(method);
+    return super.callMethod(method, args, kwargs);
   }
 }
 

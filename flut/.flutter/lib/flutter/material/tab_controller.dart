@@ -1,29 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flut/flut/runtime.dart';
 import 'package:flut/flut/object.dart';
-import 'package:flut/flut/error.dart';
+import 'package:flut/flutter/foundation/change_notifier.dart';
 
-class FlutTabController with FlutRealtimeObject<TabController> {
+class FlutTabController extends FlutChangeNotifier<TabController> {
   FlutTabController.createFromData({
-    required FlutRuntime runtime,
-    required Map<String, dynamic> data,
-    required TabController target,
-  }) {
-    initRealtimeFromData(runtime: runtime, data: data, target: target);
-  }
+    required super.runtime,
+    required super.data,
+    required super.target,
+  }) : super.createFromData();
 
   FlutTabController.createFromObject({
-    required FlutRuntime runtime,
-    required int oid,
-    required TabController target,
-  }) {
-    initRealtimeFromObject(
-      runtime: runtime,
-      oid: oid,
-      type: 'TabController',
-      target: target,
-    );
-  }
+    required super.runtime,
+    required super.oid,
+    required super.target,
+  }) : super.createFromObject(type: 'TabController');
 
   static FlutRealtimeObject flutCreate(
     FlutRuntime runtime,
@@ -56,11 +47,8 @@ class FlutTabController with FlutRealtimeObject<TabController> {
         return flutTarget.previousIndex;
       case 'indexIsChanging':
         return flutTarget.indexIsChanging;
-      case 'hasListeners':
-        // ignore: invalid_use_of_protected_member
-        return flutTarget.hasListeners;
     }
-    throw FlutUnknownPropertyException('TabController', property);
+    return super.getRawProperty(property);
   }
 
   @override
@@ -70,7 +58,7 @@ class FlutTabController with FlutRealtimeObject<TabController> {
         flutTarget.index = value as int;
         return true;
     }
-    return false;
+    return super.setProperty(property, value);
   }
 
   @override
@@ -88,7 +76,7 @@ class FlutTabController with FlutRealtimeObject<TabController> {
         );
         return null;
     }
-    throw FlutUnknownMethodException(method);
+    return super.callMethod(method, args, kwargs);
   }
 }
 

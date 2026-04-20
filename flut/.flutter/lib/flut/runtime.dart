@@ -216,6 +216,8 @@ class FlutRuntime {
     Map<String, dynamic> data,
   ) {
     switch (type) {
+      case 'ChangeNotifier':
+        return FlutChangeNotifier.flutCreate(this, data);
       case 'TextEditingController':
         return FlutTextEditingController.flutCreate(this, data);
       case 'ScrollController':
@@ -310,6 +312,8 @@ class FlutRuntime {
     _callableRegistry[closure] = cid;
     _callableFinalizer.attach(closure, cid);
   }
+
+  int? cidForCallable(Function closure) => _callableRegistry[closure];
 
   dynamic adaptCallableByType(FlutCallableRef callable) {
     if (callable.callableType == null) return callable;

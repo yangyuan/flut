@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flut/flut/runtime.dart';
 import 'package:flut/flut/object.dart';
-import 'package:flut/flut/error.dart';
+import 'package:flut/flutter/foundation/change_notifier.dart';
 
 class FlutPanAxis extends FlutEnumObject<PanAxis> {
   const FlutPanAxis()
@@ -66,27 +66,18 @@ class FlutInteractiveViewer {
 }
 
 class FlutTransformationController
-    with FlutRealtimeObject<TransformationController> {
+    extends FlutChangeNotifier<TransformationController> {
   FlutTransformationController.createFromData({
-    required FlutRuntime runtime,
-    required Map<String, dynamic> data,
-    required TransformationController target,
-  }) {
-    initRealtimeFromData(runtime: runtime, data: data, target: target);
-  }
+    required super.runtime,
+    required super.data,
+    required super.target,
+  }) : super.createFromData();
 
   FlutTransformationController.createFromObject({
-    required FlutRuntime runtime,
-    required int oid,
-    required TransformationController target,
-  }) {
-    initRealtimeFromObject(
-      runtime: runtime,
-      oid: oid,
-      type: 'TransformationController',
-      target: target,
-    );
-  }
+    required super.runtime,
+    required super.oid,
+    required super.target,
+  }) : super.createFromObject(type: 'TransformationController');
 
   static FlutRealtimeObject flutCreate(
     FlutRuntime runtime,
@@ -105,11 +96,8 @@ class FlutTransformationController
     switch (property) {
       case 'value':
         return flutTarget.value;
-      case 'hasListeners':
-        // ignore: invalid_use_of_protected_member
-        return flutTarget.hasListeners;
     }
-    throw FlutUnknownPropertyException('TransformationController', property);
+    return super.getRawProperty(property);
   }
 
   @override
@@ -119,7 +107,7 @@ class FlutTransformationController
         flutTarget.value = value as Matrix4;
         return true;
     }
-    return false;
+    return super.setProperty(property, value);
   }
 
   @override
@@ -131,11 +119,7 @@ class FlutTransformationController
     switch (method) {
       case 'toScene':
         return flutTarget.toScene(args[0] as Offset);
-      case 'notifyListeners':
-        // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
-        flutTarget.notifyListeners();
-        return null;
     }
-    throw FlutUnknownMethodException(method);
+    return super.callMethod(method, args, kwargs);
   }
 }

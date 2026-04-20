@@ -1,29 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flut/flut/object.dart';
 import 'package:flut/flut/runtime.dart';
-import 'package:flut/flut/error.dart';
+import 'package:flut/flutter/foundation/change_notifier.dart';
 
-class FlutScrollController with FlutRealtimeObject<ScrollController> {
+class FlutScrollController extends FlutChangeNotifier<ScrollController> {
   FlutScrollController.createFromData({
-    required FlutRuntime runtime,
-    required Map<String, dynamic> data,
-    required ScrollController target,
-  }) {
-    initRealtimeFromData(runtime: runtime, data: data, target: target);
-  }
+    required super.runtime,
+    required super.data,
+    required super.target,
+  }) : super.createFromData();
 
   FlutScrollController.createFromObject({
-    required FlutRuntime runtime,
-    required int oid,
-    required ScrollController target,
-  }) {
-    initRealtimeFromObject(
-      runtime: runtime,
-      oid: oid,
-      type: 'ScrollController',
-      target: target,
-    );
-  }
+    required super.runtime,
+    required super.oid,
+    required super.target,
+  }) : super.createFromObject(type: 'ScrollController');
 
   static FlutScrollController flutCreate(
     FlutRuntime runtime,
@@ -50,16 +40,8 @@ class FlutScrollController with FlutRealtimeObject<ScrollController> {
         return flutTarget.hasClients;
       case 'position':
         return flutTarget.position;
-      case 'hasListeners':
-        // ignore: invalid_use_of_protected_member
-        return flutTarget.hasListeners;
     }
-    throw FlutUnknownPropertyException('ScrollController', property);
-  }
-
-  @override
-  bool setProperty(String property, dynamic value) {
-    throw FlutUnknownPropertyException('ScrollController', property);
+    return super.getRawProperty(property);
   }
 
   @override
@@ -79,11 +61,7 @@ class FlutScrollController with FlutRealtimeObject<ScrollController> {
           curve: runtime.decodeObject<Curve>(kwargs['curve'])!,
         );
         return null;
-      case 'notifyListeners':
-        // ignore: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
-        flutTarget.notifyListeners();
-        return null;
     }
-    throw FlutUnknownMethodException(method);
+    return super.callMethod(method, args, kwargs);
   }
 }
