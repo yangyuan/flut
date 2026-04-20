@@ -26,6 +26,7 @@ from .basic import (
     Transform,
     Builder,
     AspectRatio,
+    IntrinsicWidth,
     FittedBox,
     ConstrainedBox,
     SliverPadding,
@@ -66,7 +67,7 @@ from .media_query import MediaQuery, MediaQueryData
 from .visibility import Visibility
 from .routes import ModalRoute
 from .pages import PageRoute
-from .navigator import Navigator, RouteSettings
+from .navigator import Navigator, NavigatorState, RouteSettings
 from .image import Image
 from .widget_state import (
     WidgetState,

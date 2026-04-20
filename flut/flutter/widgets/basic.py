@@ -713,6 +713,34 @@ class AspectRatio(Widget):
         return result
 
 
+class IntrinsicWidth(Widget):
+    _flut_type = "IntrinsicWidth"
+
+    def __init__(
+        self,
+        *,
+        key=None,
+        stepWidth: Optional[float] = None,
+        stepHeight: Optional[float] = None,
+        child: Optional[Widget] = None,
+    ):
+        super().__init__(key=key)
+        self.stepWidth = stepWidth
+        self.stepHeight = stepHeight
+        self.child = child
+
+    @override
+    def _flut_pack(self) -> dict:
+        result = self._flut_base_props()
+        if self.stepWidth is not None:
+            result["stepWidth"] = _flut_pack_value(self.stepWidth)
+        if self.stepHeight is not None:
+            result["stepHeight"] = _flut_pack_value(self.stepHeight)
+        if self.child is not None:
+            result["child"] = _flut_pack_value(self.child)
+        return result
+
+
 class FittedBox(Widget):
     _flut_type = "FittedBox"
 

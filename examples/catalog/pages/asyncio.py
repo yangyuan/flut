@@ -891,8 +891,7 @@ class _FutureDemoState(State[_FutureDemo]):
         self.setState(lambda: None)
 
     def _push_poll(self, context):
-        self.future_poll_ref = Navigator.push(
-            context,
+        self.future_poll_ref = Navigator.of(context).push(
             MaterialPageRoute(
                 builder=lambda ctx: _FutureResultPage(title="Poll Demo"),
                 settings=RouteSettings(name="/poll-demo"),
@@ -913,8 +912,7 @@ class _FutureDemoState(State[_FutureDemo]):
 
     def _push_then(self, context):
         self.future_then_count += 1
-        Navigator.push(
-            context,
+        Navigator.of(context).push(
             MaterialPageRoute(
                 builder=lambda ctx: _FutureResultPage(title=".then() Demo"),
                 settings=RouteSettings(name="/then-demo"),
@@ -997,17 +995,17 @@ class _FutureResultPageState(State[_FutureResultPage]):
                         SizedBox(height=24),
                         ElevatedButton(
                             child=Text('Pop with "apple"'),
-                            onPressed=lambda: Navigator.pop(context, "apple"),
+                            onPressed=lambda: Navigator.of(context).pop("apple"),
                         ),
                         SizedBox(height=12),
                         ElevatedButton(
                             child=Text('Pop with "banana"'),
-                            onPressed=lambda: Navigator.pop(context, "banana"),
+                            onPressed=lambda: Navigator.of(context).pop("banana"),
                         ),
                         SizedBox(height=12),
                         ElevatedButton(
                             child=Text("Pop with None"),
-                            onPressed=lambda: Navigator.pop(context),
+                            onPressed=lambda: Navigator.of(context).pop(),
                         ),
                     ],
                 ),
@@ -1165,8 +1163,7 @@ class AsyncPage(StatelessWidget):
                     code=CodeArea(
                         language="python",
                         code=(
-                            "future = Navigator.push(\n"
-                            "    context,\n"
+                            "future = Navigator.of(context).push(\n"
                             "    MaterialPageRoute(\n"
                             "        builder=lambda ctx: ResultPage(),\n"
                             "    ),\n"

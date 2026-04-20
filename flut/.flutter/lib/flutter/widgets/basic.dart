@@ -417,6 +417,22 @@ class FlutAspectRatio {
   }
 }
 
+class FlutIntrinsicWidth {
+  FlutIntrinsicWidth._();
+
+  static IntrinsicWidth? flutDecode(
+    FlutRuntime runtime,
+    Map<String, dynamic> data,
+  ) {
+    return IntrinsicWidth(
+      key: runtime.decodeKey(data),
+      stepWidth: runtime.unpackOptionalField<double>(data, 'stepWidth'),
+      stepHeight: runtime.unpackOptionalField<double>(data, 'stepHeight'),
+      child: runtime.unpackOptionalField<Widget>(data, 'child'),
+    );
+  }
+}
+
 class FlutFittedBox {
   FlutFittedBox._();
 

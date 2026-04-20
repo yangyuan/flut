@@ -300,8 +300,15 @@ class FlutRuntime {
     _staticRegistry[name] = handler;
   }
 
+  late final Finalizer<int> _callableFinalizer = Finalizer<int>((cid) {
+    try {
+      flutNative.invokeNativeAsync('release_callable', {'cid': cid});
+    } catch (_) {}
+  });
+
   void trackCallable(Function closure, int cid) {
     _callableRegistry[closure] = cid;
+    _callableFinalizer.attach(closure, cid);
   }
 
   dynamic adaptCallableByType(FlutCallableRef callable) {
@@ -412,6 +419,11 @@ class FlutRuntime {
             callable.invoke<Widget>(args: [context])!;
         trackCallable(closure, callable.cid);
         return closure;
+      case 'RoutePredicate':
+        bool closureRoutePredicate(Route<dynamic> route) =>
+            callable.invoke<bool>(args: [route])!;
+        trackCallable(closureRoutePredicate, callable.cid);
+        return closureRoutePredicate;
       case 'NullableIndexedWidgetBuilder':
         Widget? closureIndexed(BuildContext context, int index) =>
             callable.invoke<Widget>(args: [context, index]);
@@ -1304,6 +1316,8 @@ class FlutRuntime {
         return FlutChip.flutDecode(this, data);
       case 'AspectRatio':
         return FlutAspectRatio.flutDecode(this, data);
+      case 'IntrinsicWidth':
+        return FlutIntrinsicWidth.flutDecode(this, data);
       case 'FittedBox':
         return FlutFittedBox.flutDecode(this, data);
       case 'ConstrainedBox':
@@ -1501,6 +1515,7 @@ class FlutRuntime {
       case 'GlobalKey':
       case 'RenderBox':
       case 'FormState':
+      case 'NavigatorState':
       case 'OverlayState':
       case 'OverlayEntry':
       case 'ValueNotifier':
@@ -1794,6 +1809,18 @@ class FlutRuntime {
       final wrapper = wrapObject<FlutFormState>(
         value,
         (oid) => FlutFormState.createFromObject(
+          runtime: this,
+          oid: oid,
+          target: value,
+        ),
+      );
+      return wrapper.flutEncode();
+    }
+
+    if (value is NavigatorState) {
+      final wrapper = wrapObject<FlutNavigatorState>(
+        value,
+        (oid) => FlutNavigatorState.createFromObject(
           runtime: this,
           oid: oid,
           target: value,

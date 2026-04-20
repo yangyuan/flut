@@ -210,13 +210,12 @@ class _DetailPageState(State[_DetailPage]):
                             children=[
                                 ElevatedButton(
                                     child=Text("Go Back"),
-                                    onPressed=lambda: Navigator.pop(context),
+                                    onPressed=lambda: Navigator.of(context).pop(),
                                 ),
                                 SizedBox(width=12),
                                 ElevatedButton(
                                     child=Text("Push Another"),
-                                    onPressed=lambda: Navigator.push(
-                                        context,
+                                    onPressed=lambda: Navigator.of(context).push(
                                         MaterialPageRoute(
                                             builder=lambda ctx: (
                                                 _DetailPage(
@@ -269,7 +268,7 @@ class _NestedPageState(State[_NestedPage]):
                 ),
             )
 
-        can_pop = Navigator.canPop(context)
+        can_pop = Navigator.of(context).canPop()
 
         return Scaffold(
             appBar=AppBar(title=Text("Nested Page")),
@@ -313,11 +312,11 @@ class _NestedPageState(State[_NestedPage]):
                             ),
                         ),
                         SizedBox(height=16),
-                        _info_row("Navigator.canPop(context)", str(can_pop)),
+                        _info_row("Navigator.of(context).canPop()", str(can_pop)),
                         SizedBox(height=24),
                         ElevatedButton(
                             child=Text("Pop Back"),
-                            onPressed=lambda: Navigator.pop(context),
+                            onPressed=lambda: Navigator.of(context).pop(),
                         ),
                     ],
                 ),
@@ -336,20 +335,18 @@ class _BasicNavigationDemoState(State[_BasicNavigationDemo]):
         self.push_count = 0
 
     def _push_detail(self, context):
-        Navigator.push(
-            context,
+        Navigator.of(context).push(
             MaterialPageRoute(
                 builder=lambda ctx: _DetailPage(
                     title="Detail Page",
-                    message="Pushed via Navigator.push!",
+                    message="Pushed via Navigator.of(context).push!",
                 ),
             ),
         )
 
     def _push_with_settings(self, context):
         self.push_count += 1
-        Navigator.push(
-            context,
+        Navigator.of(context).push(
             MaterialPageRoute(
                 builder=lambda ctx: _DetailPage(
                     title="Page with Settings",
@@ -425,8 +422,7 @@ class _FullscreenDialogDemo(StatelessWidget):
     def build(self, context):
         return ElevatedButton(
             child=Text("Push Fullscreen Dialog"),
-            onPressed=lambda: Navigator.push(
-                context,
+            onPressed=lambda: Navigator.of(context).push(
                 MaterialPageRoute(
                     builder=lambda ctx: _DetailPage(
                         title="Fullscreen Dialog",
@@ -444,8 +440,7 @@ class _PushReplacementDemo(StatelessWidget):
     def build(self, context):
         return ElevatedButton(
             child=Text("Push Replacement"),
-            onPressed=lambda: Navigator.pushReplacement(
-                context,
+            onPressed=lambda: Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                     builder=lambda ctx: _DetailPage(
                         title="Replacement Page",
@@ -1407,8 +1402,7 @@ class NavigationPage(StatelessWidget):
                     code=CodeArea(
                         language="python",
                         code=(
-                            "Navigator.push(\n"
-                            "    context,\n"
+                            "Navigator.of(context).push(\n"
                             "    MaterialPageRoute(\n"
                             "        builder=lambda ctx: DetailPage(),\n"
                             "        settings=RouteSettings(name='/detail'),\n"
@@ -1479,8 +1473,7 @@ class NavigationPage(StatelessWidget):
                     code=CodeArea(
                         language="python",
                         code=(
-                            "Navigator.push(\n"
-                            "    context,\n"
+                            "Navigator.of(context).push(\n"
                             "    MaterialPageRoute(\n"
                             "        builder=lambda ctx: MyPage(),\n"
                             "        fullscreenDialog=True,\n"
@@ -1500,8 +1493,7 @@ class NavigationPage(StatelessWidget):
                     code=CodeArea(
                         language="python",
                         code=(
-                            "Navigator.pushReplacement(\n"
-                            "    context,\n"
+                            "Navigator.of(context).pushReplacement(\n"
                             "    MaterialPageRoute(\n"
                             "        builder=lambda ctx: MyPage(),\n"
                             "        settings=RouteSettings(name='/replacement'),\n"
@@ -1535,19 +1527,21 @@ class NavigationPage(StatelessWidget):
                 ),
                 SplitViewTile(
                     title="Navigator API",
-                    description="Core Navigator static methods for imperative route management.",
+                    description="Use Navigator.of(context) to access the NavigatorState for imperative route management.",
                     instruction="Use these methods to push, pop, and query the navigation stack.",
                     code=CodeArea(
                         language="python",
                         code=(
-                            "Navigator.push(context, MaterialPageRoute(\n"
+                            "navigator = Navigator.of(context)\n"
+                            "\n"
+                            "navigator.push(MaterialPageRoute(\n"
                             "    builder=lambda ctx: MyPage(),\n"
                             "    settings=RouteSettings(name='/detail'),\n"
                             "))\n"
                             "\n"
-                            "Navigator.pop(context)\n"
-                            "Navigator.canPop(context)\n"
-                            "Navigator.pushReplacement(context, route)"
+                            "navigator.pop()\n"
+                            "navigator.canPop()\n"
+                            "navigator.pushReplacement(route)"
                         ),
                     ),
                 ),

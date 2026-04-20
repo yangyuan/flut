@@ -71,12 +71,12 @@ class _AlertDialogDemoState(State[_AlertDialogDemo]):
                             actions=[
                                 TextButton(
                                     child=Text("Cancel"),
-                                    onPressed=lambda: Navigator.pop(ctx),
+                                    onPressed=lambda: Navigator.of(ctx).pop(),
                                 ),
                                 TextButton(
                                     child=Text("Discard"),
                                     onPressed=lambda: (
-                                        Navigator.pop(ctx),
+                                        Navigator.of(ctx).pop(),
                                         self.setState(
                                             lambda: setattr(
                                                 self,
@@ -107,7 +107,7 @@ class _SimpleDialogDemoState(State[_SimpleDialogDemo]):
 
     def _show_simple(self, context):
         def on_option(value):
-            Navigator.pop(context)
+            Navigator.of(context).pop()
             self.setState(lambda: setattr(self, "selected", f"Selected: {value}"))
 
         showDialog(
@@ -194,7 +194,7 @@ class _DialogWidgetDemoState(State[_DialogWidgetDemo]):
                                         SizedBox(height=24),
                                         ElevatedButton(
                                             child=Text("OK"),
-                                            onPressed=lambda: Navigator.pop(ctx),
+                                            onPressed=lambda: Navigator.of(ctx).pop(),
                                         ),
                                     ],
                                 ),
@@ -239,7 +239,7 @@ class _BarrierDismissDemoState(State[_BarrierDismissDemo]):
                                 TextButton(
                                     child=Text("Accept"),
                                     onPressed=lambda: (
-                                        Navigator.pop(ctx),
+                                        Navigator.of(ctx).pop(),
                                         self.setState(
                                             lambda: setattr(
                                                 self,
@@ -288,11 +288,11 @@ class _AlertDialogIconDemoState(State[_AlertDialogIconDemo]):
                             actions=[
                                 TextButton(
                                     child=Text("Cancel"),
-                                    onPressed=lambda: Navigator.pop(ctx),
+                                    onPressed=lambda: Navigator.of(ctx).pop(),
                                 ),
                                 TextButton(
                                     child=Text("Proceed"),
-                                    onPressed=lambda: Navigator.pop(ctx),
+                                    onPressed=lambda: Navigator.of(ctx).pop(),
                                 ),
                             ],
                         ),
@@ -575,7 +575,7 @@ class _AlertDialogVariantsDemoState(State[_AlertDialogVariantsDemo]):
         self.setState(lambda: None)
 
     def _close_with(self, dialog_context, label):
-        Navigator.pop(dialog_context)
+        Navigator.of(dialog_context).pop()
         self.setState(lambda: setattr(self, "result_text", f"{self.variant}: {label}"))
 
     def _build_dialog(self, dialog_context):
@@ -827,7 +827,7 @@ class DialogPage(StatelessWidget):
                             "        actions=[\n"
                             "            TextButton(\n"
                             "                child=Text('Accept'),\n"
-                            "                onPressed=lambda: Navigator.pop(ctx),\n"
+                            "                onPressed=lambda: Navigator.of(ctx).pop(),\n"
                             "            ),\n"
                             "        ],\n"
                             "    ),\n"

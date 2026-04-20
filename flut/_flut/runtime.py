@@ -42,6 +42,10 @@ def flut_unpack(data) -> Optional[object]:
             from flut.flutter.widgets.overlay import OverlayState
 
             return OverlayState._flut_unpack(data)
+        case "NavigatorState":
+            from flut.flutter.widgets.navigator import NavigatorState
+
+            return NavigatorState._flut_unpack(data)
         case "ValueNotifier":
             from flut.flutter.foundation.change_notifier import ValueNotifier
 

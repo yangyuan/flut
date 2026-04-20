@@ -379,6 +379,16 @@ class FlutterEngine:
                     self.binding_registry.pop(pid, None)
                 return json.dumps({"status": "ok"}).encode("utf-8")
 
+            elif req_type == "release_callable":
+                cid = data.get("cid")
+                if cid is not None:
+                    entry = self.binding_registry.get(cid)
+                    if isinstance(entry, FlutCallable):
+                        entry.dispose()
+                    else:
+                        self.binding_registry.pop(cid, None)
+                return json.dumps({"status": "ok"}).encode("utf-8")
+
             return json.dumps(
                 {"_flut_error": "Unknown request type", "type": req_type}
             ).encode("utf-8")
@@ -672,6 +682,20 @@ def call_dart_static(class_name: str, method_name: str, *args, **kwargs):
             return decoded if decoded is not None else ret
         return ret
     return None
+
+
+def pack_static_callable(callback, callable_type: str) -> dict:
+    """Wire-pack a callable to be passed as a Dart static method argument.
+
+    Lifetime is driven by Dart's GC: the entry stays in the engine's
+    binding_registry until Dart's adapted closure is reclaimed, at which
+    point Dart sends ``release_callable`` and the entry is dropped.
+    Safe to call without an active build scope.
+    """
+    engine = get_engine()
+    if engine is None:
+        raise RuntimeError("Engine is not initialized.")
+    return FlutCallable(callback, callable_type=callable_type)._flut_pack()
 
 
 class FlutEnumObject(FlutObject):
@@ -1110,7 +1134,7 @@ class Future(FlutRealtimeObject):
     def __init__(self):
         raise TypeError(
             "Future cannot be constructed directly. "
-            "It is returned by APIs like Navigator.push()."
+            "It is returned by APIs like Navigator.of(context).push()."
         )
 
     @classmethod
