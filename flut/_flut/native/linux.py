@@ -71,6 +71,15 @@ if not _glib_lib:
 else:
     glib = CDLL(_glib_lib)
 
+_gdk_lib = ctypes.util.find_library("gdk-3")
+if not _gdk_lib:
+    try:
+        gdk = CDLL("libgdk-3.so.0")
+    except OSError:
+        gdk = None
+else:
+    gdk = CDLL(_gdk_lib)
+
 try:
     libc = CDLL("libc.so.6")
 except OSError:
@@ -267,8 +276,12 @@ class FlutLinuxNative(FlutNative):
 
         self.libflutter = CDLL(PATH_FLUTTER_LIB)
 
+    def _ensure_gtk_init(self):
+        if getattr(self, "_gtk_inited", False):
+            return
         if gtk:
             gtk.gtk_init(None, None)
+        self._gtk_inited = True
 
     def setup_call_dart(self, callback_addr):
         DART_CALL_CALLBACK = CFUNCTYPE(c_void_p, c_char_p)
@@ -302,6 +315,30 @@ class FlutLinuxNative(FlutNative):
 
         return notify_dart_impl
 
+    def _apply_app_id(self, app_id, title):
+        final_id = str(app_id) if app_id else "flut"
+        try:
+            if glib is not None:
+                glib.g_set_prgname.argtypes = [c_char_p]
+                glib.g_set_prgname.restype = None
+                glib.g_set_prgname(final_id.encode("utf-8"))
+                try:
+                    glib.g_set_application_name.argtypes = [c_char_p]
+                    glib.g_set_application_name.restype = None
+                    display_name = title if title else final_id
+                    glib.g_set_application_name(display_name.encode("utf-8"))
+                except AttributeError:
+                    pass
+        except Exception as exc:
+            logger.warning("Failed to set glib program name: %s", exc)
+        try:
+            if gdk is not None:
+                gdk.gdk_set_program_class.argtypes = [c_char_p]
+                gdk.gdk_set_program_class.restype = None
+                gdk.gdk_set_program_class(final_id.encode("utf-8"))
+        except Exception as exc:
+            logger.warning("Failed to set gdk program class: %s", exc)
+
     def _setup_flutter(
         self,
         method_call_handler,
@@ -310,6 +347,7 @@ class FlutLinuxNative(FlutNative):
         height: int,
         title: str,
         icon_path: str | None = None,
+        app_id: str | None = None,
         async_mode: bool = False,
         show_window: bool = True,
     ):
@@ -318,6 +356,9 @@ class FlutLinuxNative(FlutNative):
 
         if not os.path.exists(flutter_asset_path):
             raise FileNotFoundError(f"Assets path not found: {flutter_asset_path}")
+
+        self._apply_app_id(app_id, title)
+        self._ensure_gtk_init()
 
         mode_str = " (async mode)" if async_mode else ""
 
@@ -399,6 +440,20 @@ class FlutLinuxNative(FlutNative):
         gtk.gtk_window_set_title.argtypes = [c_void_p, c_char_p]
         gtk.gtk_window_set_title(window, title.encode("utf-8"))
 
+        wm_id = (str(app_id) if app_id else "flut").encode("utf-8")
+        try:
+            gtk.gtk_window_set_wmclass.argtypes = [c_void_p, c_char_p, c_char_p]
+            gtk.gtk_window_set_wmclass.restype = None
+            gtk.gtk_window_set_wmclass(window, wm_id, wm_id)
+        except (AttributeError, OSError):
+            pass
+        try:
+            gtk.gtk_window_set_role.argtypes = [c_void_p, c_char_p]
+            gtk.gtk_window_set_role.restype = None
+            gtk.gtk_window_set_role(window, wm_id)
+        except (AttributeError, OSError):
+            pass
+
         gtk.gtk_window_set_default_icon_from_file.argtypes = [
             c_char_p,
             POINTER(c_void_p),
@@ -475,6 +530,7 @@ class FlutLinuxNative(FlutNative):
         height: int,
         title: str,
         icon_path: str | None = None,
+        app_id: str | None = None,
         on_initialized=None,
         on_close=None,
     ):
@@ -487,6 +543,7 @@ class FlutLinuxNative(FlutNative):
             height,
             title,
             icon_path=icon_path,
+            app_id=app_id,
             async_mode=False,
             show_window=False,
         )
@@ -554,6 +611,7 @@ class FlutLinuxNative(FlutNative):
         height: int,
         title: str,
         icon_path: str | None = None,
+        app_id: str | None = None,
         on_initialized=None,
         on_close=None,
         loop: asyncio.AbstractEventLoop = None,
@@ -570,6 +628,7 @@ class FlutLinuxNative(FlutNative):
             height,
             title,
             icon_path=icon_path,
+            app_id=app_id,
             async_mode=True,
             show_window=False,
         )

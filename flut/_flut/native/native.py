@@ -47,6 +47,7 @@ class FlutNative(ABC):
         height: int,
         title: str,
         icon_path: str | None = None,
+        app_id: str | None = None,
         on_initialized=None,
         on_close=None,
     ):
@@ -61,6 +62,7 @@ class FlutNative(ABC):
         height: int,
         title: str,
         icon_path: str | None = None,
+        app_id: str | None = None,
         on_initialized=None,
         on_close=None,
         loop=None,
