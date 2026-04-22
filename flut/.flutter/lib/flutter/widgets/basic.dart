@@ -26,6 +26,21 @@ class FlutPadding {
   }
 }
 
+class FlutIgnorePointer {
+  FlutIgnorePointer._();
+
+  static IgnorePointer? flutDecode(
+    FlutRuntime runtime,
+    Map<String, dynamic> data,
+  ) {
+    return IgnorePointer(
+      key: runtime.decodeKey(data),
+      ignoring: runtime.unpackRequiredField<bool>(data, 'ignoring'),
+      child: runtime.unpackOptionalField<Widget>(data, 'child'),
+    );
+  }
+}
+
 class FlutAlign {
   FlutAlign._();
 

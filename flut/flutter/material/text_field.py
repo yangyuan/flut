@@ -36,6 +36,8 @@ class TextField(Widget):
         cursorColor=None,
         dragStartBehavior: DragStartBehavior = DragStartBehavior.start,
         onTap=None,
+        onTapOutside=None,
+        onTapUpOutside=None,
         mouseCursor=None,
         clipBehavior: Clip = Clip.hardEdge,
     ):
@@ -62,6 +64,8 @@ class TextField(Widget):
         self.cursorColor = cursorColor
         self.dragStartBehavior = dragStartBehavior
         self.onTap = onTap
+        self.onTapOutside = onTapOutside
+        self.onTapUpOutside = onTapUpOutside
         self.mouseCursor = mouseCursor
         self.clipBehavior = clipBehavior
 
@@ -113,6 +117,14 @@ class TextField(Widget):
         if self.onTap is not None:
             result["onTap"] = self._register_action(
                 self.onTap, "GestureTapCallback"
+            )._flut_pack()
+        if self.onTapOutside is not None:
+            result["onTapOutside"] = self._register_action(
+                self.onTapOutside, "TapRegionCallback"
+            )._flut_pack()
+        if self.onTapUpOutside is not None:
+            result["onTapUpOutside"] = self._register_action(
+                self.onTapUpOutside, "TapRegionUpCallback"
             )._flut_pack()
         if self.mouseCursor is not None:
             result["mouseCursor"] = _flut_pack_value(self.mouseCursor)

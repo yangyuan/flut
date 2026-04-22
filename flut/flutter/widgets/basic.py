@@ -402,6 +402,29 @@ class Padding(Widget):
         return result
 
 
+class IgnorePointer(Widget):
+    _flut_type = "IgnorePointer"
+
+    def __init__(
+        self,
+        *,
+        key=None,
+        ignoring: bool = True,
+        child: Optional[Widget] = None,
+    ):
+        super().__init__(key=key)
+        self.ignoring = ignoring
+        self.child = child
+
+    @override
+    def _flut_pack(self) -> dict:
+        result = self._flut_base_props()
+        result["ignoring"] = _flut_pack_value(self.ignoring)
+        if self.child is not None:
+            result["child"] = _flut_pack_value(self.child)
+        return result
+
+
 class Align(Widget):
     _flut_type = "Align"
 

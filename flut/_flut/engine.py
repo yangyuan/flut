@@ -3,6 +3,7 @@ import os
 import sys
 import json
 import asyncio
+import contextlib
 import weakref
 from typing import override
 
@@ -92,6 +93,27 @@ class BuildScope:
             engine.binding_registry.pop(cid, None)
         self._flut_registered_actions = []
         self._kept_alive = []
+
+
+@contextlib.contextmanager
+def transient_build_scope():
+    """Pack widgets outside of a normal widget build.
+
+    Used by top-level functions like ``showMenu`` that must produce wire
+    payloads (including child widgets that register callbacks) before any
+    Flutter build phase has begun. Registered callables live until Dart's
+    GC releases them via ``release_callable``.
+    """
+    engine = get_engine()
+    if engine is None:
+        raise RuntimeError("Engine is not initialized.")
+    scope = BuildScope()
+    previous = engine._current_build_scope
+    engine._current_build_scope = scope
+    try:
+        yield
+    finally:
+        engine._current_build_scope = previous
 
 
 class FlutterEngine:

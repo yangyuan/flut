@@ -47,6 +47,8 @@ import 'package:flut/flutter/material/button_style_button.dart';
 import 'package:flut/flutter/material/ink_well.dart';
 import 'package:flut/flutter/material/progress_indicator.dart';
 import 'package:flut/flutter/material/scaffold.dart';
+import 'package:flut/flutter/material/scrollbar.dart';
+import 'package:flut/flutter/widgets/scrollbar.dart';
 import 'package:flut/flutter/material/text_field.dart';
 import 'package:flut/flutter/material/theme_data.dart';
 import 'package:flut/flutter/foundation/platform.dart';
@@ -413,6 +415,14 @@ class FlutRuntime {
         void closure(PointerExitEvent event) => callable.invoke(args: [event]);
         trackCallable(closure, callable.cid);
         return closure;
+      case 'TapRegionCallback':
+        void closure(PointerDownEvent event) => callable.invoke(args: [event]);
+        trackCallable(closure, callable.cid);
+        return closure;
+      case 'TapRegionUpCallback':
+        void closure(PointerUpEvent event) => callable.invoke(args: [event]);
+        trackCallable(closure, callable.cid);
+        return closure;
       case 'FocusOnKeyEventCallback':
         KeyEventResult closure(FocusNode node, KeyEvent event) =>
             callable.invoke<KeyEventResult>(args: [event])!;
@@ -632,6 +642,7 @@ class FlutRuntime {
     FlutExpansibleController.registerStatics(this);
     FlutClipboard.registerStatics(this);
     FlutShowDialog.registerStatics(this);
+    FlutShowMenu.registerStatics(this);
   }
 
   void triggerAction(int actionId, {Map<String, dynamic>? payload}) {
@@ -1053,6 +1064,8 @@ class FlutRuntime {
         return const FlutFlexFit().flutDecode(data);
       case 'StackFit':
         return const FlutStackFit().flutDecode(data);
+      case 'ScrollbarOrientation':
+        return const FlutScrollbarOrientation().flutDecode(data);
       case 'Axis':
         return const FlutAxis().flutDecode(data);
       case 'TextAlign':
@@ -1103,6 +1116,8 @@ class FlutRuntime {
         return FlutOffset.flutDecode(this, data);
       case 'Rect':
         return FlutRect.flutDecode(this, data);
+      case 'RelativeRect':
+        return FlutRelativeRect.flutDecode(this, data);
       case 'RRect':
         return FlutRRect.flutDecode(this, data);
       case 'ViewPadding':
@@ -1150,6 +1165,8 @@ class FlutRuntime {
         return FlutCenter.flutDecode(this, data);
       case 'Padding':
         return FlutPadding.flutDecode(this, data);
+      case 'IgnorePointer':
+        return FlutIgnorePointer.flutDecode(this, data);
       case 'Align':
         return FlutAlign.flutDecode(this, data);
       case 'Opacity':
@@ -1228,6 +1245,8 @@ class FlutRuntime {
         return FlutMaterialApp.flutDecode(this, data);
       case 'Scaffold':
         return FlutScaffold.flutDecode(this, data);
+      case 'Scrollbar':
+        return FlutScrollbar.flutDecode(this, data);
       case 'Card':
         return FlutCard.flutDecode(this, data);
       case 'Divider':
@@ -1599,6 +1618,7 @@ class FlutRuntime {
     if (value is Offset) return FlutOffset(value).flutEncode();
     if (value is Rect) return FlutRect(value).flutEncode();
     if (value is RRect) return FlutRRect(value).flutEncode();
+    if (value is RelativeRect) return FlutRelativeRect(value).flutEncode();
     if (value is ViewPadding) return FlutViewPadding(value).flutEncode();
     if (value is EdgeInsets) return FlutEdgeInsets(value).flutEncode();
     if (value is EdgeInsetsDirectional) {
@@ -1707,6 +1727,12 @@ class FlutRuntime {
     }
     if (value is PointerExitEvent) {
       return FlutPointerExitEvent(value).flutEncode();
+    }
+    if (value is PointerDownEvent) {
+      return FlutPointerDownEvent(value).flutEncode();
+    }
+    if (value is PointerUpEvent) {
+      return FlutPointerUpEvent(value).flutEncode();
     }
     if (value is PointerEvent) return FlutPointerEvent(value).flutEncode();
     if (value is KeyDownEvent) return FlutKeyDownEvent(value).flutEncode();

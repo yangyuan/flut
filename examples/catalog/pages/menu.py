@@ -32,7 +32,9 @@ from flut.flutter.material import (
     DropdownMenuCloseBehavior,
     DropdownButton,
     DropdownMenuItem,
+    showMenu,
 )
+from flut.flutter.rendering.stack import RelativeRect
 from flut.flutter.widgets.raw_menu_anchor import MenuController
 from flut.flutter.services.keyboard_key import LogicalKeyboardKey
 from flut.flutter.painting import (
@@ -1129,6 +1131,63 @@ class _DropdownBarrierDemoState(State[_DropdownBarrierDemo]):
         )
 
 
+class _ShowMenuDemo(StatefulWidget):
+    def createState(self):
+        return _ShowMenuDemoState()
+
+
+class _ShowMenuDemoState(State[_ShowMenuDemo]):
+    def initState(self):
+        self.selection = "None"
+
+    def _select(self, value):
+        self.selection = value
+        self.setState(lambda: None)
+
+    def _open_menu(self, context):
+        showMenu(
+            context=context,
+            position=RelativeRect.fromLTRB(120.0, 120.0, 0.0, 0.0),
+            items=[
+                PopupMenuItem(
+                    value="cut",
+                    onTap=lambda: self._select("cut"),
+                    child=Text("Cut"),
+                ),
+                PopupMenuItem(
+                    value="copy",
+                    onTap=lambda: self._select("copy"),
+                    child=Text("Copy"),
+                ),
+                PopupMenuItem(
+                    value="paste",
+                    onTap=lambda: self._select("paste"),
+                    child=Text("Paste"),
+                ),
+            ],
+            elevation=8.0,
+            clipBehavior=Clip.antiAlias,
+        )
+
+    def build(self, context):
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                ElevatedButton(
+                    onPressed=lambda: self._open_menu(context),
+                    child=Text(
+                        "showMenu(...) at RelativeRect.fromLTRB(120, 120, 0, 0)"
+                    ),
+                ),
+                SizedBox(height=12),
+                Text(
+                    f"Selected: {self.selection}",
+                    style=TextStyle(fontSize=13, color=Colors.grey),
+                ),
+            ],
+        )
+
+
 class MenuPage(StatelessWidget):
     def build(self, context):
         return CatalogPage(
@@ -1410,6 +1469,37 @@ class MenuPage(StatelessWidget):
                             "    onChanged=on_changed,\n"
                             "    items=[...],\n"
                             "    barrierDismissible=False,\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="showMenu & RelativeRect",
+                    description=(
+                        "showMenu(...) is a top-level function that displays a popup menu "
+                        "anchored at a RelativeRect position relative to the Navigator. "
+                        "RelativeRect.fromLTRB describes the inset of a rectangle from "
+                        "the four edges of its container."
+                    ),
+                    instruction="Click the button to call showMenu at a fixed RelativeRect position.",
+                    visible=_ShowMenuDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "showMenu(\n"
+                            "    context=context,\n"
+                            "    position=RelativeRect.fromLTRB(\n"
+                            "        120.0, 120.0, 0.0, 0.0,\n"
+                            "    ),\n"
+                            "    items=[\n"
+                            "        PopupMenuItem(\n"
+                            "            value='cut',\n"
+                            "            onTap=lambda: select('cut'),\n"
+                            "            child=Text('Cut'),\n"
+                            "        ),\n"
+                            "    ],\n"
+                            "    elevation=8.0,\n"
+                            "    clipBehavior=Clip.antiAlias,\n"
                             ")"
                         ),
                     ),

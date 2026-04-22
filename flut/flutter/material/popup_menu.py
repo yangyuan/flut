@@ -3,12 +3,16 @@ from typing import Callable, Generic, Optional, TypeVar, override
 from flut._flut.engine import (
     FlutRealtimeObject,
     _flut_pack_value,
+    call_dart_static,
+    transient_build_scope,
     wrap_popup_menu_item_builder,
 )
 from flut.dart.ui import Clip, Color, Offset
+from flut.flutter.animation.animation_style import AnimationStyle
 from flut.flutter.painting.edge_insets import EdgeInsets
 from flut.flutter.painting.text_style import TextStyle
 from flut.flutter.rendering.box import BoxConstraints
+from flut.flutter.rendering.stack import RelativeRect
 from flut.flutter.widgets.framework import Widget
 
 T = TypeVar("T")
@@ -203,3 +207,60 @@ class PopupMenuButton(Widget, Generic[T]):
         if self.child is not None:
             result["child"] = _flut_pack_value(self.child)
         return result
+
+
+def showMenu(
+    *,
+    context,
+    position: Optional[RelativeRect] = None,
+    items,
+    initialValue=None,
+    elevation: Optional[float] = None,
+    shadowColor: Optional[Color] = None,
+    surfaceTintColor: Optional[Color] = None,
+    semanticLabel: Optional[str] = None,
+    shape=None,
+    menuPadding=None,
+    color: Optional[Color] = None,
+    useRootNavigator: bool = False,
+    constraints: Optional[BoxConstraints] = None,
+    clipBehavior: Clip = Clip.none,
+    routeSettings=None,
+    popUpAnimationStyle: Optional[AnimationStyle] = None,
+    requestFocus: Optional[bool] = None,
+):
+    with transient_build_scope():
+        packed_items = [item._flut_pack() for item in items]
+
+    kwargs = {
+        "items": packed_items,
+        "useRootNavigator": useRootNavigator,
+        "clipBehavior": clipBehavior._flut_pack(),
+    }
+    if position is not None:
+        kwargs["position"] = position._flut_pack()
+    if initialValue is not None:
+        kwargs["initialValue"] = _flut_pack_value(initialValue)
+    if elevation is not None:
+        kwargs["elevation"] = elevation
+    if shadowColor is not None:
+        kwargs["shadowColor"] = shadowColor._flut_pack()
+    if surfaceTintColor is not None:
+        kwargs["surfaceTintColor"] = surfaceTintColor._flut_pack()
+    if semanticLabel is not None:
+        kwargs["semanticLabel"] = semanticLabel
+    if shape is not None:
+        kwargs["shape"] = shape._flut_pack()
+    if menuPadding is not None:
+        kwargs["menuPadding"] = menuPadding._flut_pack()
+    if color is not None:
+        kwargs["color"] = color._flut_pack()
+    if constraints is not None:
+        kwargs["constraints"] = constraints._flut_pack()
+    if routeSettings is not None:
+        kwargs["routeSettings"] = routeSettings._flut_pack()
+    if popUpAnimationStyle is not None:
+        kwargs["popUpAnimationStyle"] = popUpAnimationStyle._flut_pack()
+    if requestFocus is not None:
+        kwargs["requestFocus"] = requestFocus
+    return call_dart_static("showMenu", "showMenu", context._flut_pack(), **kwargs)

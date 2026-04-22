@@ -1041,6 +1041,48 @@ class _DropdownSelectOnlyDemoState(State[_DropdownSelectOnlyDemo]):
         )
 
 
+class _TapOutsideDemo(StatefulWidget):
+    def createState(self):
+        return _TapOutsideDemoState()
+
+
+class _TapOutsideDemoState(State[_TapOutsideDemo]):
+    def initState(self):
+        self.log_lines = []
+
+    def _add(self, line):
+        self.log_lines = (self.log_lines + [line])[-4:]
+        self.setState(lambda: None)
+
+    def build(self, context):
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                Container(
+                    width=400.0,
+                    child=TextField(
+                        decoration=InputDecoration(
+                            hintText="Focus me, then tap outside...",
+                        ),
+                        onTapOutside=lambda event: self._add(
+                            f"down @ ({event.position.dx:.0f}, {event.position.dy:.0f})"
+                        ),
+                        onTapUpOutside=lambda event: self._add(
+                            f"up   @ ({event.position.dx:.0f}, {event.position.dy:.0f})"
+                        ),
+                    ),
+                ),
+                SizedBox(height=12),
+                *[
+                    Text(
+                        line, style=TextStyle(fontSize=13, fontFamily=CODE_FONT_FAMILY)
+                    )
+                    for line in self.log_lines
+                ],
+            ],
+        )
+
+
 class FormPage(StatelessWidget):
     def build(self, context):
         return CatalogPage(
@@ -1145,6 +1187,27 @@ class FormPage(StatelessWidget):
                             "TextFormField(\n"
                             "    validator=validate,\n"
                             "    autovalidateMode=AutovalidateMode.onUserInteraction,\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="TextField onTapOutside / onTapUpOutside",
+                    description=(
+                        "TextField fires onTapOutside when a pointer goes down outside "
+                        "the field, and onTapUpOutside when it lifts back up outside. "
+                        "Useful for custom dismiss/blur behavior."
+                    ),
+                    instruction="Focus the field, then click anywhere outside it to see both callbacks fire.",
+                    visible=_TapOutsideDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "TextField(\n"
+                            "    onTapOutside=lambda event: log('down @ '\n"
+                            "        + str(event.position)),\n"
+                            "    onTapUpOutside=lambda event: log('up @ '\n"
+                            "        + str(event.position)),\n"
                             ")"
                         ),
                     ),

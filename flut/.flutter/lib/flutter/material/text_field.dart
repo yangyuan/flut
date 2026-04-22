@@ -45,6 +45,8 @@ class FlutTextField {
         'dragStartBehavior',
       ),
       onTap: runtime.unpackOptionalCallback(data, 'onTap'),
+      onTapOutside: runtime.unpackOptionalCallback(data, 'onTapOutside'),
+      onTapUpOutside: runtime.unpackOptionalCallback(data, 'onTapUpOutside'),
       mouseCursor: runtime.unpackOptionalField<MouseCursor>(
         data,
         'mouseCursor',

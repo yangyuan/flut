@@ -66,6 +66,10 @@ def flut_unpack(data) -> Optional[object]:
             from flut.dart.ui import Rect
 
             return Rect._flut_unpack(data)
+        case "RelativeRect":
+            from flut.flutter.rendering.stack import RelativeRect
+
+            return RelativeRect._flut_unpack(data)
         case "Radius":
             from flut.dart.ui import Radius
 
@@ -146,6 +150,14 @@ def flut_unpack(data) -> Optional[object]:
             from flut.flutter.gestures.events import PointerExitEvent
 
             return PointerExitEvent._flut_unpack(data)
+        case "PointerDownEvent":
+            from flut.flutter.gestures.events import PointerDownEvent
+
+            return PointerDownEvent._flut_unpack(data)
+        case "PointerUpEvent":
+            from flut.flutter.gestures.events import PointerUpEvent
+
+            return PointerUpEvent._flut_unpack(data)
         case "Velocity":
             from flut.flutter.gestures.velocity_tracker import Velocity
 
