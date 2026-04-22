@@ -33,3 +33,12 @@ class FlutPointerExitEvent extends FlutPointerEvent {
   FlutPointerExitEvent(PointerExitEvent event)
     : super._(event, 'PointerExitEvent');
 }
+
+class FlutPointerDownEvent extends FlutPointerEvent {
+  FlutPointerDownEvent(PointerDownEvent event)
+    : super._(event, 'PointerDownEvent');
+}
+
+class FlutPointerUpEvent extends FlutPointerEvent {
+  FlutPointerUpEvent(PointerUpEvent event) : super._(event, 'PointerUpEvent');
+}

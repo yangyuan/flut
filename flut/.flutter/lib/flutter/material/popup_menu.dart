@@ -90,3 +90,54 @@ class FlutPopupMenuButton {
     );
   }
 }
+
+class FlutShowMenu {
+  FlutShowMenu._();
+
+  static void registerStatics(FlutRuntime runtime) {
+    runtime.registerStatic('showMenu.showMenu', _showMenu);
+  }
+
+  static dynamic _showMenu(
+    FlutRuntime runtime,
+    BuildContext context, {
+    RelativeRect? position,
+    required List<dynamic> items,
+    dynamic initialValue,
+    double? elevation,
+    Color? shadowColor,
+    Color? surfaceTintColor,
+    String? semanticLabel,
+    ShapeBorder? shape,
+    EdgeInsetsGeometry? menuPadding,
+    Color? color,
+    bool useRootNavigator = false,
+    BoxConstraints? constraints,
+    Clip clipBehavior = Clip.none,
+    RouteSettings? routeSettings,
+    AnimationStyle? popUpAnimationStyle,
+    bool? requestFocus,
+  }) {
+    return showMenu<dynamic>(
+      context: context,
+      position: position,
+      items: items
+          .map((item) => runtime.resolveArg(item) as PopupMenuEntry<dynamic>)
+          .toList(),
+      initialValue: initialValue,
+      elevation: elevation,
+      shadowColor: shadowColor,
+      surfaceTintColor: surfaceTintColor,
+      semanticLabel: semanticLabel,
+      shape: shape,
+      menuPadding: menuPadding,
+      color: color,
+      useRootNavigator: useRootNavigator,
+      constraints: constraints,
+      clipBehavior: clipBehavior,
+      routeSettings: routeSettings,
+      popUpAnimationStyle: popUpAnimationStyle,
+      requestFocus: requestFocus,
+    );
+  }
+}

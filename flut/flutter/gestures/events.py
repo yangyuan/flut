@@ -97,3 +97,43 @@ class PointerExitEvent(PointerEvent):
             pointer=_flut_unpack_required_field(data, "pointer"),
             device=_flut_unpack_required_field(data, "device"),
         )
+
+
+class PointerDownEvent(PointerEvent):
+    _flut_type = "PointerDownEvent"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    @staticmethod
+    def _flut_unpack(data: dict) -> "PointerDownEvent":
+        return PointerDownEvent(
+            position=_flut_unpack_required_field(data, "position"),
+            localPosition=_flut_unpack_optional_field(data, "localPosition"),
+            delta=_flut_unpack_required_field(data, "delta"),
+            localDelta=_flut_unpack_optional_field(data, "localDelta"),
+            buttons=_flut_unpack_required_field(data, "buttons"),
+            down=_flut_unpack_required_field(data, "down"),
+            pointer=_flut_unpack_required_field(data, "pointer"),
+            device=_flut_unpack_required_field(data, "device"),
+        )
+
+
+class PointerUpEvent(PointerEvent):
+    _flut_type = "PointerUpEvent"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    @staticmethod
+    def _flut_unpack(data: dict) -> "PointerUpEvent":
+        return PointerUpEvent(
+            position=_flut_unpack_required_field(data, "position"),
+            localPosition=_flut_unpack_optional_field(data, "localPosition"),
+            delta=_flut_unpack_required_field(data, "delta"),
+            localDelta=_flut_unpack_optional_field(data, "localDelta"),
+            buttons=_flut_unpack_required_field(data, "buttons"),
+            down=_flut_unpack_required_field(data, "down"),
+            pointer=_flut_unpack_required_field(data, "pointer"),
+            device=_flut_unpack_required_field(data, "device"),
+        )

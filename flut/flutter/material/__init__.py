@@ -8,6 +8,7 @@ from .elevated_button import ElevatedButton
 from .floating_action_button import FloatingActionButton
 from .icons import Icons
 from .scaffold import Scaffold
+from .scrollbar import Scrollbar
 from .text_theme import TextTheme
 from .theme import Theme
 from .theme_data import ThemeData, VisualDensity, MaterialTapTargetSize
@@ -47,7 +48,7 @@ from .navigation_bar import (
 from .radio import Radio
 from .slider_theme import ShowValueIndicator
 from .chip import Chip, ChipAnimationStyle
-from .popup_menu import PopupMenuItem, PopupMenuButton
+from .popup_menu import PopupMenuItem, PopupMenuButton, showMenu
 from .popup_menu_theme import PopupMenuPosition
 from .expansion_tile import ExpansionTile
 from .text_form_field import TextFormField

@@ -32,6 +32,7 @@ from .basic import (
     SliverPadding,
     SliverToBoxAdapter,
     CustomPaint,
+    IgnorePointer,
 )
 from .spacer import Spacer
 from .text import Text
@@ -120,6 +121,7 @@ from .scroll_physics import (
     ScrollPhysics,
 )
 from .scroll_configuration import ScrollBehavior
+from .scrollbar import ScrollbarOrientation
 from .icon_theme_data import IconThemeData
 from .platform_menu_bar import (
     PlatformMenuBar,

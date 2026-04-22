@@ -30,10 +30,13 @@ from flut.flutter.widgets import (
     Stack,
     Positioned,
     Visibility,
+    IgnorePointer,
+    ScrollController,
+    ScrollbarOrientation,
 )
+from flut.flutter.material import Colors, ElevatedButton, Scrollbar
 from flut.flutter.rendering import CrossAxisAlignment, MainAxisAlignment
 from flut.flutter.foundation import ValueNotifier, ValueKey, UniqueKey
-from flut.flutter.material import Colors, ElevatedButton
 from flut.dart.ui import FontWeight
 from flut.flutter.painting import (
     EdgeInsets,
@@ -43,7 +46,7 @@ from flut.flutter.painting import (
     Border,
     Alignment,
 )
-from flut.dart.ui import Offset, Clip
+from flut.dart.ui import Offset, Clip, Radius
 from flut.dart import Matrix4
 from flut.flutter.widgets import InteractiveViewer, PanAxis
 from flut.flutter.widgets.interactive_viewer import TransformationController
@@ -1909,6 +1912,124 @@ def _key_demo_row(reversed_order, use_value_key):
     return Row(children=children)
 
 
+class _IgnorePointerDemo(StatefulWidget):
+    def createState(self):
+        return _IgnorePointerDemoState()
+
+
+class _IgnorePointerDemoState(State[_IgnorePointerDemo]):
+    def initState(self):
+        self.ignored = True
+        self.tap_count = 0
+
+    def _on_tap(self):
+        self.tap_count = self.tap_count + 1
+        self.setState(lambda: None)
+
+    def _toggle(self):
+        self.ignored = not self.ignored
+        self.setState(lambda: None)
+
+    def build(self, context):
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                Row(
+                    children=[
+                        ElevatedButton(
+                            onPressed=self._toggle,
+                            child=Text(
+                                f"ignoring={self.ignored} (toggle)",
+                            ),
+                        ),
+                        SizedBox(width=12),
+                        Text(
+                            f"taps received: {self.tap_count}",
+                            style=TextStyle(fontSize=13),
+                        ),
+                    ],
+                ),
+                SizedBox(height=12),
+                IgnorePointer(
+                    ignoring=self.ignored,
+                    child=ElevatedButton(
+                        onPressed=self._on_tap,
+                        child=Text("Try clicking me"),
+                    ),
+                ),
+            ],
+        )
+
+
+class _ScrollbarDemo(StatefulWidget):
+    def createState(self):
+        return _ScrollbarDemoState()
+
+
+class _ScrollbarDemoState(State[_ScrollbarDemo]):
+    def initState(self):
+        self.controller = ScrollController()
+        self.orientation = ScrollbarOrientation.right
+
+    def _set_orientation(self, value):
+        self.orientation = value
+        self.setState(lambda: None)
+
+    def build(self, context):
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                Wrap(
+                    spacing=8,
+                    children=[
+                        ElevatedButton(
+                            onPressed=lambda o=o: self._set_orientation(o),
+                            child=Text(label),
+                        )
+                        for o, label in [
+                            (ScrollbarOrientation.left, "left"),
+                            (ScrollbarOrientation.right, "right"),
+                            (ScrollbarOrientation.top, "top"),
+                            (ScrollbarOrientation.bottom, "bottom"),
+                        ]
+                    ],
+                ),
+                SizedBox(height=8),
+                Container(
+                    height=200.0,
+                    width=400.0,
+                    decoration=BoxDecoration(
+                        borderRadius=BorderRadius.circular(8),
+                    ),
+                    child=Scrollbar(
+                        controller=self.controller,
+                        thumbVisibility=True,
+                        trackVisibility=True,
+                        thickness=10.0,
+                        radius=Radius.circular(6.0),
+                        interactive=True,
+                        scrollbarOrientation=self.orientation,
+                        child=SingleChildScrollView(
+                            controller=self.controller,
+                            child=Column(
+                                children=[
+                                    Padding(
+                                        padding=EdgeInsets.all(8.0),
+                                        child=Text(
+                                            f"Line {i}",
+                                            style=TextStyle(fontSize=14),
+                                        ),
+                                    )
+                                    for i in range(40)
+                                ],
+                            ),
+                        ),
+                    ),
+                ),
+            ],
+        )
+
+
 class WidgetPage(StatelessWidget):
     def build(self, context):
         measure_ctrl = _LogController()
@@ -2728,6 +2849,56 @@ class WidgetPage(StatelessWidget):
                             "InteractiveViewer(\n"
                             "    panAxis=PanAxis.free,\n"
                             "    child=large_grid,\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="IgnorePointer",
+                    description=(
+                        "IgnorePointer makes its subtree invisible to hit-testing. "
+                        "Children still paint, but pointer events skip them."
+                    ),
+                    instruction="Toggle 'ignoring' and try clicking the inner button. Taps only register when ignoring=False.",
+                    visible=_IgnorePointerDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "IgnorePointer(\n"
+                            "    ignoring=True,\n"
+                            "    child=ElevatedButton(\n"
+                            "        onPressed=on_tap,\n"
+                            "        child=Text('Try clicking me'),\n"
+                            "    ),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="Scrollbar & ScrollbarOrientation",
+                    description=(
+                        "Scrollbar wraps a scroll view to show a draggable thumb. "
+                        "ScrollbarOrientation pins the bar to one of four edges."
+                    ),
+                    instruction="Pick an orientation, then drag the scrollbar thumb.",
+                    visible=_ScrollbarDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "ctrl = ScrollController()\n\n"
+                            "Scrollbar(\n"
+                            "    controller=ctrl,\n"
+                            "    thumbVisibility=True,\n"
+                            "    trackVisibility=True,\n"
+                            "    thickness=10.0,\n"
+                            "    radius=Radius.circular(6.0),\n"
+                            "    interactive=True,\n"
+                            "    scrollbarOrientation=\n"
+                            "        ScrollbarOrientation.right,\n"
+                            "    child=SingleChildScrollView(\n"
+                            "        controller=ctrl,\n"
+                            "        child=long_column,\n"
+                            "    ),\n"
                             ")"
                         ),
                     ),
