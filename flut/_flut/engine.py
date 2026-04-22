@@ -192,6 +192,7 @@ class FlutterEngine:
         height,
         title,
         icon_path=None,
+        app_id=None,
         on_initialized=None,
         on_close=None,
     ):
@@ -202,6 +203,7 @@ class FlutterEngine:
             height,
             title,
             icon_path=icon_path,
+            app_id=app_id,
             on_initialized=on_initialized,
             on_close=on_close,
         )
@@ -213,6 +215,7 @@ class FlutterEngine:
         height,
         title,
         icon_path=None,
+        app_id=None,
         on_initialized=None,
         on_close=None,
         loop=None,
@@ -225,6 +228,7 @@ class FlutterEngine:
             height,
             title,
             icon_path=icon_path,
+            app_id=app_id,
             on_initialized=on_initialized,
             on_close=on_close,
             loop=self._event_loop,
@@ -440,6 +444,7 @@ def run_app(
     height=600,
     title="Flut",
     icon=None,
+    app_id=None,
     on_initialized=None,
     on_close=None,
 ):
@@ -458,6 +463,7 @@ def run_app(
             height,
             title,
             icon_path=icon_path,
+            app_id=app_id,
             on_initialized=on_initialized,
             on_close=on_close,
         )
@@ -474,6 +480,7 @@ async def run_app_async(
     height=600,
     title="Flut",
     icon=None,
+    app_id=None,
     on_initialized=None,
     on_close=None,
 ):
@@ -492,6 +499,7 @@ async def run_app_async(
             height,
             title,
             icon_path=icon_path,
+            app_id=app_id,
             on_initialized=on_initialized,
             on_close=on_close,
         )

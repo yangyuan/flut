@@ -689,6 +689,18 @@ class FlutWindowsNative(FlutNative):
 
         return icon_handle.value
 
+    def _set_app_user_model_id(self, app_id, title):
+        try:
+            final_id = str(app_id) if app_id else "flut"
+            shell32 = ctypes.windll.shell32
+            shell32.SetCurrentProcessExplicitAppUserModelID.argtypes = [
+                wintypes.LPCWSTR,
+            ]
+            shell32.SetCurrentProcessExplicitAppUserModelID.restype = ctypes.c_long
+            shell32.SetCurrentProcessExplicitAppUserModelID(final_id)
+        except Exception as exc:
+            logger.warning("Failed to set AppUserModelID: %s", exc)
+
     def _load_icon_handles(self, icon_path):
         with self._use_default_icon_path() as default_icon_path:
             candidates = []
@@ -698,10 +710,12 @@ class FlutWindowsNative(FlutNative):
                 candidates.append(default_icon_path)
 
             user32 = ctypes.windll.user32
-            big_width = user32.GetSystemMetrics(SM_CXICON)
-            big_height = user32.GetSystemMetrics(SM_CYICON)
+            sys_big_width = user32.GetSystemMetrics(SM_CXICON)
+            sys_big_height = user32.GetSystemMetrics(SM_CYICON)
             small_width = user32.GetSystemMetrics(SM_CXSMICON)
             small_height = user32.GetSystemMetrics(SM_CYSMICON)
+            png_big_width = max(sys_big_width, 256)
+            png_big_height = max(sys_big_height, 256)
             last_error = None
 
             for candidate in candidates:
@@ -712,8 +726,8 @@ class FlutWindowsNative(FlutNative):
                             None,
                             candidate,
                             IMAGE_ICON,
-                            big_width,
-                            big_height,
+                            sys_big_width,
+                            sys_big_height,
                             LR_LOADFROMFILE,
                         )
                         small_icon_handle = user32.LoadImageW(
@@ -729,8 +743,8 @@ class FlutWindowsNative(FlutNative):
                     elif extension == ".png":
                         big_icon_handle = self._load_icon_from_png(
                             candidate,
-                            big_width,
-                            big_height,
+                            png_big_width,
+                            png_big_height,
                         )
                         small_icon_handle = self._load_icon_from_png(
                             candidate,
@@ -761,11 +775,14 @@ class FlutWindowsNative(FlutNative):
         height,
         title,
         icon_path,
+        app_id,
         on_close,
         on_destroy,
     ):
         user32 = ctypes.windll.user32
         kernel32 = ctypes.windll.kernel32
+
+        self._set_app_user_model_id(app_id, title)
 
         def _host_wndproc(host_hwnd, msg, wparam, lparam):
             result = LRESULT(0)
@@ -901,6 +918,7 @@ class FlutWindowsNative(FlutNative):
         height: int,
         title: str,
         icon_path: str | None = None,
+        app_id: str | None = None,
         on_initialized=None,
         on_close=None,
     ):
@@ -922,6 +940,7 @@ class FlutWindowsNative(FlutNative):
             scaled_height,
             title,
             icon_path,
+            app_id,
             on_initialized,
             on_close,
             close_error,
@@ -937,6 +956,7 @@ class FlutWindowsNative(FlutNative):
         height,
         title,
         icon_path,
+        app_id,
         on_initialized,
         on_close,
         close_error,
@@ -959,6 +979,7 @@ class FlutWindowsNative(FlutNative):
             height,
             title,
             icon_path,
+            app_id,
             on_close=handle_close,
             on_destroy=lambda: user32.PostQuitMessage(0),
         )
@@ -988,6 +1009,7 @@ class FlutWindowsNative(FlutNative):
         height: int,
         title: str,
         icon_path: str | None = None,
+        app_id: str | None = None,
         on_initialized=None,
         on_close=None,
         loop: asyncio.AbstractEventLoop = None,
@@ -1012,6 +1034,7 @@ class FlutWindowsNative(FlutNative):
             scaled_height,
             title,
             icon_path,
+            app_id,
             on_initialized,
             on_close,
             loop,
@@ -1025,6 +1048,7 @@ class FlutWindowsNative(FlutNative):
         height,
         title,
         icon_path,
+        app_id,
         on_initialized,
         on_close,
         loop: asyncio.AbstractEventLoop,
@@ -1053,6 +1077,7 @@ class FlutWindowsNative(FlutNative):
             height,
             title,
             icon_path,
+            app_id,
             on_close=handle_close,
             on_destroy=handle_destroy,
         )
