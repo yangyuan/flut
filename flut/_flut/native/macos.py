@@ -338,6 +338,174 @@ kCFRunLoopCommonModes = (
 CFRunLoopTimerCallBack = CFUNCTYPE(None, c_void_p, c_void_p)
 
 
+_FOUR_CHAR_AEVT = 0x61657674
+_FOUR_CHAR_RAPP = 0x72617070
+_CF_RUN_LOOP_BEFORE_WAITING = 1 << 5
+
+_AEEventHandlerProc = CFUNCTYPE(c_int32, c_void_p, c_void_p, c_void_p)
+_CFRunLoopObserverCallback = CFUNCTYPE(None, c_void_p, c_uint32, c_void_p)
+
+_apple_events_lib_name = ctypes.util.find_library("AE") or ctypes.util.find_library(
+    "ApplicationServices"
+)
+_AppleEvents = ctypes.CDLL(_apple_events_lib_name) if _apple_events_lib_name else None
+if _AppleEvents is not None:
+    _AppleEvents.AEInstallEventHandler.argtypes = [
+        c_uint32,
+        c_uint32,
+        c_void_p,
+        c_void_p,
+        ctypes.c_byte,
+    ]
+    _AppleEvents.AEInstallEventHandler.restype = c_int32
+    _AppleEvents.AEGetEventHandler.argtypes = [
+        c_uint32,
+        c_uint32,
+        ctypes.POINTER(c_void_p),
+        ctypes.POINTER(c_void_p),
+        ctypes.c_byte,
+    ]
+    _AppleEvents.AEGetEventHandler.restype = c_int32
+
+
+class _AppleEventReopenGuard:
+    def __init__(self):
+        self._handler_proc = None
+        self._handler_addr = None
+        self._observer_callback = None
+        self._observer = None
+        self._installed = False
+
+    def install(self):
+        if self._installed:
+            return
+        if _AppleEvents is None or CoreFoundation is None:
+            logger.warning(
+                "AppleEvent reopen guard disabled: AppleEvents=%s CoreFoundation=%s",
+                _AppleEvents is not None,
+                CoreFoundation is not None,
+            )
+            return
+
+        self._handler_proc = _AEEventHandlerProc(self._on_reopen_event)
+        self._handler_addr = ctypes.cast(self._handler_proc, c_void_p).value
+
+        err = self._install_handler()
+        if err != 0:
+            logger.warning(
+                "AEInstallEventHandler(kAEReopenApplication) failed: %d", err
+            )
+
+        self._observer_callback = _CFRunLoopObserverCallback(
+            lambda observer, activity, info: self._reassert_ownership()
+        )
+
+        CoreFoundation.CFRunLoopObserverCreate.argtypes = [
+            c_void_p,
+            c_uint32,
+            c_bool,
+            c_long,
+            _CFRunLoopObserverCallback,
+            c_void_p,
+        ]
+        CoreFoundation.CFRunLoopObserverCreate.restype = c_void_p
+        CoreFoundation.CFRunLoopAddObserver.argtypes = [c_void_p, c_void_p, c_void_p]
+        CoreFoundation.CFRunLoopAddObserver.restype = None
+        CoreFoundation.CFRunLoopGetMain.argtypes = []
+        CoreFoundation.CFRunLoopGetMain.restype = c_void_p
+
+        self._observer = CoreFoundation.CFRunLoopObserverCreate(
+            None,
+            _CF_RUN_LOOP_BEFORE_WAITING,
+            True,
+            0,
+            self._observer_callback,
+            None,
+        )
+        if self._observer:
+            CoreFoundation.CFRunLoopAddObserver(
+                CoreFoundation.CFRunLoopGetMain(),
+                self._observer,
+                kCFRunLoopCommonModes,
+            )
+
+        self._installed = True
+
+    def _install_handler(self):
+        return _AppleEvents.AEInstallEventHandler(
+            _FOUR_CHAR_AEVT,
+            _FOUR_CHAR_RAPP,
+            self._handler_addr,
+            None,
+            0,
+        )
+
+    def _reassert_ownership(self):
+        if self._handler_addr is None:
+            return
+        current = c_void_p()
+        refcon = c_void_p()
+        err = _AppleEvents.AEGetEventHandler(
+            _FOUR_CHAR_AEVT,
+            _FOUR_CHAR_RAPP,
+            ctypes.byref(current),
+            ctypes.byref(refcon),
+            0,
+        )
+        if err == 0 and current.value == self._handler_addr:
+            return
+        self._install_handler()
+
+    def _on_reopen_event(self, event_ptr, reply_ptr, refcon):
+        try:
+            self._activate_main_window()
+        except Exception as e:
+            logger.error("AppleEvent reopen handler error: %s", e)
+        return 0
+
+    @staticmethod
+    def _activate_main_window():
+        NSApplication = objc_class("NSApplication")
+        if not NSApplication:
+            return
+        get_object = ctypes.cast(
+            objc_msgSend, ctypes.CFUNCTYPE(c_void_p, c_void_p, c_void_p)
+        )
+        app = get_object(NSApplication, sel("sharedApplication"))
+        if not app:
+            return
+
+        window = get_object(app, sel("mainWindow"))
+        if not window:
+            windows = get_object(app, sel("windows"))
+            if windows:
+                count_fn = ctypes.cast(
+                    objc_msgSend,
+                    ctypes.CFUNCTYPE(c_size_t, c_void_p, c_void_p),
+                )
+                if count_fn(windows, sel("count")) > 0:
+                    object_at_index = ctypes.cast(
+                        objc_msgSend,
+                        ctypes.CFUNCTYPE(c_void_p, c_void_p, c_void_p, c_size_t),
+                    )
+                    window = object_at_index(windows, sel("objectAtIndex:"), 0)
+
+        if window:
+            order_front = ctypes.cast(
+                objc_msgSend,
+                ctypes.CFUNCTYPE(None, c_void_p, c_void_p, c_void_p),
+            )
+            order_front(window, sel("makeKeyAndOrderFront:"), None)
+
+        activate = ctypes.cast(
+            objc_msgSend, ctypes.CFUNCTYPE(None, c_void_p, c_void_p, c_bool)
+        )
+        activate(app, sel("activateIgnoringOtherApps:"), True)
+
+
+_apple_event_reopen_guard = _AppleEventReopenGuard()
+
+
 class CFRunLoopSourceContext(ctypes.Structure):
     _fields_ = [
         ("version", c_long),
@@ -783,6 +951,8 @@ class FlutMacOSNative(FlutNative):
         )
         set_policy(app, sel("setActivationPolicy:"), 0)
         msg(app, "finishLaunching")
+
+        _apple_event_reopen_guard.install()
 
         dart_project = msg(msg(FlutterDartProject, "alloc"), "init")
         dart_args = self._create_nsarray([f"--native-callback={callback_addr}"])
