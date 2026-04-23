@@ -18,7 +18,6 @@ class TabController(ChangeNotifier):
         length: int,
         vsync,
     ):
-        super().__init__()
         props = {
             "initialIndex": initialIndex,
             "length": length,
@@ -26,7 +25,8 @@ class TabController(ChangeNotifier):
         }
         if animationDuration is not None:
             props["animationDuration"] = animationDuration._flut_pack()
-        self._flut_create(props=props)
+        self._flut_init_props = props
+        super().__init__()
 
     @property
     def index(self) -> int:

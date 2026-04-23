@@ -5,7 +5,7 @@ from flut.flutter.foundation.change_notifier import Listenable
 from flut.flutter.widgets.framework import Widget, BuildContext
 
 
-class OverlayEntry(FlutRealtimeObject, Listenable):
+class OverlayEntry(Listenable):
     _flut_type = "OverlayEntry"
 
     def __init__(
@@ -16,17 +16,15 @@ class OverlayEntry(FlutRealtimeObject, Listenable):
         maintainState: bool = False,
         canSizeOverlay: bool = False,
     ):
-        super().__init__()
-        self._flut_create(
-            props={
-                "opaque": opaque,
-                "maintainState": maintainState,
-                "canSizeOverlay": canSizeOverlay,
-            },
-            bindings=[
-                ("builder", wrap_widget_builder(builder), "build_scope"),
-            ],
-        )
+        self._flut_init_props = {
+            "opaque": opaque,
+            "maintainState": maintainState,
+            "canSizeOverlay": canSizeOverlay,
+        }
+        self._flut_init_bindings = [
+            ("builder", wrap_widget_builder(builder), "build_scope"),
+        ]
+        Listenable.__init__(self)
 
     @property
     def mounted(self) -> bool:

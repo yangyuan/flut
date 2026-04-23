@@ -9,8 +9,8 @@ class ScrollController(ChangeNotifier):
     _flut_type = "ScrollController"
 
     def __init__(self, initialScrollOffset: float = 0.0):
+        self._flut_init_props = {"initialScrollOffset": initialScrollOffset}
         super().__init__()
-        self._flut_create(props={"initialScrollOffset": initialScrollOffset})
 
     @property
     def offset(self) -> float:

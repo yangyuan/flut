@@ -218,6 +218,8 @@ class FlutRuntime {
     Map<String, dynamic> data,
   ) {
     switch (type) {
+      case 'Listenable':
+        return FlutListenable.flutCreate(this, data);
       case 'ChangeNotifier':
         return FlutChangeNotifier.flutCreate(this, data);
       case 'TextEditingController':
@@ -1128,8 +1130,6 @@ class FlutRuntime {
         return FlutShadow.flutDecode(this, data);
       case 'CustomPainter':
         return FlutCustomPainter.flutDecode(this, data);
-      case 'Listenable':
-        return FlutListenable.flutDecode(this, data);
       case 'StatefulWidget':
         return FlutStatefulWidget(
           key: decodeKey(data),

@@ -1,25 +1,23 @@
-from flut.flutter.foundation.change_notifier import ChangeNotifier
+from flut.flutter.foundation.change_notifier import Listenable, ValueNotifier
 
 
-class TextEditingController(ChangeNotifier):
+class TextEditingController(ValueNotifier):
     _flut_type = "TextEditingController"
 
     def __init__(self, text=None):
-        super().__init__()
         props = {}
         if text is not None:
             props["text"] = text
-        self._flut_create(
-            props=props,
-            bindings=[
-                (
-                    "buildTextSpan",
-                    self.buildTextSpan,
-                    TextEditingController,
-                    "buildTextSpan",
-                ),
-            ],
-        )
+        self._flut_init_props = props
+        self._flut_init_bindings = [
+            (
+                "buildTextSpan",
+                self.buildTextSpan,
+                TextEditingController,
+                "buildTextSpan",
+            ),
+        ]
+        Listenable.__init__(self)
 
     @property
     def text(self):

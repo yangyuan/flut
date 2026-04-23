@@ -245,6 +245,132 @@ class _ValueNotifierDemoState(State[_ValueNotifierDemo]):
         )
 
 
+class _DirectListenerDemo(StatefulWidget):
+    def createState(self):
+        return _DirectListenerDemoState()
+
+
+class _DirectListenerDemoState(State[_DirectListenerDemo]):
+    def initState(self):
+        self.counter = Counter()
+        self.log: list[str] = []
+        self.counter.addListener(self._on_change)
+
+    def dispose(self):
+        self.counter.removeListener(self._on_change)
+        self.counter.dispose()
+
+    def _on_change(self):
+        self.log.append(f"value -> {self.counter.value}")
+        if len(self.log) > 5:
+            self.log.pop(0)
+        self.setState(lambda: None)
+
+    def build(self, context):
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                Row(
+                    children=[
+                        ElevatedButton(
+                            onPressed=self.counter.increment,
+                            child=Text("notify"),
+                        ),
+                        SizedBox(width=8),
+                        ElevatedButton(
+                            onPressed=self.counter.reset,
+                            child=Text("reset"),
+                        ),
+                    ],
+                ),
+                SizedBox(height=12),
+                Text(
+                    "listener log:",
+                    style=TextStyle(color=Colors.grey),
+                ),
+                Column(
+                    crossAxisAlignment=CrossAxisAlignment.start,
+                    children=[Text(line) for line in self.log] or [Text("(empty)")],
+                ),
+            ],
+        )
+
+
+class DerivedNotifier(ChangeNotifier):
+    def __init__(self, a: ValueNotifier, b: ValueNotifier):
+        super().__init__()
+        self._a = a
+        self._b = b
+        a.addListener(self.notifyListeners)
+        b.addListener(self.notifyListeners)
+
+    @property
+    def value(self) -> int:
+        return self._a.value * self._b.value
+
+    def dispose(self):
+        self._a.removeListener(self.notifyListeners)
+        self._b.removeListener(self.notifyListeners)
+        super().dispose()
+
+
+class _DerivedNotifierDemo(StatefulWidget):
+    def createState(self):
+        return _DerivedNotifierDemoState()
+
+
+class _DerivedNotifierDemoState(State[_DerivedNotifierDemo]):
+    def initState(self):
+        self.a = ValueNotifier(2)
+        self.b = ValueNotifier(3)
+        self.product = DerivedNotifier(self.a, self.b)
+
+    def dispose(self):
+        self.product.dispose()
+        self.a.dispose()
+        self.b.dispose()
+
+    def _stepper(self, label: str, notifier: ValueNotifier):
+        return Row(
+            children=[
+                Text(label),
+                SizedBox(width=8),
+                IconButton(
+                    icon=Icon(Icons.remove),
+                    onPressed=lambda: setattr(notifier, "value", notifier.value - 1),
+                ),
+                ValueListenableBuilder(
+                    valueListenable=notifier,
+                    builder=lambda c, value, _: Text(
+                        str(value),
+                        style=TextStyle(fontWeight=FontWeight.bold),
+                    ),
+                ),
+                IconButton(
+                    icon=Icon(Icons.add),
+                    onPressed=lambda: setattr(notifier, "value", notifier.value + 1),
+                ),
+            ],
+        )
+
+    def build(self, context):
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                ListenableBuilder(
+                    listenable=self.product,
+                    builder=lambda c, _: Text(
+                        f"a × b = {self.product.value}",
+                        style=TextStyle(fontSize=20, fontWeight=FontWeight.bold),
+                    ),
+                ),
+                SizedBox(height=12),
+                self._stepper("a", self.a),
+                self._stepper("b", self.b),
+            ],
+        )
+
+
 _COUNTER_CODE = (
     "from flut.flutter.foundation import ChangeNotifier\n"
     "\n"
@@ -362,6 +488,55 @@ class ListenablePage(StatelessWidget):
                             "\n"
                             "# Mutate via the `.value` setter:\n"
                             "notifier.value += 1"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="Direct addListener / removeListener",
+                    description=(
+                        "Subscribe outside any builder. Useful for logging, "
+                        "analytics, or driving non-widget side effects. The "
+                        "listener fires across the FFI boundary every time "
+                        "`notifyListeners()` is called."
+                    ),
+                    instruction="Tap `notify` to append to the log.",
+                    visible=_DirectListenerDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "counter = Counter()\n"
+                            "\n"
+                            "def on_change():\n"
+                            "    print(f'value -> {counter.value}')\n"
+                            "\n"
+                            "counter.addListener(on_change)\n"
+                            "# ... later\n"
+                            "counter.removeListener(on_change)"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="Derived ChangeNotifier",
+                    description=(
+                        "Build a notifier whose value is computed from other "
+                        "notifiers. Subscribing to the dependencies forwards "
+                        "their `notifyListeners()` calls to ours."
+                    ),
+                    instruction="Adjust `a` or `b`; the product rebuilds.",
+                    visible=_DerivedNotifierDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "class DerivedNotifier(ChangeNotifier):\n"
+                            "    def __init__(self, a, b):\n"
+                            "        super().__init__()\n"
+                            "        self._a, self._b = a, b\n"
+                            "        a.addListener(self.notifyListeners)\n"
+                            "        b.addListener(self.notifyListeners)\n"
+                            "\n"
+                            "    @property\n"
+                            "    def value(self):\n"
+                            "        return self._a.value * self._b.value\n"
                         ),
                     ),
                 ),

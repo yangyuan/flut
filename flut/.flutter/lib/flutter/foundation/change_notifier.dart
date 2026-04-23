@@ -4,7 +4,7 @@ import 'package:flut/flut/object.dart';
 import 'package:flut/flut/error.dart';
 
 /// Shared base for any Flutter `Listenable` wrapped as a realtime object.
-abstract class FlutListenable<T extends Listenable> with FlutRealtimeObject<T> {
+class FlutListenable<T extends Listenable> with FlutRealtimeObject<T> {
   final Map<int, VoidCallback> listenersByCid = {};
 
   FlutListenable.createFromData({
@@ -29,19 +29,22 @@ abstract class FlutListenable<T extends Listenable> with FlutRealtimeObject<T> {
     );
   }
 
-  static Listenable? flutDecode(
+  static FlutListenable<Listenable> flutCreate(
     FlutRuntime runtime,
     Map<String, dynamic> data,
   ) {
-    final constructor = runtime.unpackConstructor(data);
-    switch (constructor) {
-      case 'merge':
-        return Listenable.merge(
-          runtime.unpackRequiredField<List<Listenable?>>(data, 'listenables'),
-        );
-      default:
-        return null;
-    }
+    final listenables = runtime.unpackOptionalField<List<Listenable?>>(
+      data,
+      'listenables',
+    );
+    final Listenable target = listenables != null
+        ? Listenable.merge(listenables)
+        : Listenable.merge(const <Listenable?>[]);
+    return FlutListenable<Listenable>.createFromData(
+      runtime: runtime,
+      data: data,
+      target: target,
+    );
   }
 
   void clearTrackedListeners() {

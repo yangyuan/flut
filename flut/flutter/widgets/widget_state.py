@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, override
+from typing import Generic, Optional, TypeVar, override
 
 from flut._flut.engine import (
     FlutAbstractObject,
@@ -9,7 +9,11 @@ from flut._flut.engine import (
 )
 from flut._flut.runtime import _flut_unpack_required_field
 from flut.dart.ui import Color
-from flut.flutter.foundation.change_notifier import ChangeNotifier
+from flut.flutter.foundation.change_notifier import (
+    ChangeNotifier,
+    Listenable,
+    ValueNotifier,
+)
 
 T = TypeVar("T")
 
@@ -111,13 +115,17 @@ class WidgetState:
 
 class WidgetStateProperty(FlutRealtimeObject, FlutAbstractObject, Generic[T]):
     _flut_type = "WidgetStateProperty"
+    _flut_init_props: dict = {}
+    _flut_init_bindings: Optional[list] = None
 
     def __init__(self):
-        super().__init__()
+        FlutRealtimeObject.__init__(self)
+        bindings = [("resolve", self.resolve, WidgetStateProperty, "resolve")]
+        if self._flut_init_bindings is not None:
+            bindings.extend(self._flut_init_bindings)
         self._flut_create(
-            bindings=[
-                ("resolve", self.resolve),
-            ],
+            props=self._flut_init_props or None,
+            bindings=bindings,
         )
 
     def resolve(self, states):
@@ -158,7 +166,7 @@ class WidgetStatePropertyWith(WidgetStateProperty[T]):
 
     def __init__(self, resolver):
         self._resolver = resolver
-        super().__init__()
+        WidgetStateProperty.__init__(self)
 
     @override
     def resolve(self, states):
@@ -175,14 +183,15 @@ class WidgetStatePropertyWith(WidgetStateProperty[T]):
         return resolver
 
 
-class WidgetStatePropertyAll(FlutRealtimeObject, Generic[T]):
+class WidgetStatePropertyAll(WidgetStateProperty[T]):
     _flut_type = "WidgetStatePropertyAll"
 
     def __init__(self, value):
         self._value = value
-        super().__init__()
-        self._flut_create(props={"value": _flut_pack_value(value)})
+        self._flut_init_props = {"value": _flut_pack_value(value)}
+        WidgetStateProperty.__init__(self)
 
+    @override
     def resolve(self, states):
         return self._value
 
@@ -206,15 +215,15 @@ class WidgetStateColor(WidgetStatePropertyWith[Color]):
         return result
 
 
-class WidgetStatesController(ChangeNotifier):
+class WidgetStatesController(ValueNotifier):
     _flut_type = "WidgetStatesController"
 
     def __init__(self, value=None):
-        super().__init__()
         props = {}
         if value is not None:
             props["value"] = _flut_pack_value(value)
-        self._flut_create(props=props)
+        self._flut_init_props = props
+        Listenable.__init__(self)
 
     @property
     def value(self):
