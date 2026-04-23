@@ -9,7 +9,6 @@ class ExpansibleController(ChangeNotifier):
 
     def __init__(self):
         super().__init__()
-        self._flut_create(props={})
 
     @property
     def isExpanded(self) -> bool:

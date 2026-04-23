@@ -1,8 +1,8 @@
 from typing import Optional
 
-from flut._flut.engine import FlutRealtimeObject, FlutEnumObject, _flut_pack_value
-from flut.flutter.foundation.change_notifier import ChangeNotifier
-from flut.flutter.animation.animation import AnimationStatus
+from flut._flut.engine import FlutEnumObject, _flut_pack_value
+from flut.flutter.foundation.change_notifier import Listenable
+from flut.flutter.animation.animation import Animation, AnimationStatus
 from flut.flutter.animation.curves import Curve, Curves
 from flut.dart.core import Duration
 
@@ -12,7 +12,7 @@ class AnimationBehavior(FlutEnumObject):
     preserve: "AnimationBehavior"
 
 
-class AnimationController(ChangeNotifier):
+class AnimationController(Animation):
     _flut_type = "AnimationController"
 
     def __init__(
@@ -27,7 +27,6 @@ class AnimationController(ChangeNotifier):
         animationBehavior: AnimationBehavior = AnimationBehavior.normal,
         vsync,
     ):
-        super().__init__()
         props = {
             "lowerBound": lowerBound,
             "upperBound": upperBound,
@@ -42,7 +41,8 @@ class AnimationController(ChangeNotifier):
             props["reverseDuration"] = reverseDuration._flut_pack()
         if debugLabel is not None:
             props["debugLabel"] = debugLabel
-        self._flut_create(props=props)
+        self._flut_init_props = props
+        Listenable.__init__(self)
 
     @property
     def value(self) -> float:

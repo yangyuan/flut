@@ -1,20 +1,23 @@
-from typing import override
+from typing import Optional
 
 from flut._flut.engine import (
     FlutAbstractObject,
     FlutRealtimeObject,
     call_dart_static,
-    _flut_pack_value,
 )
-from flut._flut.runtime import _flut_unpack_optional_field
-from flut.flutter.widgets.navigator import RouteSettings
 
 
 class ModalRoute(FlutRealtimeObject, FlutAbstractObject):
     _flut_type = "ModalRoute"
+    _flut_init_props: dict = {}
+    _flut_init_bindings: Optional[list] = None
 
-    def __init__(self, *, settings=None):
-        super().__init__()
+    def __init__(self):
+        FlutRealtimeObject.__init__(self)
+        self._flut_create(
+            props=self._flut_init_props or None,
+            bindings=self._flut_init_bindings,
+        )
 
     @staticmethod
     def of(context):

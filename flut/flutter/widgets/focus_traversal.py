@@ -3,7 +3,6 @@ from typing import override
 from flut._flut.engine import (
     FlutAbstractObject,
     FlutEnumObject,
-    FlutRealtimeObject,
     FlutValueObject,
     _flut_pack_value,
 )
@@ -25,7 +24,7 @@ class TraversalEdgeBehavior(FlutEnumObject):
     stop: "TraversalEdgeBehavior"
 
 
-class FocusTraversalPolicy(FlutRealtimeObject, FlutAbstractObject):
+class FocusTraversalPolicy(FlutAbstractObject):
     _flut_type = "FocusTraversalPolicy"
 
     def __init__(self, *, requestFocusCallback=None):

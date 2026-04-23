@@ -13,8 +13,7 @@ class InteractiveInkFeatureFactory(FlutRealtimeObject, FlutAbstractObject):
     _flut_type = "InteractiveInkFeatureFactory"
 
     def __init__(self) -> None:
-        super().__init__()
-        self._flut_create()
+        FlutRealtimeObject.__init__(self)
 
     def create(
         self,

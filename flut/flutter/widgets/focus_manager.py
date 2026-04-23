@@ -13,12 +13,10 @@ class FocusNode(ChangeNotifier):
     _flut_type = "FocusNode"
 
     def __init__(self, onKeyEvent=None):
+        self._flut_init_bindings = [
+            ("onKeyEvent", onKeyEvent, "FocusOnKeyEventCallback"),
+        ]
         super().__init__()
-        self._flut_create(
-            bindings=[
-                ("onKeyEvent", onKeyEvent, "FocusOnKeyEventCallback"),
-            ],
-        )
 
     @property
     def onKeyEvent(self):
@@ -59,7 +57,6 @@ class FocusScopeNode(FocusNode):
         traversalEdgeBehavior=TraversalEdgeBehavior.closedLoop,
         directionalTraversalEdgeBehavior=TraversalEdgeBehavior.stop,
     ):
-        ChangeNotifier.__init__(self)
         props = {}
         if debugLabel is not None:
             props["debugLabel"] = debugLabel
@@ -69,9 +66,9 @@ class FocusScopeNode(FocusNode):
         props["directionalTraversalEdgeBehavior"] = _flut_pack_value(
             directionalTraversalEdgeBehavior
         )
-        self._flut_create(
-            bindings=[
-                ("onKeyEvent", onKeyEvent, "FocusOnKeyEventCallback"),
-            ],
-            props=props,
-        )
+        self._flut_init_props = props
+        self._flut_init_bindings = [
+            ("onKeyEvent", onKeyEvent, "FocusOnKeyEventCallback"),
+        ]
+        # Skip FocusNode.__init__ which would set its own bindings.
+        ChangeNotifier.__init__(self)

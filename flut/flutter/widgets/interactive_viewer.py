@@ -2,7 +2,7 @@ from typing import Callable, Optional, override
 
 from flut._flut.engine import FlutEnumObject, _flut_pack_value
 from flut.dart.ui import Clip
-from flut.flutter.foundation.change_notifier import ValueNotifier
+from flut.flutter.foundation.change_notifier import Listenable, ValueNotifier
 from flut.flutter.painting.edge_insets import EdgeInsets
 from flut.flutter.widgets.framework import Widget
 
@@ -103,7 +103,11 @@ class TransformationController(ValueNotifier):
     _flut_type = "TransformationController"
 
     def __init__(self, value=None):
-        super().__init__(value=value)
+        props = {}
+        if value is not None:
+            props["value"] = _flut_pack_value(value)
+        self._flut_init_props = props
+        Listenable.__init__(self)
 
     def toScene(self, viewportPoint):
         return self._flut_call("toScene", viewportPoint._flut_pack())
