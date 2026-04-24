@@ -1349,6 +1349,8 @@ class FlutRuntime {
         return FlutPopupMenuItem.flutDecode(this, data);
       case 'PopupMenuButton':
         return FlutPopupMenuButton.flutDecode(this, data);
+      case 'PopupMenuDivider':
+        return FlutPopupMenuDivider.flutDecode(this, data);
       case 'MenuBar':
         return FlutMenuBar.flutDecode(this, data);
       case 'Material':

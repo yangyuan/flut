@@ -48,7 +48,7 @@ from .navigation_bar import (
 from .radio import Radio
 from .slider_theme import ShowValueIndicator
 from .chip import Chip, ChipAnimationStyle
-from .popup_menu import PopupMenuItem, PopupMenuButton, showMenu
+from .popup_menu import PopupMenuItem, PopupMenuButton, PopupMenuDivider, showMenu
 from .popup_menu_theme import PopupMenuPosition
 from .expansion_tile import ExpansionTile
 from .text_form_field import TextFormField

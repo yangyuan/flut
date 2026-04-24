@@ -91,6 +91,25 @@ class FlutPopupMenuButton {
   }
 }
 
+class FlutPopupMenuDivider {
+  FlutPopupMenuDivider._();
+
+  static PopupMenuDivider? flutDecode(
+    FlutRuntime runtime,
+    Map<String, dynamic> data,
+  ) {
+    return PopupMenuDivider(
+      key: runtime.decodeKey(data),
+      height: runtime.unpackRequiredField<double>(data, 'height'),
+      thickness: runtime.unpackOptionalField<double>(data, 'thickness'),
+      indent: runtime.unpackOptionalField<double>(data, 'indent'),
+      endIndent: runtime.unpackOptionalField<double>(data, 'endIndent'),
+      radius: runtime.unpackOptionalField<BorderRadius>(data, 'radius'),
+      color: runtime.unpackOptionalField<Color>(data, 'color'),
+    );
+  }
+}
+
 class FlutShowMenu {
   FlutShowMenu._();
 

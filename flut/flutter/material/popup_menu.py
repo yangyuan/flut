@@ -209,6 +209,45 @@ class PopupMenuButton(Widget, Generic[T]):
         return result
 
 
+class PopupMenuDivider(Widget):
+    _flut_type = "PopupMenuDivider"
+
+    def __init__(
+        self,
+        *,
+        key=None,
+        height: float = 16.0,
+        thickness: Optional[float] = None,
+        indent: Optional[float] = None,
+        endIndent: Optional[float] = None,
+        radius=None,
+        color: Optional[Color] = None,
+    ):
+        super().__init__(key=key)
+        self.height = height
+        self.thickness = thickness
+        self.indent = indent
+        self.endIndent = endIndent
+        self.radius = radius
+        self.color = color
+
+    @override
+    def _flut_pack(self) -> dict:
+        result = self._flut_base_props()
+        result["height"] = _flut_pack_value(self.height)
+        if self.thickness is not None:
+            result["thickness"] = _flut_pack_value(self.thickness)
+        if self.indent is not None:
+            result["indent"] = _flut_pack_value(self.indent)
+        if self.endIndent is not None:
+            result["endIndent"] = _flut_pack_value(self.endIndent)
+        if self.radius is not None:
+            result["radius"] = _flut_pack_value(self.radius)
+        if self.color is not None:
+            result["color"] = _flut_pack_value(self.color)
+        return result
+
+
 def showMenu(
     *,
     context,

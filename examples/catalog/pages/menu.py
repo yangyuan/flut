@@ -26,6 +26,7 @@ from flut.flutter.material import (
     Theme,
     PopupMenuItem,
     PopupMenuButton,
+    PopupMenuDivider,
     PopupMenuPosition,
     DropdownMenu,
     DropdownMenuEntry,
@@ -285,6 +286,49 @@ class _PopupMenuDemoState(State[_PopupMenuDemo]):
                 SizedBox(width=12),
                 Text(
                     f"Selected: {self.popup_selection}",
+                    style=TextStyle(fontSize=13),
+                ),
+            ],
+        )
+
+
+class _PopupMenuDividerDemo(StatefulWidget):
+    def createState(self):
+        return _PopupMenuDividerDemoState()
+
+
+class _PopupMenuDividerDemoState(State[_PopupMenuDividerDemo]):
+    def initState(self):
+        self.selection = "None"
+
+    def build(self, context):
+        return Row(
+            children=[
+                PopupMenuButton(
+                    itemBuilder=lambda context: [
+                        PopupMenuItem(value="cut", child=Text("Cut")),
+                        PopupMenuItem(value="copy", child=Text("Copy")),
+                        PopupMenuItem(value="paste", child=Text("Paste")),
+                        PopupMenuDivider(),
+                        PopupMenuItem(value="delete", child=Text("Delete")),
+                        PopupMenuDivider(
+                            height=24,
+                            thickness=2,
+                            indent=16,
+                            endIndent=16,
+                            color=Colors.red,
+                        ),
+                        PopupMenuItem(value="report", child=Text("Report")),
+                    ],
+                    onSelected=lambda v: self.setState(
+                        lambda: setattr(self, "selection", v)
+                    ),
+                    tooltip="Show menu with dividers",
+                    icon=Icon(Icons.more_vert),
+                ),
+                SizedBox(width=12),
+                Text(
+                    f"Selected: {self.selection}",
                     style=TextStyle(fontSize=13),
                 ),
             ],
@@ -1281,6 +1325,38 @@ class MenuPage(StatelessWidget):
                             "    clipBehavior=Clip.antiAlias if preset == 'clip' else None,\n"
                             "    popUpAnimationStyle=AnimationStyle.noAnimation\n"
                             "        if preset == 'animation' else None,\n"
+                            "    icon=Icon(Icons.more_vert),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="PopupMenuDivider",
+                    description=(
+                        "PopupMenuDivider is a horizontal divider used between PopupMenuItem "
+                        "entries. It supports height, thickness, indent, endIndent, radius, and color."
+                    ),
+                    instruction="Open the menu to see a default divider and a customized red divider grouping items.",
+                    visible=_PopupMenuDividerDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "PopupMenuButton(\n"
+                            "    itemBuilder=lambda ctx: [\n"
+                            "        PopupMenuItem(value='cut', child=Text('Cut')),\n"
+                            "        PopupMenuItem(value='copy', child=Text('Copy')),\n"
+                            "        PopupMenuItem(value='paste', child=Text('Paste')),\n"
+                            "        PopupMenuDivider(),\n"
+                            "        PopupMenuItem(value='delete', child=Text('Delete')),\n"
+                            "        PopupMenuDivider(\n"
+                            "            height=24,\n"
+                            "            thickness=2,\n"
+                            "            indent=16,\n"
+                            "            endIndent=16,\n"
+                            "            color=Colors.red,\n"
+                            "        ),\n"
+                            "        PopupMenuItem(value='report', child=Text('Report')),\n"
+                            "    ],\n"
                             "    icon=Icon(Icons.more_vert),\n"
                             ")"
                         ),
