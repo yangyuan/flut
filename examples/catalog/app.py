@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../.
 
 from flut import run_app_async
 from flut.dart import Color
-from flut.flutter.foundation import ValueKey
+from flut.flutter.foundation import ValueKey, ValueNotifier
 from flut.flutter.widgets import (
     StatefulWidget,
     State,
@@ -119,6 +119,9 @@ PAGES = [
 ]
 
 
+_catalog_engine_probe = None
+
+
 def _extract_tile_title(node):
     if not isinstance(node, ast.Call):
         return None
@@ -186,6 +189,14 @@ class CatalogApp(StatefulWidget):
 class CatalogAppState(State[CatalogApp]):
 
     def initState(self):
+        try:
+            _catalog_engine_probe.value = _catalog_engine_probe.value + 1
+            assert (
+                _catalog_engine_probe.value == 2
+            ), f"probe value {_catalog_engine_probe.value!r} != 2"
+        except Exception as e:
+            print(f"[catalog] error: initState ran before on_initialized: {e!r}")
+
         self.selected_index = 0
         self.is_dark = False
         self.filter_text = ""
@@ -418,11 +429,27 @@ class CatalogAppState(State[CatalogApp]):
 
 
 async def _on_catalog_initialized():
+    global _catalog_engine_probe
     print("Catalog event: on_initialized")
+    try:
+        _catalog_engine_probe = ValueNotifier(0)
+        _catalog_engine_probe.value = _catalog_engine_probe.value + 1
+        assert (
+            _catalog_engine_probe.value == 1
+        ), f"probe value {_catalog_engine_probe.value!r} != 1"
+    except Exception as e:
+        print(f"[catalog] error: engine not ready in on_initialized: {e!r}")
 
 
 async def _on_catalog_close():
     print("Catalog event: on_close")
+    try:
+        _catalog_engine_probe.value = _catalog_engine_probe.value + 1
+        assert (
+            _catalog_engine_probe.value == 3
+        ), f"probe value {_catalog_engine_probe.value!r} != 3"
+    except Exception as e:
+        print(f"[catalog] error: engine not alive in on_close: {e!r}")
 
 
 async def main():

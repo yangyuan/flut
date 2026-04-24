@@ -531,7 +531,6 @@ class FlutLinuxNative(FlutNative):
         title: str,
         icon_path: str | None = None,
         app_id: str | None = None,
-        on_initialized=None,
         on_close=None,
     ):
         self._close_error = None
@@ -595,9 +594,6 @@ class FlutLinuxNative(FlutNative):
 
         self._running = True
 
-        if on_initialized is not None:
-            on_initialized()
-
         gtk.gtk_main()
         if self._close_error is not None:
             raise self._close_error
@@ -612,7 +608,6 @@ class FlutLinuxNative(FlutNative):
         title: str,
         icon_path: str | None = None,
         app_id: str | None = None,
-        on_initialized=None,
         on_close=None,
         loop: asyncio.AbstractEventLoop = None,
     ):
@@ -659,9 +654,6 @@ class FlutLinuxNative(FlutNative):
 
         gtk.gtk_widget_show_all.argtypes = [c_void_p]
         gtk.gtk_widget_show_all(window)
-
-        if on_initialized is not None:
-            await on_initialized()
 
         await self._run_async_gtk_loop(window, loop, on_close=on_close)
         return True

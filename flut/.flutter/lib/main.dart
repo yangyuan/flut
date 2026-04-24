@@ -17,33 +17,36 @@ void main(List<String> args) {
 
   flutNative = FlutFfiNative(nativeCallbackAddr ?? 0);
   flutRuntime = FlutRuntime(flutNative);
+  (flutNative as FlutFfiNative).bootstrap();
 
-  Map<String, dynamic>? rootData;
-  String? error;
+  (flutNative as FlutFfiNative).userInitDone.then((_) {
+    Map<String, dynamic>? rootData;
+    String? error;
 
-  try {
-    rootData = flutNative.invokeNativeSync("get_root", {});
-    if (rootData == null) {
-      error = 'get_root returned null';
-    } else if (rootData['_flut_error'] != null) {
-      error = rootData['_flut_error'].toString();
+    try {
+      rootData = flutNative.invokeNativeSync("get_root", {});
+      if (rootData == null) {
+        error = 'get_root returned null';
+      } else if (rootData['_flut_error'] != null) {
+        error = rootData['_flut_error'].toString();
+      }
+    } catch (e) {
+      error = e.toString();
     }
-  } catch (e) {
-    error = e.toString();
-  }
 
-  if (error != null) {
-    print(error);
-    runApp(ErrorWidget.withDetails(message: error));
-    return;
-  }
+    if (error != null) {
+      print(error);
+      runApp(ErrorWidget.withDetails(message: error));
+      return;
+    }
 
-  runApp(
-    Builder(
-      builder: (context) {
-        final result = flutRuntime.buildWidgetFromJson(rootData!);
-        return result;
-      },
-    ),
-  );
+    runApp(
+      Builder(
+        builder: (context) {
+          final result = flutRuntime.buildWidgetFromJson(rootData!);
+          return result;
+        },
+      ),
+    );
+  });
 }

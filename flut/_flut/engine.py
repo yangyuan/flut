@@ -4,6 +4,7 @@ import sys
 import json
 import asyncio
 import contextlib
+import inspect
 import weakref
 from typing import override
 
@@ -136,6 +137,9 @@ class FlutterEngine:
 
         self._current_build_scope = None
 
+        self._on_initialized_callback = None
+        self._on_initialized_dispatched = False
+
         _engine = self
 
     def call_dart(self, call_type, data):
@@ -218,6 +222,17 @@ class FlutterEngine:
         on_initialized=None,
         on_close=None,
     ):
+        if inspect.iscoroutinefunction(on_initialized):
+            raise TypeError(
+                "run_app requires a sync on_initialized; "
+                "use run_app_async for async callbacks"
+            )
+        if inspect.iscoroutinefunction(on_close):
+            raise TypeError(
+                "run_app requires a sync on_close; "
+                "use run_app_async for async callbacks"
+            )
+        self._on_initialized_callback = on_initialized
         self._native.run(
             self._handle_method_call,
             flutter_asset_path,
@@ -226,7 +241,6 @@ class FlutterEngine:
             title,
             icon_path=icon_path,
             app_id=app_id,
-            on_initialized=on_initialized,
             on_close=on_close,
         )
 
@@ -243,6 +257,7 @@ class FlutterEngine:
         loop=None,
     ):
         self._event_loop = loop or asyncio.get_running_loop()
+        self._on_initialized_callback = on_initialized
         await self._native.run_async(
             self._handle_method_call,
             flutter_asset_path,
@@ -251,10 +266,44 @@ class FlutterEngine:
             title,
             icon_path=icon_path,
             app_id=app_id,
-            on_initialized=on_initialized,
             on_close=on_close,
             loop=self._event_loop,
         )
+
+    def _signal_user_init_done(self):
+        try:
+            self.call_dart_async("lifecycle", {"event": "user_init_done"})
+        except Exception:
+            logger.exception("Failed to signal user_init_done to Dart")
+
+    def _kickoff_on_initialized(self):
+        if self._on_initialized_dispatched:
+            return
+        self._on_initialized_dispatched = True
+        callback = self._on_initialized_callback
+        if callback is None:
+            self._signal_user_init_done()
+            return
+        if self._event_loop is None:
+            try:
+                callback()
+            except Exception:
+                logger.exception("on_initialized raised")
+            finally:
+                self._signal_user_init_done()
+            return
+
+        async def _runner():
+            try:
+                result = callback()
+                if asyncio.iscoroutine(result):
+                    await result
+            except Exception:
+                logger.exception("on_initialized raised")
+            finally:
+                self._signal_user_init_done()
+
+        self._event_loop.create_task(_runner())
 
     def shutdown(self):
         global _engine
@@ -295,7 +344,7 @@ class FlutterEngine:
                         kwargs[k] = _decode_value(v)
 
                 raw_fn = getattr(cb, "_func", cb)
-                if asyncio.iscoroutinefunction(raw_fn):
+                if inspect.iscoroutinefunction(raw_fn):
                     if self._event_loop is not None:
                         self._event_loop.create_task(cb(*args, **kwargs))
                     else:
@@ -364,6 +413,7 @@ class FlutterEngine:
                 self._dart_exit_isolate = EXIT_FN(exit_addr)
                 self._dart_current_isolate = CURRENT_FN(current_addr)
                 self._dart_isolate_handle = ctypes.c_void_p(isolate_addr)
+                self._kickoff_on_initialized()
                 return json.dumps({"success": True}).encode("utf-8")
 
             elif req_type == "action":
