@@ -919,7 +919,6 @@ class FlutWindowsNative(FlutNative):
         title: str,
         icon_path: str | None = None,
         app_id: str | None = None,
-        on_initialized=None,
         on_close=None,
     ):
         hwnd, scaled_width, scaled_height, title = self._setup_engine(
@@ -941,7 +940,6 @@ class FlutWindowsNative(FlutNative):
             title,
             icon_path,
             app_id,
-            on_initialized,
             on_close,
             close_error,
         )
@@ -957,7 +955,6 @@ class FlutWindowsNative(FlutNative):
         title,
         icon_path,
         app_id,
-        on_initialized,
         on_close,
         close_error,
     ):
@@ -986,9 +983,6 @@ class FlutWindowsNative(FlutNative):
         if not host_hwnd:
             return False
 
-        if on_initialized is not None:
-            on_initialized()
-
         msg = MSG()
         self._running = True
 
@@ -1010,7 +1004,6 @@ class FlutWindowsNative(FlutNative):
         title: str,
         icon_path: str | None = None,
         app_id: str | None = None,
-        on_initialized=None,
         on_close=None,
         loop: asyncio.AbstractEventLoop = None,
     ):
@@ -1035,7 +1028,6 @@ class FlutWindowsNative(FlutNative):
             title,
             icon_path,
             app_id,
-            on_initialized,
             on_close,
             loop,
         )
@@ -1049,7 +1041,6 @@ class FlutWindowsNative(FlutNative):
         title,
         icon_path,
         app_id,
-        on_initialized,
         on_close,
         loop: asyncio.AbstractEventLoop,
     ):
@@ -1083,9 +1074,6 @@ class FlutWindowsNative(FlutNative):
         )
         if not host_hwnd:
             return False
-
-        if on_initialized is not None:
-            await on_initialized()
 
         wake_bridge = ProactorWakeEvent()
         wake_event = wake_bridge.setup(loop)

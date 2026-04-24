@@ -49,11 +49,17 @@ class FlutFfiNative implements FlutNative {
   ffi.Pointer<Utf8>? _callResponseBuffer;
   static int _processedNotifyCount = 0;
 
+  final Completer<void> _userInitDone = Completer<void>();
+  Future<void> get userInitDone => _userInitDone.future;
+
   FlutFfiNative(this.nativeCallbackAddr) {
     if (_instance != null) {
       throw Exception("FlutFfiNative already initialized");
     }
     _instance = this;
+  }
+
+  void bootstrap() {
     try {
       _registerDartCallbackWithPython();
     } catch (_) {
@@ -291,6 +297,12 @@ class FlutFfiNative implements FlutNative {
           _callMethod(_instance!, decoded);
         } else if (type == 'release') {
           _releaseObjects(_instance!, decoded);
+        } else if (type == 'lifecycle') {
+          final event = decoded['event'] as String?;
+          if (event == 'user_init_done' &&
+              !_instance!._userInitDone.isCompleted) {
+            _instance!._userInitDone.complete();
+          }
         }
       }
     } catch (e) {
