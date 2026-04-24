@@ -3,7 +3,7 @@ from typing import override
 from flut._flut.engine import _flut_pack_value
 from flut._flut.runtime import _flut_unpack_required_field
 from flut.flutter.painting.borders import BorderSide, OutlinedBorder
-from flut.flutter.painting.border_radius import BorderRadius
+from flut.flutter.painting.border_radius import BorderRadius, BorderRadiusGeometry
 
 
 class BeveledRectangleBorder(OutlinedBorder):
@@ -13,7 +13,7 @@ class BeveledRectangleBorder(OutlinedBorder):
         self,
         *,
         side: BorderSide = BorderSide.none,
-        borderRadius: BorderRadius = BorderRadius.zero,
+        borderRadius: BorderRadiusGeometry = BorderRadius.zero,
     ):
         super().__init__()
         self.side = side

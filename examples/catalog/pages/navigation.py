@@ -49,7 +49,7 @@ from flut.flutter.material import (
     ThemeMode,
     Drawer,
 )
-from flut.dart.ui import FontWeight
+from flut.dart.ui import FontWeight, Radius
 from flut.flutter.painting import (
     EdgeInsets,
     TextStyle,
@@ -1281,9 +1281,9 @@ class _DebugBannerDemo(StatelessWidget):
                                 padding=EdgeInsets.symmetric(horizontal=6, vertical=2),
                                 decoration=BoxDecoration(
                                     color=Color(0xFFA30000),
-                                    borderRadius=BorderRadius(
-                                        topRight=8,
-                                        bottomLeft=8,
+                                    borderRadius=BorderRadius.only(
+                                        topRight=Radius.circular(8),
+                                        bottomLeft=Radius.circular(8),
                                     ),
                                 ),
                                 child=Text(

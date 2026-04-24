@@ -11,8 +11,16 @@ class FlutAlignmentGeometry extends FlutValueObject {
   @override
   Map<String, dynamic> flutEncode() {
     throw UnimplementedError(
-      'Mixed AlignmentGeometry values are not supported yet. '
-      'Only Alignment and AlignmentDirectional are supported.',
+      'AlignmentGeometry has no concrete wire form. Pass a concrete subtype.',
+    );
+  }
+
+  static AlignmentGeometry? flutDecode(
+    FlutRuntime runtime,
+    Map<String, dynamic> data,
+  ) {
+    throw UnimplementedError(
+      'AlignmentGeometry has no concrete wire form. Pass a concrete subtype.',
     );
   }
 }

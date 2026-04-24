@@ -12,7 +12,7 @@ class FlutDivider {
       indent: runtime.unpackOptionalField<double>(data, 'indent'),
       endIndent: runtime.unpackOptionalField<double>(data, 'endIndent'),
       color: runtime.unpackOptionalField<Color>(data, 'color'),
-      radius: runtime.unpackOptionalField<BorderRadius>(data, 'radius'),
+      radius: runtime.unpackOptionalField<BorderRadiusGeometry>(data, 'radius'),
     );
   }
 

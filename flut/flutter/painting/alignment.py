@@ -11,11 +11,16 @@ class _AlignmentGeometry(FlutValueObject):
     def __init__(self):
         super().__init__()
 
+    @override
+    def _flut_pack(self) -> dict:
+        raise NotImplementedError(
+            "AlignmentGeometry has no concrete wire form. Pass a concrete subtype."
+        )
+
     @staticmethod
     def _flut_unpack(data: dict):
         raise NotImplementedError(
-            "AlignmentGeometry decode is not supported yet. "
-            "Decode Alignment or AlignmentDirectional explicitly."
+            "AlignmentGeometry has no concrete wire form. Pass a concrete subtype."
         )
 
     @staticmethod

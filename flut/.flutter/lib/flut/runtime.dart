@@ -972,12 +972,13 @@ class FlutRuntime {
       case 'AlignmentDirectional':
         return FlutAlignmentDirectional.flutDecode(this, data);
       case 'AlignmentGeometry':
-        throw UnimplementedError(
-          'AlignmentGeometry decode is not supported yet. '
-          'Decode Alignment or AlignmentDirectional explicitly.',
-        );
+        return FlutAlignmentGeometry.flutDecode(this, data);
+      case 'BorderRadiusGeometry':
+        return FlutBorderRadiusGeometry.flutDecode(this, data);
       case 'BorderRadius':
         return FlutBorderRadius.flutDecode(this, data);
+      case 'BorderRadiusDirectional':
+        return FlutBorderRadiusDirectional.flutDecode(this, data);
       case 'BorderStyle':
         return const FlutBorderStyle().flutDecode(data);
       case 'DynamicSchemeVariant':
@@ -1759,6 +1760,12 @@ class FlutRuntime {
     }
     if (value is IconData) return FlutIconData(value).flutEncode();
     if (value is BorderRadius) return FlutBorderRadius(value).flutEncode();
+    if (value is BorderRadiusDirectional) {
+      return FlutBorderRadiusDirectional(value).flutEncode();
+    }
+    if (value is BorderRadiusGeometry) {
+      return FlutBorderRadiusGeometry(value).flutEncode();
+    }
     if (value is BorderSide) return FlutBorderSide(value).flutEncode();
     if (value is Border) return FlutBorder(value).flutEncode();
     if (value is BoxDecoration) return FlutBoxDecoration(value).flutEncode();

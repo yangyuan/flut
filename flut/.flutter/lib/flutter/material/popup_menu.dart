@@ -104,7 +104,7 @@ class FlutPopupMenuDivider {
       thickness: runtime.unpackOptionalField<double>(data, 'thickness'),
       indent: runtime.unpackOptionalField<double>(data, 'indent'),
       endIndent: runtime.unpackOptionalField<double>(data, 'endIndent'),
-      radius: runtime.unpackOptionalField<BorderRadius>(data, 'radius'),
+      radius: runtime.unpackOptionalField<BorderRadiusGeometry>(data, 'radius'),
       color: runtime.unpackOptionalField<Color>(data, 'color'),
     );
   }

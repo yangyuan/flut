@@ -73,7 +73,7 @@ class FlutLinearProgressIndicator {
         data,
         'semanticsValue',
       ),
-      borderRadius: runtime.unpackOptionalField<BorderRadius>(
+      borderRadius: runtime.unpackOptionalField<BorderRadiusGeometry>(
         data,
         'borderRadius',
       ),

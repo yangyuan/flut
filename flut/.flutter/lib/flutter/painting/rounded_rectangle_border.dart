@@ -13,8 +13,8 @@ class FlutRoundedRectangleBorder extends FlutValueObject {
   Map<String, dynamic> flutEncode() {
     final result = flutBaseProps();
     result['side'] = FlutBorderSide(value.side).flutEncode();
-    result['borderRadius'] = FlutBorderRadius(
-      value.borderRadius as BorderRadius,
+    result['borderRadius'] = FlutBorderRadiusGeometry(
+      value.borderRadius,
     ).flutEncode();
     return result;
   }
@@ -25,7 +25,7 @@ class FlutRoundedRectangleBorder extends FlutValueObject {
   ) {
     return RoundedRectangleBorder(
       side: runtime.unpackRequiredField<BorderSide>(data, 'side'),
-      borderRadius: runtime.unpackRequiredField<BorderRadius>(
+      borderRadius: runtime.unpackRequiredField<BorderRadiusGeometry>(
         data,
         'borderRadius',
       ),

@@ -395,10 +395,13 @@ def flut_unpack(data) -> Optional[object]:
 
             return _AlignmentDirectional._flut_unpack(data)
         case "AlignmentGeometry":
-            raise NotImplementedError(
-                "AlignmentGeometry decode is not supported yet. "
-                "Decode Alignment or AlignmentDirectional explicitly."
-            )
+            from flut.flutter.painting.alignment import _AlignmentGeometry
+
+            return _AlignmentGeometry._flut_unpack(data)
+        case "BorderRadiusGeometry":
+            from flut.flutter.painting.border_radius import _BorderRadiusGeometry
+
+            return _BorderRadiusGeometry._flut_unpack(data)
         case "BorderRadius":
             from flut.flutter.painting.border_radius import BorderRadius
 

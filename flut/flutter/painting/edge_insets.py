@@ -2,7 +2,7 @@ import math
 from typing import override
 
 from flut._flut.engine import FlutValueObject, _flut_pack_value
-from flut._flut.runtime import _flut_unpack_optional_field, _flut_unpack_required_field
+from flut._flut.runtime import _flut_unpack_required_field
 from flut.dart.ui import Offset, RRect, Radius, Rect, Size, TextDirection, ViewPadding
 from flut.flutter.painting.basic_types import Axis
 
@@ -30,13 +30,13 @@ class _EdgeInsetsGeometry(FlutValueObject):
 
     @staticmethod
     def _flut_unpack(data: dict):
-        return _canonicalize_edge_insets(
-            _flut_unpack_optional_field(data, "left") or 0.0,
-            _flut_unpack_optional_field(data, "right") or 0.0,
-            _flut_unpack_optional_field(data, "start") or 0.0,
-            _flut_unpack_optional_field(data, "end") or 0.0,
-            _flut_unpack_optional_field(data, "top") or 0.0,
-            _flut_unpack_optional_field(data, "bottom") or 0.0,
+        return _MixedEdgeInsets(
+            _flut_unpack_required_field(data, "left"),
+            _flut_unpack_required_field(data, "right"),
+            _flut_unpack_required_field(data, "start"),
+            _flut_unpack_required_field(data, "end"),
+            _flut_unpack_required_field(data, "top"),
+            _flut_unpack_required_field(data, "bottom"),
         )
 
     @staticmethod

@@ -74,7 +74,7 @@ class FlutBoxDecoration extends FlutValueObject {
     return BoxDecoration(
       color: runtime.unpackOptionalField<Color>(data, 'color'),
       border: runtime.unpackOptionalField<Border>(data, 'border'),
-      borderRadius: runtime.unpackOptionalField<BorderRadius>(
+      borderRadius: runtime.unpackOptionalField<BorderRadiusGeometry>(
         data,
         'borderRadius',
       ),

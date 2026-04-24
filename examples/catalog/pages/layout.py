@@ -93,6 +93,8 @@ from flut.flutter.painting import (
     BoxDecoration,
     BoxShadow,
     BorderRadius,
+    BorderRadiusDirectional,
+    BorderRadiusGeometry,
     EdgeInsetsDirectional,
     EdgeInsetsGeometry,
     TextSpan,
@@ -2511,6 +2513,95 @@ class LayoutPage(StatelessWidget):
                     ),
                 ),
                 SplitViewTile(
+                    title="BorderRadiusGeometry",
+                    description=(
+                        "BorderRadiusGeometry is the abstract supertype of BorderRadius "
+                        "(physical corners: topLeft/topRight/bottomLeft/bottomRight) and "
+                        "BorderRadiusDirectional (logical corners: topStart/topEnd/"
+                        "bottomStart/bottomEnd, resolved against TextDirection). Widgets "
+                        "such as Container.borderRadius, ClipRRect.borderRadius and "
+                        "RoundedRectangleBorder.borderRadius accept either subtype."
+                    ),
+                    instruction=(
+                        "Left: BorderRadius.only with physical corners. "
+                        "Right: BorderRadiusDirectional.only with logical corners "
+                        "(start/end resolve against the ambient TextDirection - LTR here, "
+                        "so start == left)."
+                    ),
+                    visible=Row(
+                        crossAxisAlignment=CrossAxisAlignment.start,
+                        children=[
+                            Expanded(
+                                child=Column(
+                                    crossAxisAlignment=CrossAxisAlignment.start,
+                                    children=[
+                                        Text(
+                                            "BorderRadius.only",
+                                            style=TextStyle(
+                                                fontSize=12, color=Colors.grey
+                                            ),
+                                        ),
+                                        SizedBox(height=4),
+                                        Container(
+                                            width=140.0,
+                                            height=80.0,
+                                            decoration=BoxDecoration(
+                                                color=Color(0xFF90CAF9),
+                                                borderRadius=BorderRadius.only(
+                                                    topLeft=Radius.circular(24),
+                                                    bottomRight=Radius.circular(24),
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ),
+                            SizedBox(width=16),
+                            Expanded(
+                                child=Column(
+                                    crossAxisAlignment=CrossAxisAlignment.start,
+                                    children=[
+                                        Text(
+                                            "BorderRadiusDirectional.only",
+                                            style=TextStyle(
+                                                fontSize=12, color=Colors.grey
+                                            ),
+                                        ),
+                                        SizedBox(height=4),
+                                        Container(
+                                            width=140.0,
+                                            height=80.0,
+                                            decoration=BoxDecoration(
+                                                color=Color(0xFFA5D6A7),
+                                                borderRadius=BorderRadiusDirectional.only(
+                                                    topStart=Radius.circular(24),
+                                                    bottomEnd=Radius.circular(24),
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                ),
+                            ),
+                        ],
+                    ),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "# Physical corners.\n"
+                            "BorderRadius.only(\n"
+                            "    topLeft=Radius.circular(24),\n"
+                            "    bottomRight=Radius.circular(24),\n"
+                            ")\n"
+                            "\n"
+                            "# Logical corners (resolved against TextDirection).\n"
+                            "BorderRadiusDirectional.only(\n"
+                            "    topStart=Radius.circular(24),\n"
+                            "    bottomEnd=Radius.circular(24),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
                     title="Stack clipBehavior",
                     description=(
                         "Stack.clipBehavior controls whether children that overflow "
@@ -3152,16 +3243,28 @@ class LayoutPage(StatelessWidget):
                         runSpacing=16.0,
                         children=[
                             _br_card("circular(12)", BorderRadius.circular(12)),
-                            _br_card("all(24)", BorderRadius.all(24)),
+                            _br_card(
+                                "all(Radius.circular(24))",
+                                BorderRadius.all(Radius.circular(24)),
+                            ),
                             _br_card(
                                 "horizontal\nleft=20, right=4",
-                                BorderRadius.horizontal(left=20, right=4),
+                                BorderRadius.horizontal(
+                                    left=Radius.circular(20),
+                                    right=Radius.circular(4),
+                                ),
                             ),
                             _br_card(
                                 "vertical\ntop=24, bottom=0",
-                                BorderRadius.vertical(top=24, bottom=0),
+                                BorderRadius.vertical(
+                                    top=Radius.circular(24),
+                                    bottom=Radius.circular(0),
+                                ),
                             ),
-                            _br_card("only\ntopLeft=30", BorderRadius(topLeft=30)),
+                            _br_card(
+                                "only\ntopLeft=30",
+                                BorderRadius.only(topLeft=Radius.circular(30)),
+                            ),
                         ],
                     ),
                     code=CodeArea(
@@ -3174,9 +3277,15 @@ class LayoutPage(StatelessWidget):
                             "    ),\n"
                             ")\n\n"
                             "# Asymmetric corners\n"
-                            "BorderRadius.horizontal(left=20, right=4)\n"
-                            "BorderRadius.vertical(top=24, bottom=0)\n"
-                            "BorderRadius(topLeft=30)\n"
+                            "BorderRadius.horizontal(\n"
+                            "    left=Radius.circular(20),\n"
+                            "    right=Radius.circular(4),\n"
+                            ")\n"
+                            "BorderRadius.vertical(\n"
+                            "    top=Radius.circular(24),\n"
+                            "    bottom=Radius.circular(0),\n"
+                            ")\n"
+                            "BorderRadius.only(topLeft=Radius.circular(30))\n"
                         ),
                     ),
                 ),
@@ -5175,8 +5284,9 @@ class LayoutPage(StatelessWidget):
                                         height=80.0,
                                         decoration=BoxDecoration(
                                             color=Colors.deepPurple,
-                                            borderRadius=BorderRadius(
-                                                topLeft=20, bottomRight=20
+                                            borderRadius=BorderRadius.only(
+                                                topLeft=Radius.circular(20),
+                                                bottomRight=Radius.circular(20),
                                             ),
                                         ),
                                         child=Center(
@@ -5194,7 +5304,9 @@ class LayoutPage(StatelessWidget):
                                         height=80.0,
                                         decoration=BoxDecoration(
                                             color=Colors.teal,
-                                            borderRadius=BorderRadius.all(12),
+                                            borderRadius=BorderRadius.all(
+                                                Radius.circular(12)
+                                            ),
                                         ),
                                         child=Center(
                                             child=Text(
@@ -5238,7 +5350,10 @@ class LayoutPage(StatelessWidget):
                             ")\n"
                             "\n"
                             "BoxDecoration(\n"
-                            "    borderRadius=BorderRadius(topLeft=20, bottomRight=20),\n"
+                            "    borderRadius=BorderRadius(\n"
+                            "        topLeft=Radius.circular(20),\n"
+                            "        bottomRight=Radius.circular(20),\n"
+                            "    ),\n"
                             ")"
                         ),
                     ),

@@ -77,7 +77,7 @@ class FlutClipRRect {
   static ClipRRect? flutDecode(FlutRuntime runtime, Map<String, dynamic> data) {
     return ClipRRect(
       key: runtime.decodeKey(data),
-      borderRadius: runtime.unpackRequiredField<BorderRadius>(
+      borderRadius: runtime.unpackRequiredField<BorderRadiusGeometry>(
         data,
         'borderRadius',
       ),

@@ -11,7 +11,7 @@ from flut.flutter.rendering.flex import (
 from flut.flutter.rendering.wrap import WrapAlignment, WrapCrossAlignment
 from flut.flutter.painting.alignment import Alignment, AlignmentDirectional
 from flut.flutter.painting.basic_types import Axis, VerticalDirection
-from flut.flutter.painting.border_radius import BorderRadius
+from flut.flutter.painting.border_radius import BorderRadius, BorderRadiusGeometry
 from flut.flutter.painting.box_fit import BoxFit
 from flut.flutter.rendering.stack import StackFit
 from flut.flutter.services.mouse_cursor import MouseCursor
@@ -489,7 +489,7 @@ class ClipRRect(Widget):
         self,
         *,
         key=None,
-        borderRadius: BorderRadius = BorderRadius.circular(0),
+        borderRadius: BorderRadiusGeometry = BorderRadius.circular(0),
         clipper=None,
         clipBehavior: Clip = Clip.antiAlias,
         child: Optional[Widget] = None,
