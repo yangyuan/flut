@@ -143,7 +143,7 @@ class StatelessWidget(Widget):
         engine.binding_registry[pid] = _init_callback
         result = self._flut_base_props()
         result["_flut_pid"] = pid
-        result["className"] = self.__class__.__name__
+        result["className"] = f"{type(self).__module__}.{type(self).__qualname__}"
         return result
 
 
@@ -284,7 +284,7 @@ class StatefulWidget(Widget):
         engine.binding_registry[pid] = _init_callback
         result = self._flut_base_props()
         result["_flut_pid"] = pid
-        result["className"] = self.__class__.__name__
+        result["className"] = f"{type(self).__module__}.{type(self).__qualname__}"
         return result
 
 
@@ -406,5 +406,5 @@ class InheritedWidget(Widget):
         result = self._flut_base_props()
         result["_flut_pid"] = pid
         result["scopeName"] = self.__class__.__name__
-        result["className"] = self.__class__.__name__
+        result["className"] = f"{type(self).__module__}.{type(self).__qualname__}"
         return result

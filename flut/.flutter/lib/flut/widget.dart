@@ -11,29 +11,84 @@ final _pidFinalizer = Finalizer<List<dynamic>>((token) {
   } catch (_) {}
 });
 
-class FlutStatefulWidget extends StatefulWidget {
+@immutable
+class _FlutClassKey extends LocalKey {
+  const _FlutClassKey(this.className, this.originalKey);
+
+  final String className;
+  final Key? originalKey;
+
+  @override
+  bool operator ==(Object other) {
+    return other is _FlutClassKey &&
+        other.className == className &&
+        other.originalKey == originalKey;
+  }
+
+  @override
+  int get hashCode => Object.hash(className, originalKey);
+
+  @override
+  String toString() =>
+      '_FlutClassKey($className${originalKey == null ? '' : ', $originalKey'})';
+}
+
+Key _innerHostKey(String className, Key? userKey) {
+  if (userKey is GlobalKey) return userKey;
+  return _FlutClassKey(className, userKey);
+}
+
+class FlutStatefulWidget extends StatelessWidget {
   final int flutPid;
   final String className;
   final FlutNative native;
   final FlutRuntime runtime;
+  final Key? userKey;
 
   FlutStatefulWidget({
     required this.flutPid,
     required this.className,
     required this.native,
     required this.runtime,
-    super.key,
-  }) {
+    Key? key,
+  }) : userKey = key,
+       super(key: key is GlobalKey ? null : key) {
     _pidFinalizer.attach(this, [native, flutPid]);
   }
 
   @override
-  State<FlutStatefulWidget> createState() => _FlutStatefulWidgetState();
+  Widget build(BuildContext context) {
+    return _FlutStatefulHost(
+      key: _innerHostKey(className, userKey),
+      flutPid: flutPid,
+      className: className,
+      native: native,
+      runtime: runtime,
+    );
+  }
 }
 
-class _FlutStatefulWidgetState extends State<FlutStatefulWidget>
+class _FlutStatefulHost extends StatefulWidget {
+  final int flutPid;
+  final String className;
+  final FlutNative native;
+  final FlutRuntime runtime;
+
+  const _FlutStatefulHost({
+    required this.flutPid,
+    required this.className,
+    required this.native,
+    required this.runtime,
+    super.key,
+  });
+
+  @override
+  State<_FlutStatefulHost> createState() => _FlutStatefulHostState();
+}
+
+class _FlutStatefulHostState extends State<_FlutStatefulHost>
     with
-        FlutRealtimeObject<State<FlutStatefulWidget>>,
+        FlutRealtimeObject<State<_FlutStatefulHost>>,
         TickerProviderStateMixin,
         AutomaticKeepAliveClientMixin {
   int? _buildActionId;
@@ -231,36 +286,62 @@ class FlutStatelessWidget extends StatelessWidget {
   final String className;
   final FlutNative native;
   final FlutRuntime runtime;
+  final Key? userKey;
 
   FlutStatelessWidget({
     required this.flutPid,
     required this.className,
     required this.native,
     required this.runtime,
-    super.key,
-  }) {
+    Key? key,
+  }) : userKey = key,
+       super(key: key is GlobalKey ? null : key) {
     _pidFinalizer.attach(this, [native, flutPid]);
   }
 
   @override
-  StatelessElement createElement() => FlutStatelessElement(this);
-
-  @override
   Widget build(BuildContext context) {
-    throw StateError(
-      'FlutStatelessWidget.build should not be called directly.',
+    return _FlutStatelessHost(
+      key: _innerHostKey(className, userKey),
+      flutPid: flutPid,
+      className: className,
+      native: native,
+      runtime: runtime,
     );
   }
 }
 
-class FlutStatelessElement extends StatelessElement
+class _FlutStatelessHost extends StatelessWidget {
+  final int flutPid;
+  final String className;
+  final FlutNative native;
+  final FlutRuntime runtime;
+
+  const _FlutStatelessHost({
+    required this.flutPid,
+    required this.className,
+    required this.native,
+    required this.runtime,
+    super.key,
+  });
+
+  @override
+  StatelessElement createElement() => _FlutStatelessHostElement(this);
+
+  @override
+  Widget build(BuildContext context) {
+    throw StateError('_FlutStatelessHost.build should not be called directly.');
+  }
+}
+
+class _FlutStatelessHostElement extends StatelessElement
     with FlutRealtimeObject<StatelessElement> {
   int? _buildActionId;
   late int _lastProcessedPid;
 
-  FlutStatelessElement(FlutStatelessWidget super.widget);
+  _FlutStatelessHostElement(_FlutStatelessHost super.widget);
 
-  FlutStatelessWidget get _flutWidget => widget as FlutStatelessWidget;
+  _FlutStatelessHost get _flutWidget => widget as _FlutStatelessHost;
 
   @override
   void mount(Element? parent, Object? newSlot) {
@@ -274,12 +355,6 @@ class FlutStatelessElement extends StatelessElement
     );
     _flutWidget.runtime.objectRegistry[oid] = this;
     super.mount(parent, newSlot);
-  }
-
-  @override
-  void update(FlutStatelessWidget newWidget) {
-    super.update(newWidget);
-    rebuild(force: true);
   }
 
   @override
@@ -449,12 +524,13 @@ class _FlutInheritedScopeMarker extends InheritedWidget {
   }
 }
 
-class FlutInheritedScopeWidget extends StatefulWidget {
+class FlutInheritedScopeWidget extends StatelessWidget {
   final int flutPid;
   final String scopeName;
   final String className;
   final FlutNative native;
   final FlutRuntime runtime;
+  final Key? userKey;
 
   FlutInheritedScopeWidget({
     required this.flutPid,
@@ -462,17 +538,47 @@ class FlutInheritedScopeWidget extends StatefulWidget {
     required this.className,
     required this.native,
     required this.runtime,
-    super.key,
-  }) {
+    Key? key,
+  }) : userKey = key,
+       super(key: key is GlobalKey ? null : key) {
     _pidFinalizer.attach(this, [native, flutPid]);
   }
 
   @override
-  State<FlutInheritedScopeWidget> createState() => _FlutInheritedScopeState();
+  Widget build(BuildContext context) {
+    return _FlutInheritedScopeHost(
+      key: _innerHostKey(className, userKey),
+      flutPid: flutPid,
+      scopeName: scopeName,
+      className: className,
+      native: native,
+      runtime: runtime,
+    );
+  }
 }
 
-class _FlutInheritedScopeState extends State<FlutInheritedScopeWidget>
-    with FlutRealtimeObject<State<FlutInheritedScopeWidget>> {
+class _FlutInheritedScopeHost extends StatefulWidget {
+  final int flutPid;
+  final String scopeName;
+  final String className;
+  final FlutNative native;
+  final FlutRuntime runtime;
+
+  const _FlutInheritedScopeHost({
+    required this.flutPid,
+    required this.scopeName,
+    required this.className,
+    required this.native,
+    required this.runtime,
+    super.key,
+  });
+
+  @override
+  State<_FlutInheritedScopeHost> createState() => _FlutInheritedScopeState();
+}
+
+class _FlutInheritedScopeState extends State<_FlutInheritedScopeHost>
+    with FlutRealtimeObject<State<_FlutInheritedScopeHost>> {
   int? _buildActionId;
   late int _lastProcessedPid;
   int _version = 0;

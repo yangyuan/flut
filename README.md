@@ -169,7 +169,7 @@ For a more complete example, see the [catalog app](https://github.com/yangyuan/f
 
 ## Flutter Parity
 
-Flut is a project that brings Flutter to Python. Some features are not applicable in this context: whether due to platform limitations, overlap with Python's own ecosystem, being tied to the Dart development workflow, or simply due to its challanging nature. The following are out of scope, listed from lowest to highest priority for future consideration:
+Flut is a project that brings Flutter to Python. Some features are not applicable in this context: whether due to platform limitations, overlap with Python's own ecosystem, being tied to the Dart development workflow, or simply due to its challenging nature. The following are out of scope, listed from lowest to highest priority for future consideration:
 
 - **Web Support**
 - **Mobile Support**
@@ -184,6 +184,7 @@ The following are implemented with compromises:
 - **InheritedWidget** Uses `visitAncestorElements` + `dependOnInheritedElement` instead of type-based lookup, resulting in O(depth) lookup vs Flutter's O(1). Negligible for typical widget trees.
 - **Shortcuts / Actions** O(depth) action lookup vs Flutter's O(1). Negligible for typical widget trees.
 - **showDialog** wraps the builder in a StatelessWidget proxy so the dialog's widget tree is built through the standard Dart-initiated build path, enabling callbacks in dialog children to work correctly.
+- Python defined `StatelessWidget`/`StatefulWidget`/`InheritedWidget` are wrapped in an outer `StatelessWidget` whose inner host is keyed by the fully-qualified Python class name.
 
 ## Build
 ```

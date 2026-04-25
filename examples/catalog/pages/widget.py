@@ -88,6 +88,16 @@ class _LogPanelState(State[_LogPanel]):
     def initState(self):
         self.widget.controller._notify = lambda: self.setState(lambda: None)
 
+    def didUpdateWidget(self, oldWidget):
+        if oldWidget.controller is not self.widget.controller:
+            if oldWidget.controller._notify is not None:
+                oldWidget.controller._notify = None
+            self.widget.controller._notify = lambda: self.setState(lambda: None)
+
+    def dispose(self):
+        if self.widget.controller._notify is not None:
+            self.widget.controller._notify = None
+
     def build(self, context):
         ctrl = self.widget.controller
         if not ctrl.lines:
@@ -561,6 +571,313 @@ class _InheritedWidgetDemoState(State[_InheritedWidgetDemo]):
                         child=_InheritedConsumer(controller=self.widget.controller),
                     ),
                 ),
+            ],
+        )
+
+
+class _RedCounter(StatefulWidget):
+    def __init__(self, *, controller, key=None):
+        super().__init__(key=key)
+        self.controller = controller
+
+    def createState(self):
+        return _RedCounterState()
+
+
+class _RedCounterState(State[_RedCounter]):
+    def initState(self):
+        self.count = 0
+        self.widget.controller.log("[Red] initState")
+
+    def dispose(self):
+        self.widget.controller.log("[Red] dispose")
+
+    def _bump(self):
+        self.setState(lambda: setattr(self, "count", self.count + 1))
+
+    def build(self, context):
+        return GestureDetector(
+            onTap=self._bump,
+            child=Container(
+                padding=EdgeInsets.symmetric(horizontal=16, vertical=10),
+                decoration=BoxDecoration(
+                    color=Colors.red,
+                    borderRadius=BorderRadius.circular(8),
+                ),
+                child=Text(
+                    f"Red counter: {self.count} (+1 per tap)",
+                    style=TextStyle(color=Colors.white, fontSize=14),
+                ),
+            ),
+        )
+
+
+class _BlueCounter(StatefulWidget):
+    def __init__(self, *, controller, key=None):
+        super().__init__(key=key)
+        self.controller = controller
+
+    def createState(self):
+        return _BlueCounterState()
+
+
+class _BlueCounterState(State[_BlueCounter]):
+    def initState(self):
+        self.count = 0
+        self.widget.controller.log("[Blue] initState")
+
+    def dispose(self):
+        self.widget.controller.log("[Blue] dispose")
+
+    def _bump(self):
+        self.setState(lambda: setattr(self, "count", self.count + 5))
+
+    def build(self, context):
+        return GestureDetector(
+            onTap=self._bump,
+            child=Container(
+                padding=EdgeInsets.symmetric(horizontal=16, vertical=10),
+                decoration=BoxDecoration(
+                    color=Colors.blue,
+                    borderRadius=BorderRadius.circular(8),
+                ),
+                child=Text(
+                    f"Blue counter: {self.count} (+5 per tap)",
+                    style=TextStyle(color=Colors.white, fontSize=14),
+                ),
+            ),
+        )
+
+
+class _ClassIdentityStatefulDemo(StatefulWidget):
+    def __init__(self, *, controller, key=None):
+        super().__init__(key=key)
+        self.controller = controller
+
+    def createState(self):
+        return _ClassIdentityStatefulDemoState()
+
+
+class _ClassIdentityStatefulDemoState(State[_ClassIdentityStatefulDemo]):
+    def initState(self):
+        self.use_red = True
+
+    def _toggle(self):
+        self.widget.controller.clear()
+        self.setState(lambda: setattr(self, "use_red", not self.use_red))
+
+    def build(self, context):
+        slot = (
+            _RedCounter(controller=self.widget.controller)
+            if self.use_red
+            else _BlueCounter(controller=self.widget.controller)
+        )
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                ElevatedButton(
+                    onPressed=self._toggle,
+                    child=Text("Swap class in slot"),
+                ),
+                SizedBox(height=8),
+                slot,
+            ],
+        )
+
+
+class _StatelessProbeA(StatelessWidget):
+    def __init__(self, *, child, key=None):
+        super().__init__(key=key)
+        self._child = child
+
+    def build(self, context):
+        return Container(
+            padding=EdgeInsets.all(8),
+            decoration=BoxDecoration(
+                color=Color(0xFFFCE4EC),
+                borderRadius=BorderRadius.circular(8),
+            ),
+            child=Column(
+                crossAxisAlignment=CrossAxisAlignment.start,
+                children=[
+                    Text(
+                        "Wrapper class: _StatelessProbeA",
+                        style=TextStyle(fontSize=12, fontFamily=CODE_FONT_FAMILY),
+                    ),
+                    SizedBox(height=6),
+                    self._child,
+                ],
+            ),
+        )
+
+
+class _StatelessProbeB(StatelessWidget):
+    def __init__(self, *, child, key=None):
+        super().__init__(key=key)
+        self._child = child
+
+    def build(self, context):
+        return Container(
+            padding=EdgeInsets.all(8),
+            decoration=BoxDecoration(
+                color=Color(0xFFE0F7FA),
+                borderRadius=BorderRadius.circular(8),
+            ),
+            child=Column(
+                crossAxisAlignment=CrossAxisAlignment.start,
+                children=[
+                    Text(
+                        "Wrapper class: _StatelessProbeB",
+                        style=TextStyle(fontSize=12, fontFamily=CODE_FONT_FAMILY),
+                    ),
+                    SizedBox(height=6),
+                    self._child,
+                ],
+            ),
+        )
+
+
+class _ClassIdentityStatelessDemo(StatefulWidget):
+    def createState(self):
+        return _ClassIdentityStatelessDemoState()
+
+
+class _ClassIdentityStatelessDemoState(State[_ClassIdentityStatelessDemo]):
+    def initState(self):
+        self.use_a = True
+
+    def _toggle(self):
+        self.setState(lambda: setattr(self, "use_a", not self.use_a))
+
+    def build(self, context):
+        inner = _CounterWidget(key=ValueKey("identity-stateless-counter"))
+        wrapper = (
+            _StatelessProbeA(child=inner)
+            if self.use_a
+            else _StatelessProbeB(child=inner)
+        )
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                ElevatedButton(
+                    onPressed=self._toggle,
+                    child=Text("Swap stateless wrapper class"),
+                ),
+                SizedBox(height=8),
+                wrapper,
+                SizedBox(height=6),
+                Text(
+                    "Counter has a stable ValueKey, but its State resets on every "
+                    "swap because the wrapper class — and therefore the parent "
+                    "Element — is replaced.",
+                    style=TextStyle(fontSize=11, color=Colors.grey),
+                ),
+            ],
+        )
+
+
+class _AlphaScope(InheritedWidget):
+    def __init__(self, *, value, child, key=None):
+        super().__init__(child=child, key=key)
+        self.value = value
+
+    def updateShouldNotify(self, old_widget):
+        return self.value != old_widget.value
+
+    @staticmethod
+    def of(context):
+        return InheritedWidget._of(context, "_AlphaScope")
+
+
+class _BetaScope(InheritedWidget):
+    def __init__(self, *, value, child, key=None):
+        super().__init__(child=child, key=key)
+        self.value = value
+
+    def updateShouldNotify(self, old_widget):
+        return self.value != old_widget.value
+
+    @staticmethod
+    def of(context):
+        return InheritedWidget._of(context, "_BetaScope")
+
+
+class _ScopeReader(StatefulWidget):
+    def __init__(self, *, controller, key=None):
+        super().__init__(key=key)
+        self.controller = controller
+
+    def createState(self):
+        return _ScopeReaderState()
+
+
+class _ScopeReaderState(State[_ScopeReader]):
+    def build(self, context):
+        ctrl = self.widget.controller
+        ctrl.clear()
+        alpha = _AlphaScope.of(context)
+        beta = _BetaScope.of(context)
+        ctrl.log("_AlphaScope.of(context) = " + (str(alpha.value) if alpha else "None"))
+        ctrl.log("_BetaScope.of(context) = " + (str(beta.value) if beta else "None"))
+        return Container(
+            padding=EdgeInsets.all(12),
+            decoration=BoxDecoration(
+                color=Color(0xFFF3E5F5),
+                borderRadius=BorderRadius.circular(8),
+            ),
+            child=Text(
+                "Reader rebuilt — check log",
+                style=TextStyle(fontSize=13),
+            ),
+        )
+
+
+class _ClassIdentityInheritedDemo(StatefulWidget):
+    def __init__(self, *, controller, key=None):
+        super().__init__(key=key)
+        self.controller = controller
+
+    def createState(self):
+        return _ClassIdentityInheritedDemoState()
+
+
+class _ClassIdentityInheritedDemoState(State[_ClassIdentityInheritedDemo]):
+    def initState(self):
+        self.use_alpha = True
+        self.tick = 0
+
+    def _toggle_class(self):
+        self.tick += 1
+        self.setState(lambda: setattr(self, "use_alpha", not self.use_alpha))
+
+    def _bump_value(self):
+        self.tick += 1
+        self.setState(lambda: None)
+
+    def build(self, context):
+        reader = _ScopeReader(controller=self.widget.controller)
+        if self.use_alpha:
+            scope = _AlphaScope(value=f"alpha-{self.tick}", child=reader)
+        else:
+            scope = _BetaScope(value=f"beta-{self.tick}", child=reader)
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                Row(
+                    children=[
+                        ElevatedButton(
+                            onPressed=self._toggle_class,
+                            child=Text("Swap InheritedWidget class"),
+                        ),
+                        SizedBox(width=8),
+                        ElevatedButton(
+                            onPressed=self._bump_value,
+                            child=Text("Bump value"),
+                        ),
+                    ],
+                ),
+                SizedBox(height=8),
+                scope,
             ],
         )
 
@@ -2037,6 +2354,8 @@ class WidgetPage(StatelessWidget):
         current_state_ctrl = _LogController()
         overlay_ctrl = _LogController()
         inherited_ctrl = _LogController()
+        _identity_stateful_ctrl = _LogController()
+        _identity_inherited_ctrl = _LogController()
 
         theme = Theme.of(context)
         is_dark = theme.brightness == Brightness.dark
@@ -2232,6 +2551,97 @@ class WidgetPage(StatelessWidget):
                     ),
                     instruction="Click 'Theme' or 'Locale' buttons to change inherited values. Watch the consumer rebuild and the build count increment.",
                     log=_LogPanel(controller=inherited_ctrl),
+                ),
+                SplitViewTile(
+                    title="Class Identity — StatefulWidget",
+                    description=(
+                        "Two different StatefulWidget Python classes share the same "
+                        "parent slot. Swapping the class disposes the old State and "
+                        "creates a fresh one — the count resets and initState/dispose "
+                        "fire, just like vanilla Flutter would for two distinct "
+                        "Dart widget classes."
+                    ),
+                    visible=_ClassIdentityStatefulDemo(
+                        controller=_identity_stateful_ctrl
+                    ),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "class RedCounter(StatefulWidget):\n"
+                            "    def createState(self): return RedCounterState()\n\n"
+                            "class BlueCounter(StatefulWidget):\n"
+                            "    def createState(self): return BlueCounterState()\n\n"
+                            "slot = RedCounter() if use_red else BlueCounter()\n"
+                            "Column(children=[toggle_button, slot])"
+                        ),
+                    ),
+                    instruction=(
+                        "Tap the colored counter to increment, then press 'Swap class "
+                        "in slot'. The counter resets and the log shows the old class's "
+                        "dispose followed by the new class's initState."
+                    ),
+                    log=_LogPanel(controller=_identity_stateful_ctrl),
+                ),
+                SplitViewTile(
+                    title="Class Identity — StatelessWidget",
+                    description=(
+                        "Two different StatelessWidget Python classes wrap the same "
+                        "child in the same parent slot. Swapping the wrapper class "
+                        "replaces the parent Element, so even a child with a stable "
+                        "ValueKey loses its State — same behavior as swapping two "
+                        "distinct Dart StatelessWidget classes."
+                    ),
+                    visible=_ClassIdentityStatelessDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "class ProbeA(StatelessWidget):\n"
+                            "    def build(self, ctx): return Container(child=self._child)\n\n"
+                            "class ProbeB(StatelessWidget):\n"
+                            "    def build(self, ctx): return Container(child=self._child)\n\n"
+                            "inner = MyCounter(key=ValueKey('keep'))\n"
+                            "wrapper = ProbeA(child=inner) if use_a else ProbeB(child=inner)"
+                        ),
+                    ),
+                    instruction=(
+                        "Tap the counter, then press 'Swap stateless wrapper class'. "
+                        "The wrapper label flips and the counter resets to 0 even "
+                        "though it carries a stable ValueKey."
+                    ),
+                ),
+                SplitViewTile(
+                    title="Class Identity — InheritedWidget",
+                    description=(
+                        "Two different InheritedWidget Python classes occupy the same "
+                        "parent slot. Each exposes its own .of(context) lookup. The "
+                        "consumer below queries both — only the one currently in the "
+                        "tree returns a value, proving the previous scope was fully "
+                        "torn down."
+                    ),
+                    visible=_ClassIdentityInheritedDemo(
+                        controller=_identity_inherited_ctrl
+                    ),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "class AlphaScope(InheritedWidget):\n"
+                            "    @staticmethod\n"
+                            "    def of(ctx): return InheritedWidget._of(ctx, 'AlphaScope')\n\n"
+                            "class BetaScope(InheritedWidget):\n"
+                            "    @staticmethod\n"
+                            "    def of(ctx): return InheritedWidget._of(ctx, 'BetaScope')\n\n"
+                            "scope = AlphaScope(value=v, child=reader) if use_alpha else \\\n"
+                            "        BetaScope(value=v, child=reader)"
+                        ),
+                    ),
+                    instruction=(
+                        "Press 'Swap InheritedWidget class' to flip the ancestor "
+                        "between AlphaScope and BetaScope. The log shows that only "
+                        "the active class's .of(context) returns a value; the other "
+                        "returns None. Press 'Bump value' to confirm same-class "
+                        "updates still flow through updateShouldNotify."
+                    ),
+                    log=_LogPanel(controller=_identity_inherited_ctrl),
                 ),
                 SplitViewTile(
                     title="Visibility — maintainState + maintainSize",
