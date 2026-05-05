@@ -102,6 +102,10 @@ def flut_unpack(data) -> Optional[object]:
             from flut.flutter.gestures.long_press import LongPressStartDetails
 
             return LongPressStartDetails._flut_unpack(data)
+        case "LongPressDownDetails":
+            from flut.flutter.gestures.long_press import LongPressDownDetails
+
+            return LongPressDownDetails._flut_unpack(data)
         case "LongPressMoveUpdateDetails":
             from flut.flutter.gestures.long_press import LongPressMoveUpdateDetails
 
@@ -118,6 +122,10 @@ def flut_unpack(data) -> Optional[object]:
             from flut.flutter.gestures.tap import TapUpDetails
 
             return TapUpDetails._flut_unpack(data)
+        case "TapMoveDetails":
+            from flut.flutter.gestures.tap import TapMoveDetails
+
+            return TapMoveDetails._flut_unpack(data)
         case "ScaleStartDetails":
             from flut.flutter.gestures.scale import ScaleStartDetails
 
@@ -216,6 +224,18 @@ def flut_unpack(data) -> Optional[object]:
             from flut.flutter.services.clipboard import ClipboardData
 
             return ClipboardData._flut_unpack(data)
+        case "TextSelection":
+            from flut.flutter.services.text_editing import TextSelection
+
+            return TextSelection._flut_unpack(data)
+        case "TextAffinity":
+            from flut.dart.ui import TextAffinity
+
+            return TextAffinity._flut_unpack(data)
+        case "SelectionChangedCause":
+            from flut.flutter.services.text_input import SelectionChangedCause
+
+            return SelectionChangedCause._flut_unpack(data)
         case "LogicalKeyboardKey":
             from flut.flutter.services.keyboard_key import _LogicalKeyboardKey
 
@@ -288,6 +308,12 @@ def flut_unpack(data) -> Optional[object]:
             from flut.flutter.widgets.media_query import MediaQueryData
 
             return MediaQueryData._flut_unpack(data)
+        case "TextSelectionThemeData":
+            from flut.flutter.material.text_selection_theme import (
+                TextSelectionThemeData,
+            )
+
+            return TextSelectionThemeData._flut_unpack(data)
         case "NavigationMode":
             from flut.flutter.widgets.media_query import NavigationMode
 
@@ -386,6 +412,14 @@ def flut_unpack(data) -> Optional[object]:
             )
 
             return TransformationController._flut_unpack(data)
+        case "TapGestureRecognizer":
+            from flut.flutter.gestures.tap import TapGestureRecognizer
+
+            return TapGestureRecognizer._flut_unpack(data)
+        case "LongPressGestureRecognizer":
+            from flut.flutter.gestures.long_press import LongPressGestureRecognizer
+
+            return LongPressGestureRecognizer._flut_unpack(data)
         case "Alignment":
             from flut.flutter.painting.alignment import _Alignment
 
@@ -426,6 +460,150 @@ def flut_unpack(data) -> Optional[object]:
             from flut.flutter.widgets.widget_span import WidgetSpan
 
             return WidgetSpan._flut_unpack(data)
+        case "TextMagnifierConfiguration":
+            from flut.flutter.widgets.magnifier import _TextMagnifierConfiguration
+
+            return _TextMagnifierConfiguration._flut_unpack(data)
+        case "MagnifierInfo":
+            from flut.flutter.widgets.magnifier import MagnifierInfo
+
+            return MagnifierInfo._flut_unpack(data)
+        case "MagnifierController":
+            from flut.flutter.widgets.magnifier import MagnifierController
+
+            return MagnifierController._flut_unpack(data)
+        case "SelectedContent":
+            from flut.flutter.rendering.selection import SelectedContent
+
+            return SelectedContent._flut_unpack(data)
+        case "SelectedContentRange":
+            from flut.flutter.rendering.selection import SelectedContentRange
+
+            return SelectedContentRange._flut_unpack(data)
+        case "SelectionResult":
+            from flut.flutter.rendering.selection import SelectionResult
+
+            return SelectionResult._flut_unpack(data)
+        case "SelectionEventType":
+            from flut.flutter.rendering.selection import SelectionEventType
+
+            return SelectionEventType._flut_unpack(data)
+        case "TextGranularity":
+            from flut.flutter.rendering.selection import TextGranularity
+
+            return TextGranularity._flut_unpack(data)
+        case "SelectionExtendDirection":
+            from flut.flutter.rendering.selection import SelectionExtendDirection
+
+            return SelectionExtendDirection._flut_unpack(data)
+        case "SelectionStatus":
+            from flut.flutter.rendering.selection import SelectionStatus
+
+            return SelectionStatus._flut_unpack(data)
+        case "TextSelectionHandleType":
+            from flut.flutter.rendering.selection import TextSelectionHandleType
+
+            return TextSelectionHandleType._flut_unpack(data)
+        case "SelectionPoint":
+            from flut.flutter.rendering.selection import SelectionPoint
+
+            return SelectionPoint._flut_unpack(data)
+        case "SelectionGeometry":
+            from flut.flutter.rendering.selection import SelectionGeometry
+
+            return SelectionGeometry._flut_unpack(data)
+        case "SelectAllSelectionEvent":
+            from flut.flutter.rendering.selection import SelectAllSelectionEvent
+
+            return SelectAllSelectionEvent._flut_unpack(data)
+        case "ClearSelectionEvent":
+            from flut.flutter.rendering.selection import ClearSelectionEvent
+
+            return ClearSelectionEvent._flut_unpack(data)
+        case "SelectWordSelectionEvent":
+            from flut.flutter.rendering.selection import SelectWordSelectionEvent
+
+            return SelectWordSelectionEvent._flut_unpack(data)
+        case "SelectParagraphSelectionEvent":
+            from flut.flutter.rendering.selection import SelectParagraphSelectionEvent
+
+            return SelectParagraphSelectionEvent._flut_unpack(data)
+        case "SelectionEdgeUpdateEvent":
+            from flut.flutter.rendering.selection import SelectionEdgeUpdateEvent
+
+            return SelectionEdgeUpdateEvent._flut_unpack(data)
+        case "GranularlyExtendSelectionEvent":
+            from flut.flutter.rendering.selection import GranularlyExtendSelectionEvent
+
+            return GranularlyExtendSelectionEvent._flut_unpack(data)
+        case "DirectionallyExtendSelectionEvent":
+            from flut.flutter.rendering.selection import (
+                DirectionallyExtendSelectionEvent,
+            )
+
+            return DirectionallyExtendSelectionEvent._flut_unpack(data)
+        case "TextSelectionToolbarAnchors":
+            from flut.flutter.widgets.text_selection_toolbar_anchors import (
+                TextSelectionToolbarAnchors,
+            )
+
+            return TextSelectionToolbarAnchors._flut_unpack(data)
+        case "TextSelectionControls":
+            from flut.flutter.widgets.text_selection import TextSelectionControls
+
+            return TextSelectionControls._flut_unpack(data)
+        case "TextSelectionHandleControls":
+            from flut.flutter.widgets.text_selection import TextSelectionHandleControls
+
+            return TextSelectionHandleControls._flut_unpack(data)
+        case "EmptyTextSelectionControls":
+            from flut.flutter.widgets.text_selection import EmptyTextSelectionControls
+
+            return EmptyTextSelectionControls._flut_unpack(data)
+        case "SelectionRegistrar":
+            from flut.flutter.widgets.selection_container import SelectionRegistrar
+
+            return SelectionRegistrar._flut_unpack(data)
+        case "SelectionContainerDelegate":
+            from flut.flutter.widgets.selection_container import (
+                SelectionContainerDelegate,
+            )
+
+            return SelectionContainerDelegate._flut_unpack(data)
+        case "MultiSelectableSelectionContainerDelegate":
+            from flut.flutter.widgets.selection_container import (
+                MultiSelectableSelectionContainerDelegate,
+            )
+
+            return MultiSelectableSelectionContainerDelegate._flut_unpack(data)
+        case "StaticSelectionContainerDelegate":
+            from flut.flutter.widgets.selection_container import (
+                StaticSelectionContainerDelegate,
+            )
+
+            return StaticSelectionContainerDelegate._flut_unpack(data)
+        case "SelectableRegionState":
+            from flut.flutter.widgets.selectable_region import SelectableRegionState
+
+            return SelectableRegionState._flut_unpack(data)
+        case "TapGestureRecognizer":
+            from flut.flutter.gestures.tap import TapGestureRecognizer
+
+            return TapGestureRecognizer._flut_unpack(data)
+        case "LongPressGestureRecognizer":
+            from flut.flutter.gestures.long_press import LongPressGestureRecognizer
+
+            return LongPressGestureRecognizer._flut_unpack(data)
+        case "GestureRecognizerFactory":
+            from flut.flutter.widgets.gesture_detector import GestureRecognizerFactory
+
+            return GestureRecognizerFactory._flut_unpack(data)
+        case "GestureRecognizerFactoryWithHandlers":
+            from flut.flutter.widgets.gesture_detector import (
+                GestureRecognizerFactoryWithHandlers,
+            )
+
+            return GestureRecognizerFactoryWithHandlers._flut_unpack(data)
         case "IconData":
             from flut.flutter.widgets.icon_data import IconData
 

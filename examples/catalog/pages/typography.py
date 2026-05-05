@@ -2,6 +2,8 @@ from flut.flutter.painting import TextOverflow
 from utils import CODE_FONT_FAMILY
 from flut.dart import Color, TextAlign
 from flut.flutter.widgets import (
+    StatefulWidget,
+    State,
     StatelessWidget,
     Text,
     Column,
@@ -10,11 +12,23 @@ from flut.flutter.widgets import (
     Container,
     Expanded,
     Padding,
+    EmptyTextSelectionControls,
+    SelectionContainer,
+    SelectionRegistrarScope,
+    SelectableRegion,
+    StaticSelectionContainerDelegate,
+    TextMagnifierConfiguration,
+    DefaultSelectionStyle,
+    Builder,
 )
 from flut.flutter.rendering import CrossAxisAlignment
 from flut.flutter.material import (
     Colors,
     Theme,
+    SelectableText,
+    SelectionArea,
+    TextSelectionTheme,
+    TextSelectionThemeData,
 )
 from flut.dart.ui import FontWeight
 from flut.flutter.painting import (
@@ -370,6 +384,332 @@ def _overflow_box(label, overflow):
             style=TextStyle(fontSize=12),
         ),
     )
+
+
+class _SelectableRegionDemo(StatefulWidget):
+    def createState(self):
+        return _SelectableRegionDemoState()
+
+
+class _SelectableRegionDemoState(State[_SelectableRegionDemo]):
+
+    def initState(self):
+        self.last_selection = ""
+
+    def _on_selection_changed(self, content):
+        def update():
+            self.last_selection = content.plainText if content is not None else ""
+
+        self.setState(update)
+
+    def build(self, context):
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                SelectableRegion(
+                    selectionControls=EmptyTextSelectionControls(),
+                    onSelectionChanged=self._on_selection_changed,
+                    child=Container(
+                        padding=EdgeInsets.all(12),
+                        decoration=BoxDecoration(
+                            color=Colors.blue.withValues(alpha=0.08),
+                            borderRadius=BorderRadius.circular(8),
+                        ),
+                        child=Column(
+                            crossAxisAlignment=CrossAxisAlignment.start,
+                            children=[
+                                Text(
+                                    "SelectableRegion wraps any subtree.",
+                                    style=TextStyle(fontSize=14),
+                                ),
+                                SizedBox(height=4),
+                                Text(
+                                    "Drag across these lines to highlight text. "
+                                    "EmptyTextSelectionControls is the placeholder "
+                                    "implementation that draws no handles or toolbar.",
+                                    style=TextStyle(fontSize=13, color=Colors.grey),
+                                ),
+                            ],
+                        ),
+                    ),
+                ),
+                SizedBox(height=8),
+                Text(
+                    f"onSelectionChanged plainText: {self.last_selection!r}",
+                    style=TextStyle(
+                        fontSize=12,
+                        fontFamily=CODE_FONT_FAMILY,
+                        color=Colors.grey,
+                    ),
+                ),
+            ],
+        )
+
+
+class _MagnifierBuilderDemo(StatefulWidget):
+    def createState(self):
+        return _MagnifierBuilderDemoState()
+
+
+class _MagnifierBuilderDemoState(State[_MagnifierBuilderDemo]):
+    def initState(self):
+        self.last_invocation = "(magnifierBuilder has not been invoked yet)"
+
+    def _magnifier_builder(self, context, controller, magnifier_info):
+        # Note: SelectableRegion only invokes magnifierBuilder during touch-
+        # based selection drags (Android / iOS). On desktop catalog the
+        # magnifier path is wired but not visually triggered. Returning None
+        # tells the framework "no magnifier"; returning a Widget would draw
+        # one anchored to the touch position.
+        def update():
+            self.last_invocation = (
+                "magnifierBuilder invoked " f"(controller.shown={controller.shown})"
+            )
+
+        self.setState(update)
+        return None
+
+    def build(self, context):
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                SelectableRegion(
+                    selectionControls=EmptyTextSelectionControls(),
+                    magnifierConfiguration=TextMagnifierConfiguration(
+                        magnifierBuilder=self._magnifier_builder,
+                        shouldDisplayHandlesInMagnifier=True,
+                    ),
+                    child=Container(
+                        padding=EdgeInsets.all(12),
+                        decoration=BoxDecoration(
+                            color=Colors.purple.withValues(alpha=0.08),
+                            borderRadius=BorderRadius.circular(8),
+                        ),
+                        child=Text(
+                            "Drag across this text on a touch device to "
+                            "trigger the magnifierBuilder callback.",
+                            style=TextStyle(fontSize=13),
+                        ),
+                    ),
+                ),
+                SizedBox(height=8),
+                Text(
+                    self.last_invocation,
+                    style=TextStyle(
+                        fontSize=12,
+                        fontFamily=CODE_FONT_FAMILY,
+                        color=Colors.grey,
+                    ),
+                ),
+            ],
+        )
+
+
+class _SelectionContainerMaybeOfDemo(StatelessWidget):
+    @staticmethod
+    def _line(label, registrar):
+        text = (
+            f"SelectionContainer.maybeOf -> {type(registrar).__name__}"
+            if registrar is not None
+            else "SelectionContainer.maybeOf -> None"
+        )
+        return Row(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                SizedBox(
+                    width=200.0,
+                    child=Text(label, style=TextStyle(fontSize=13)),
+                ),
+                Expanded(
+                    child=Text(
+                        text,
+                        style=TextStyle(
+                            fontSize=12,
+                            fontFamily=CODE_FONT_FAMILY,
+                            color=Colors.grey,
+                        ),
+                    ),
+                ),
+            ],
+        )
+
+    def build(self, context):
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                SelectableRegion(
+                    selectionControls=EmptyTextSelectionControls(),
+                    child=Container(
+                        padding=EdgeInsets.all(10),
+                        decoration=BoxDecoration(
+                            color=Colors.blue.withValues(alpha=0.08),
+                            borderRadius=BorderRadius.circular(6),
+                        ),
+                        child=Builder(
+                            builder=lambda inner_ctx: self._line(
+                                "Inside SelectableRegion:",
+                                SelectionContainer.maybeOf(inner_ctx),
+                            ),
+                        ),
+                    ),
+                ),
+                SizedBox(height=8),
+                Container(
+                    padding=EdgeInsets.all(10),
+                    decoration=BoxDecoration(
+                        color=Colors.grey.withValues(alpha=0.12),
+                        borderRadius=BorderRadius.circular(6),
+                    ),
+                    child=Builder(
+                        builder=lambda outer_ctx: self._line(
+                            "Outside any SelectableRegion:",
+                            SelectionContainer.maybeOf(outer_ctx),
+                        ),
+                    ),
+                ),
+            ],
+        )
+
+
+class _SelectionRegistrarScopeDemo(StatefulWidget):
+    def createState(self):
+        return _SelectionRegistrarScopeDemoState()
+
+
+class _SelectionRegistrarScopeDemoState(State[_SelectionRegistrarScopeDemo]):
+    def initState(self):
+        self._delegate = StaticSelectionContainerDelegate()
+
+    def build(self, context):
+        return SelectionRegistrarScope(
+            registrar=self._delegate,
+            child=Container(
+                padding=EdgeInsets.all(10),
+                decoration=BoxDecoration(
+                    color=Colors.teal.withValues(alpha=0.10),
+                    borderRadius=BorderRadius.circular(6),
+                ),
+                child=Builder(
+                    builder=lambda inner_ctx: Column(
+                        crossAxisAlignment=CrossAxisAlignment.start,
+                        children=[
+                            Text(
+                                "Subtree under a manually placed "
+                                "SelectionRegistrarScope:",
+                                style=TextStyle(fontSize=13),
+                            ),
+                            SizedBox(height=4),
+                            Text(
+                                "SelectionContainer.maybeOf(context) -> "
+                                + (
+                                    type(SelectionContainer.maybeOf(inner_ctx)).__name__
+                                    if SelectionContainer.maybeOf(inner_ctx) is not None
+                                    else "None"
+                                ),
+                                style=TextStyle(
+                                    fontSize=12,
+                                    fontFamily=CODE_FONT_FAMILY,
+                                    color=Colors.grey,
+                                ),
+                            ),
+                        ],
+                    ),
+                ),
+            ),
+        )
+
+
+class _DefaultSelectionStyleDemo(StatelessWidget):
+    def build(self, context):
+        return DefaultSelectionStyle(
+            cursorColor=Colors.deepOrange,
+            selectionColor=Colors.deepOrange.withValues(alpha=0.30),
+            child=SelectableRegion(
+                selectionControls=EmptyTextSelectionControls(),
+                child=Container(
+                    padding=EdgeInsets.all(12),
+                    decoration=BoxDecoration(
+                        color=Colors.orange.withValues(alpha=0.06),
+                        borderRadius=BorderRadius.circular(8),
+                    ),
+                    child=Column(
+                        crossAxisAlignment=CrossAxisAlignment.start,
+                        children=[
+                            Text(
+                                "DefaultSelectionStyle.defaultColor = "
+                                f"0x{DefaultSelectionStyle.defaultColor.value:08X}",
+                                style=TextStyle(
+                                    fontSize=12,
+                                    fontFamily=CODE_FONT_FAMILY,
+                                    color=Colors.grey,
+                                ),
+                            ),
+                            SizedBox(height=6),
+                            Text(
+                                "Drag across this paragraph. The selection is "
+                                "drawn in deep-orange instead of the default "
+                                "grey because the surrounding "
+                                "DefaultSelectionStyle overrides "
+                                "selectionColor and cursorColor for the "
+                                "entire subtree.",
+                                style=TextStyle(fontSize=14),
+                            ),
+                        ],
+                    ),
+                ),
+            ),
+        )
+
+
+class _TextSelectionThemeDemo(StatelessWidget):
+    @staticmethod
+    def _format_color(color):
+        return "None" if color is None else f"0x{color.value:08X}"
+
+    def build(self, context):
+        custom_data = TextSelectionThemeData(
+            cursorColor=Colors.purple,
+            selectionColor=Colors.purple.withValues(alpha=0.25),
+            selectionHandleColor=Colors.purple,
+        )
+        return TextSelectionTheme(
+            data=custom_data,
+            child=Builder(
+                builder=lambda inner_ctx: Column(
+                    crossAxisAlignment=CrossAxisAlignment.start,
+                    children=[
+                        Container(
+                            padding=EdgeInsets.all(10),
+                            decoration=BoxDecoration(
+                                color=Colors.purple.withValues(alpha=0.05),
+                                borderRadius=BorderRadius.circular(6),
+                            ),
+                            child=SelectableText(
+                                "Tap or drag in this SelectableText to see "
+                                "the purple cursor and selection color from "
+                                "the surrounding TextSelectionTheme.",
+                                style=TextStyle(fontSize=14),
+                            ),
+                        ),
+                        SizedBox(height=8),
+                        Text(
+                            "TextSelectionTheme.of(context) returned "
+                            f"cursorColor="
+                            f"{self._format_color(TextSelectionTheme.of(inner_ctx).cursorColor)}, "
+                            f"selectionColor="
+                            f"{self._format_color(TextSelectionTheme.of(inner_ctx).selectionColor)}, "
+                            f"selectionHandleColor="
+                            f"{self._format_color(TextSelectionTheme.of(inner_ctx).selectionHandleColor)}",
+                            style=TextStyle(
+                                fontSize=12,
+                                fontFamily=CODE_FONT_FAMILY,
+                                color=Colors.grey,
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+        )
 
 
 class TypographyPage(StatelessWidget):
@@ -812,6 +1152,351 @@ class TypographyPage(StatelessWidget):
                             "    'Justified text content...',\n"
                             "    textAlign=TextAlign.justify,\n"
                             ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="SelectableRegion + EmptyTextSelectionControls",
+                    description=(
+                        "SelectableRegion makes any subtree text-selectable. "
+                        "selectionControls is required and accepts any "
+                        "TextSelectionControls subclass; EmptyTextSelectionControls "
+                        "is the no-op implementation that omits handles and toolbars. "
+                        "onSelectionChanged delivers a SelectedContent (or None when "
+                        "the selection clears)."
+                    ),
+                    instruction=(
+                        "Drag across the highlighted block to select text. The line "
+                        "below shows the plainText reported by onSelectionChanged."
+                    ),
+                    visible=_SelectableRegionDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "SelectableRegion(\n"
+                            "    selectionControls=EmptyTextSelectionControls(),\n"
+                            "    onSelectionChanged=lambda c: print(\n"
+                            "        c.plainText if c else ''\n"
+                            "    ),\n"
+                            "    child=Text('Selectable text...'),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="SelectionArea default contextMenuBuilder)",
+                    description=(
+                        "SelectionArea is the Material wrapper around "
+                        "SelectableRegion that, in Flutter, defaults its "
+                        "`contextMenuBuilder` to `_defaultContextMenuBuilder`, "
+                        "which returns AdaptiveTextSelectionToolbar.selectableRegion. "
+                        "In flut the parameter currently maps to a plain "
+                        "`Optional[...] = None`, so when Python omits it Dart "
+                        "still passes `null` into the Flutter constructor and "
+                        "Flutter's own default never kicks in."
+                    ),
+                    instruction=(
+                        "Drag to select some of the text below, then RIGHT-CLICK "
+                        "(desktop) on the highlighted block. Expected: the "
+                        "adaptive selection toolbar (Copy / etc.) opens."
+                    ),
+                    visible=Container(
+                        padding=EdgeInsets.all(12),
+                        decoration=BoxDecoration(
+                            color=Colors.red.withValues(alpha=0.06),
+                            borderRadius=BorderRadius.circular(8),
+                        ),
+                        child=SelectionArea(
+                            child=Column(
+                                crossAxisAlignment=CrossAxisAlignment.start,
+                                children=[
+                                    Text(
+                                        "SelectionArea — no contextMenuBuilder "
+                                        "supplied",
+                                        style=TextStyle(
+                                            fontSize=14,
+                                            fontWeight=FontWeight.w600,
+                                        ),
+                                    ),
+                                    SizedBox(height=4),
+                                    Text(
+                                        "Select any portion of this paragraph "
+                                        "and right-click. In Flutter the "
+                                        "AdaptiveTextSelectionToolbar opens "
+                                        "automatically; in flut the default "
+                                        "is dropped on the floor and Flutter "
+                                        "force-unwraps the null builder.",
+                                        style=TextStyle(fontSize=13),
+                                    ),
+                                ],
+                            ),
+                        ),
+                    ),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "# Mirrors Flutter's `SelectionArea(child: ...)` —\n"
+                            "# contextMenuBuilder is intentionally omitted so\n"
+                            "# Flutter's default _defaultContextMenuBuilder\n"
+                            "# should apply.\n"
+                            "SelectionArea(\n"
+                            "    child=Text('Right-click after selecting'),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="SelectionContainer (static & disabled)",
+                    description=(
+                        "SelectionContainer scopes selection behaviour for its "
+                        "subtree. Pass StaticSelectionContainerDelegate when the "
+                        "Selectables inside the subtree do not change at runtime — "
+                        "it provides the standard multi-child selection semantics "
+                        "without the bookkeeping for dynamic registration. "
+                        "SelectionContainer.disabled opts a subtree out of any "
+                        "enclosing SelectableRegion."
+                    ),
+                    instruction=(
+                        "Both blocks live inside the same SelectableRegion above. "
+                        "The first block is wrapped in a SelectionContainer with a "
+                        "StaticSelectionContainerDelegate; selection works normally. "
+                        "The second block uses SelectionContainer.disabled and "
+                        "cannot be selected."
+                    ),
+                    visible=SelectableRegion(
+                        selectionControls=EmptyTextSelectionControls(),
+                        child=Column(
+                            crossAxisAlignment=CrossAxisAlignment.start,
+                            children=[
+                                SelectionContainer(
+                                    delegate=StaticSelectionContainerDelegate(),
+                                    child=Container(
+                                        padding=EdgeInsets.all(8),
+                                        decoration=BoxDecoration(
+                                            color=Colors.green.withValues(alpha=0.1),
+                                            borderRadius=BorderRadius.circular(6),
+                                        ),
+                                        child=Text(
+                                            "Selectable: wrapped in "
+                                            "SelectionContainer(delegate=Static…)",
+                                            style=TextStyle(fontSize=13),
+                                        ),
+                                    ),
+                                ),
+                                SizedBox(height=8),
+                                SelectionContainer.disabled(
+                                    child=Container(
+                                        padding=EdgeInsets.all(8),
+                                        decoration=BoxDecoration(
+                                            color=Colors.grey.withValues(alpha=0.15),
+                                            borderRadius=BorderRadius.circular(6),
+                                        ),
+                                        child=Text(
+                                            "Not selectable: "
+                                            "SelectionContainer.disabled",
+                                            style=TextStyle(fontSize=13),
+                                        ),
+                                    ),
+                                ),
+                            ],
+                        ),
+                    ),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "SelectableRegion(\n"
+                            "    selectionControls=EmptyTextSelectionControls(),\n"
+                            "    child=Column(children=[\n"
+                            "        SelectionContainer(\n"
+                            "            delegate=StaticSelectionContainerDelegate(),\n"
+                            "            child=Text('Selectable...'),\n"
+                            "        ),\n"
+                            "        SelectionContainer.disabled(\n"
+                            "            child=Text('Not selectable'),\n"
+                            "        ),\n"
+                            "    ]),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="TextMagnifierConfiguration + magnifierBuilder",
+                    description=(
+                        "Pass a Python `magnifierBuilder` callback through "
+                        "TextMagnifierConfiguration. The callback receives "
+                        "(BuildContext, MagnifierController, "
+                        "ValueNotifier<MagnifierInfo>) and returns the magnifier "
+                        "Widget to display, or None to suppress it. Returning "
+                        "None still wires the controller through but avoids "
+                        "drawing anything."
+                    ),
+                    instruction=(
+                        "On Android / iOS, drag across this purple block to "
+                        "trigger the magnifier path; magnifierBuilder is called "
+                        "with a live MagnifierController. On desktop the "
+                        "callback is reachable from the framework but not "
+                        "visually triggered (Flutter only invokes it for "
+                        "touch-based selection drags)."
+                    ),
+                    visible=_MagnifierBuilderDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "def my_magnifier(context, controller, info):\n"
+                            "    # info is ValueNotifier<MagnifierInfo>; read\n"
+                            "    # info.value.globalGesturePosition / caretRect\n"
+                            "    return None  # or return a custom Widget\n\n"
+                            "SelectableRegion(\n"
+                            "    selectionControls=EmptyTextSelectionControls(),\n"
+                            "    magnifierConfiguration=TextMagnifierConfiguration(\n"
+                            "        magnifierBuilder=my_magnifier,\n"
+                            "        shouldDisplayHandlesInMagnifier=True,\n"
+                            "    ),\n"
+                            "    child=Text('Selectable text'),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="SelectionContainer.maybeOf",
+                    description=(
+                        "SelectionContainer.maybeOf(context) returns the nearest "
+                        "ancestor SelectionRegistrar via "
+                        "dependOnInheritedWidgetOfExactType<SelectionRegistrarScope>. "
+                        "Returns None when no SelectableRegion / SelectionContainer "
+                        "is above the context."
+                    ),
+                    instruction=(
+                        "Both rows render the result of maybeOf(context). The first "
+                        "context is inside a SelectableRegion (which installs a "
+                        "registrar) and reports a non-null type; the second context "
+                        "is outside any selection scope and reports None."
+                    ),
+                    visible=_SelectionContainerMaybeOfDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "SelectableRegion(\n"
+                            "    selectionControls=EmptyTextSelectionControls(),\n"
+                            "    child=Builder(\n"
+                            "        builder=lambda ctx: Text(\n"
+                            "            'maybeOf -> ' + (\n"
+                            "                type(SelectionContainer.maybeOf(ctx)).__name__\n"
+                            "                if SelectionContainer.maybeOf(ctx) is not None\n"
+                            "                else 'None'\n"
+                            "            ),\n"
+                            "        ),\n"
+                            "    ),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="SelectionRegistrarScope (manual)",
+                    description=(
+                        "SelectionRegistrarScope is the InheritedWidget that "
+                        "SelectionContainer normally inserts automatically. Placing "
+                        "one manually lets a subtree expose a registrar without a "
+                        "full SelectableRegion / SelectionContainer pair, so "
+                        "SelectionContainer.maybeOf finds it via "
+                        "dependOnInheritedWidgetOfExactType."
+                    ),
+                    instruction=(
+                        "The block below is wrapped only in SelectionRegistrarScope "
+                        "(no enclosing SelectableRegion). The line still reports "
+                        "that maybeOf located the registrar, proving the inherited "
+                        "lookup wires through correctly."
+                    ),
+                    visible=_SelectionRegistrarScopeDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "SelectionRegistrarScope(\n"
+                            "    registrar=StaticSelectionContainerDelegate(),\n"
+                            "    child=Builder(\n"
+                            "        builder=lambda ctx: Text(\n"
+                            "            'maybeOf saw ' + type(\n"
+                            "                SelectionContainer.maybeOf(ctx)\n"
+                            "            ).__name__,\n"
+                            "        ),\n"
+                            "    ),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="DefaultSelectionStyle (cursor + selection colors)",
+                    description=(
+                        "DefaultSelectionStyle is an InheritedTheme that lets a "
+                        "subtree override the cursor color, selection color and "
+                        "mouse cursor used by descendant EditableText widgets when "
+                        "no explicit value is given. The class also exposes the "
+                        "constant defaultColor (0x80808080) used as the framework "
+                        "fallback."
+                    ),
+                    instruction=(
+                        "Drag across the orange paragraph; the selection rectangle "
+                        "is drawn in deep-orange instead of the default semi-"
+                        "transparent grey because the surrounding "
+                        "DefaultSelectionStyle overrides selectionColor / "
+                        "cursorColor for the entire subtree."
+                    ),
+                    visible=_DefaultSelectionStyleDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "DefaultSelectionStyle(\n"
+                            "    cursorColor=Colors.deepOrange,\n"
+                            "    selectionColor=Colors.deepOrange.withValues(\n"
+                            "        alpha=0.30,\n"
+                            "    ),\n"
+                            "    child=SelectableRegion(\n"
+                            "        selectionControls=EmptyTextSelectionControls(),\n"
+                            "        child=Text('Selectable paragraph...'),\n"
+                            "    ),\n"
+                            ")\n\n"
+                            "# Static constant exposed by the class:\n"
+                            "DefaultSelectionStyle.defaultColor"
+                            "  # Color(0x80808080)"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="TextSelectionTheme + TextSelectionThemeData",
+                    description=(
+                        "TextSelectionTheme propagates a TextSelectionThemeData "
+                        "(cursorColor, selectionColor, selectionHandleColor) to "
+                        "descendant TextField / SelectableText widgets. "
+                        "TextSelectionTheme.of(context) returns the nearest "
+                        "TextSelectionThemeData, falling back to "
+                        "Theme.of(context).textSelectionTheme so the lookup is "
+                        "always non-null."
+                    ),
+                    instruction=(
+                        "Tap or drag inside the SelectableText to see purple "
+                        "cursor / selection. The line below echoes the "
+                        "cursorColor / selectionColor / selectionHandleColor as "
+                        "read back via TextSelectionTheme.of(context)."
+                    ),
+                    visible=_TextSelectionThemeDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "TextSelectionTheme(\n"
+                            "    data=TextSelectionThemeData(\n"
+                            "        cursorColor=Colors.purple,\n"
+                            "        selectionColor=Colors.purple.withValues(\n"
+                            "            alpha=0.25,\n"
+                            "        ),\n"
+                            "        selectionHandleColor=Colors.purple,\n"
+                            "    ),\n"
+                            "    child=SelectableText('Tap or drag...'),\n"
+                            ")\n\n"
+                            "# Read back from inside the subtree:\n"
+                            "data = TextSelectionTheme.of(context)\n"
+                            "data.cursorColor  # Color(...)\n"
+                            "data.selectionColor  # Color(...)\n"
+                            "data.selectionHandleColor  # Color(...)"
                         ),
                     ),
                 ),

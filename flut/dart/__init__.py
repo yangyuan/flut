@@ -31,6 +31,7 @@ from .ui import (
     StrokeCap,
     StrokeJoin,
     TextAlign,
+    TextAffinity,
     TextBaseline,
     TextDecoration,
     TextDecorationStyle,

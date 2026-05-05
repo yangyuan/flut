@@ -1,9 +1,66 @@
 from typing import Callable, Optional, override
 
-from flut._flut.engine import _flut_pack_value
-from flut.flutter.gestures.recognizer import DragStartBehavior
-
+from flut._flut.engine import FlutAbstractObject, _flut_pack_value
+from flut.flutter.foundation.key import Key
+from flut.flutter.gestures.recognizer import DragStartBehavior, GestureRecognizer
+from flut.flutter.rendering.proxy_box import HitTestBehavior
 from flut.flutter.widgets.framework import Widget
+
+
+class GestureRecognizerFactory(FlutAbstractObject):
+    _flut_type = "GestureRecognizerFactory"
+
+    def constructor(self) -> GestureRecognizer:
+        raise NotImplementedError
+
+    def initializer(self, instance: GestureRecognizer) -> None:
+        raise NotImplementedError
+
+    @staticmethod
+    def _flut_unpack(data: dict) -> "GestureRecognizerFactory":
+        raise NotImplementedError(
+            "GestureRecognizerFactory has no concrete wire form. Pass a concrete subtype."
+        )
+
+    @override
+    def _flut_pack(self) -> dict[str, object]:
+        raise NotImplementedError(
+            "GestureRecognizerFactory has no concrete wire form. Pass a concrete subtype."
+        )
+
+
+class GestureRecognizerFactoryWithHandlers(GestureRecognizerFactory):
+    _flut_type = "GestureRecognizerFactoryWithHandlers"
+
+    def __init__(
+        self,
+        constructor: Callable[[], GestureRecognizer],
+        initializer: Callable[[GestureRecognizer], None],
+    ) -> None:
+        super().__init__()
+        self._constructor = constructor
+        self._initializer = initializer
+
+    def constructor(self) -> GestureRecognizer:
+        return self._constructor()
+
+    def initializer(self, instance: GestureRecognizer) -> None:
+        self._initializer(instance)
+
+    @staticmethod
+    def _flut_unpack(data: dict) -> "GestureRecognizerFactoryWithHandlers":
+        raise NotImplementedError
+
+    @override
+    def _flut_pack(self) -> dict[str, object]:
+        result = self._flut_base_props()
+        result["constructor"] = self._register_action(
+            self._constructor, "GestureRecognizerFactoryConstructor"
+        )._flut_pack()
+        result["initializer"] = self._register_action(
+            self._initializer, "GestureRecognizerFactoryInitializer"
+        )._flut_pack()
+        return result
 
 
 class GestureDetector(Widget):
@@ -16,8 +73,10 @@ class GestureDetector(Widget):
         onTapDown: Optional[Callable] = None,
         onTapUp: Optional[Callable] = None,
         onTap=None,
+        onTapMove: Optional[Callable] = None,
         onDoubleTap=None,
         onTapCancel=None,
+        onSecondaryTap=None,
         onSecondaryTapDown: Optional[Callable] = None,
         onSecondaryTapUp: Optional[Callable] = None,
         onSecondaryTapCancel: Optional[Callable] = None,
@@ -26,15 +85,27 @@ class GestureDetector(Widget):
         onTertiaryTapCancel: Optional[Callable] = None,
         onDoubleTapDown: Optional[Callable] = None,
         onDoubleTapCancel: Optional[Callable] = None,
+        onLongPressDown: Optional[Callable] = None,
+        onLongPressCancel: Optional[Callable] = None,
         onLongPress=None,
         onLongPressStart: Optional[Callable] = None,
         onLongPressMoveUpdate: Optional[Callable] = None,
         onLongPressUp=None,
         onLongPressEnd: Optional[Callable] = None,
+        onSecondaryLongPressDown: Optional[Callable] = None,
+        onSecondaryLongPressCancel: Optional[Callable] = None,
         onSecondaryLongPress: Optional[Callable] = None,
+        onSecondaryLongPressStart: Optional[Callable] = None,
+        onSecondaryLongPressMoveUpdate: Optional[Callable] = None,
         onSecondaryLongPressUp: Optional[Callable] = None,
+        onSecondaryLongPressEnd: Optional[Callable] = None,
+        onTertiaryLongPressDown: Optional[Callable] = None,
+        onTertiaryLongPressCancel: Optional[Callable] = None,
         onTertiaryLongPress: Optional[Callable] = None,
+        onTertiaryLongPressStart: Optional[Callable] = None,
+        onTertiaryLongPressMoveUpdate: Optional[Callable] = None,
         onTertiaryLongPressUp: Optional[Callable] = None,
+        onTertiaryLongPressEnd: Optional[Callable] = None,
         onVerticalDragStart=None,
         onVerticalDragUpdate=None,
         onVerticalDragEnd=None,
@@ -58,8 +129,10 @@ class GestureDetector(Widget):
         self.onTapDown = onTapDown
         self.onTapUp = onTapUp
         self.onTap = onTap
+        self.onTapMove = onTapMove
         self.onDoubleTap = onDoubleTap
         self.onTapCancel = onTapCancel
+        self.onSecondaryTap = onSecondaryTap
         self.onSecondaryTapDown = onSecondaryTapDown
         self.onSecondaryTapUp = onSecondaryTapUp
         self.onSecondaryTapCancel = onSecondaryTapCancel
@@ -68,15 +141,27 @@ class GestureDetector(Widget):
         self.onTertiaryTapCancel = onTertiaryTapCancel
         self.onDoubleTapDown = onDoubleTapDown
         self.onDoubleTapCancel = onDoubleTapCancel
+        self.onLongPressDown = onLongPressDown
+        self.onLongPressCancel = onLongPressCancel
         self.onLongPress = onLongPress
         self.onLongPressStart = onLongPressStart
         self.onLongPressMoveUpdate = onLongPressMoveUpdate
         self.onLongPressUp = onLongPressUp
         self.onLongPressEnd = onLongPressEnd
+        self.onSecondaryLongPressDown = onSecondaryLongPressDown
+        self.onSecondaryLongPressCancel = onSecondaryLongPressCancel
         self.onSecondaryLongPress = onSecondaryLongPress
+        self.onSecondaryLongPressStart = onSecondaryLongPressStart
+        self.onSecondaryLongPressMoveUpdate = onSecondaryLongPressMoveUpdate
         self.onSecondaryLongPressUp = onSecondaryLongPressUp
+        self.onSecondaryLongPressEnd = onSecondaryLongPressEnd
+        self.onTertiaryLongPressDown = onTertiaryLongPressDown
+        self.onTertiaryLongPressCancel = onTertiaryLongPressCancel
         self.onTertiaryLongPress = onTertiaryLongPress
+        self.onTertiaryLongPressStart = onTertiaryLongPressStart
+        self.onTertiaryLongPressMoveUpdate = onTertiaryLongPressMoveUpdate
         self.onTertiaryLongPressUp = onTertiaryLongPressUp
+        self.onTertiaryLongPressEnd = onTertiaryLongPressEnd
         self.onVerticalDragStart = onVerticalDragStart
         self.onVerticalDragUpdate = onVerticalDragUpdate
         self.onVerticalDragEnd = onVerticalDragEnd
@@ -112,6 +197,10 @@ class GestureDetector(Widget):
             result["onTap"] = self._register_action(
                 self.onTap, "GestureTapCallback"
             )._flut_pack()
+        if self.onTapMove is not None:
+            result["onTapMove"] = self._register_action(
+                self.onTapMove, "GestureTapMoveCallback"
+            )._flut_pack()
         if self.onDoubleTap is not None:
             result["onDoubleTap"] = self._register_action(
                 self.onDoubleTap, "GestureTapCallback"
@@ -119,6 +208,10 @@ class GestureDetector(Widget):
         if self.onTapCancel is not None:
             result["onTapCancel"] = self._register_action(
                 self.onTapCancel, "GestureTapCancelCallback"
+            )._flut_pack()
+        if self.onSecondaryTap is not None:
+            result["onSecondaryTap"] = self._register_action(
+                self.onSecondaryTap, "GestureTapCallback"
             )._flut_pack()
         if self.onSecondaryTapDown is not None:
             result["onSecondaryTapDown"] = self._register_action(
@@ -152,6 +245,14 @@ class GestureDetector(Widget):
             result["onDoubleTapCancel"] = self._register_action(
                 self.onDoubleTapCancel, "GestureTapCancelCallback"
             )._flut_pack()
+        if self.onLongPressDown is not None:
+            result["onLongPressDown"] = self._register_action(
+                self.onLongPressDown, "GestureLongPressDownCallback"
+            )._flut_pack()
+        if self.onLongPressCancel is not None:
+            result["onLongPressCancel"] = self._register_action(
+                self.onLongPressCancel, "GestureLongPressCancelCallback"
+            )._flut_pack()
         if self.onLongPress is not None:
             result["onLongPress"] = self._register_action(
                 self.onLongPress, "GestureLongPressCallback"
@@ -172,21 +273,63 @@ class GestureDetector(Widget):
             result["onLongPressEnd"] = self._register_action(
                 self.onLongPressEnd, "GestureLongPressEndCallback"
             )._flut_pack()
+        if self.onSecondaryLongPressDown is not None:
+            result["onSecondaryLongPressDown"] = self._register_action(
+                self.onSecondaryLongPressDown, "GestureLongPressDownCallback"
+            )._flut_pack()
+        if self.onSecondaryLongPressCancel is not None:
+            result["onSecondaryLongPressCancel"] = self._register_action(
+                self.onSecondaryLongPressCancel, "GestureLongPressCancelCallback"
+            )._flut_pack()
         if self.onSecondaryLongPress is not None:
             result["onSecondaryLongPress"] = self._register_action(
                 self.onSecondaryLongPress, "GestureLongPressCallback"
+            )._flut_pack()
+        if self.onSecondaryLongPressStart is not None:
+            result["onSecondaryLongPressStart"] = self._register_action(
+                self.onSecondaryLongPressStart, "GestureLongPressStartCallback"
+            )._flut_pack()
+        if self.onSecondaryLongPressMoveUpdate is not None:
+            result["onSecondaryLongPressMoveUpdate"] = self._register_action(
+                self.onSecondaryLongPressMoveUpdate,
+                "GestureLongPressMoveUpdateCallback",
             )._flut_pack()
         if self.onSecondaryLongPressUp is not None:
             result["onSecondaryLongPressUp"] = self._register_action(
                 self.onSecondaryLongPressUp, "GestureLongPressUpCallback"
             )._flut_pack()
+        if self.onSecondaryLongPressEnd is not None:
+            result["onSecondaryLongPressEnd"] = self._register_action(
+                self.onSecondaryLongPressEnd, "GestureLongPressEndCallback"
+            )._flut_pack()
+        if self.onTertiaryLongPressDown is not None:
+            result["onTertiaryLongPressDown"] = self._register_action(
+                self.onTertiaryLongPressDown, "GestureLongPressDownCallback"
+            )._flut_pack()
+        if self.onTertiaryLongPressCancel is not None:
+            result["onTertiaryLongPressCancel"] = self._register_action(
+                self.onTertiaryLongPressCancel, "GestureLongPressCancelCallback"
+            )._flut_pack()
         if self.onTertiaryLongPress is not None:
             result["onTertiaryLongPress"] = self._register_action(
                 self.onTertiaryLongPress, "GestureLongPressCallback"
             )._flut_pack()
+        if self.onTertiaryLongPressStart is not None:
+            result["onTertiaryLongPressStart"] = self._register_action(
+                self.onTertiaryLongPressStart, "GestureLongPressStartCallback"
+            )._flut_pack()
+        if self.onTertiaryLongPressMoveUpdate is not None:
+            result["onTertiaryLongPressMoveUpdate"] = self._register_action(
+                self.onTertiaryLongPressMoveUpdate,
+                "GestureLongPressMoveUpdateCallback",
+            )._flut_pack()
         if self.onTertiaryLongPressUp is not None:
             result["onTertiaryLongPressUp"] = self._register_action(
                 self.onTertiaryLongPressUp, "GestureLongPressUpCallback"
+            )._flut_pack()
+        if self.onTertiaryLongPressEnd is not None:
+            result["onTertiaryLongPressEnd"] = self._register_action(
+                self.onTertiaryLongPressEnd, "GestureLongPressEndCallback"
             )._flut_pack()
         if self.onVerticalDragStart is not None:
             result["onVerticalDragStart"] = self._register_action(
@@ -249,4 +392,34 @@ class GestureDetector(Widget):
             result["behavior"] = _flut_pack_value(self.behavior)
         if self.child is not None:
             result["child"] = _flut_pack_value(self.child)
+        return result
+
+
+class RawGestureDetector(Widget):
+    _flut_type = "RawGestureDetector"
+
+    def __init__(
+        self,
+        *,
+        key: Optional[Key] = None,
+        child: Optional[Widget] = None,
+        gestures: Optional[dict[type, "GestureRecognizerFactory"]] = None,
+        behavior: Optional[HitTestBehavior] = None,
+        excludeFromSemantics: bool = False,
+    ) -> None:
+        super().__init__(key=key)
+        self.child = child
+        self.gestures = gestures or {}
+        self.behavior = behavior
+        self.excludeFromSemantics = excludeFromSemantics
+
+    @override
+    def _flut_pack(self) -> dict:
+        result = self._flut_base_props()
+        if self.child is not None:
+            result["child"] = _flut_pack_value(self.child)
+        result["gestures"] = _flut_pack_value(list(self.gestures.values()))
+        if self.behavior is not None:
+            result["behavior"] = _flut_pack_value(self.behavior)
+        result["excludeFromSemantics"] = _flut_pack_value(self.excludeFromSemantics)
         return result

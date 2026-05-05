@@ -21,6 +21,7 @@ class FlutText {
             data,
             'textDirection',
           ),
+          locale: runtime.unpackOptionalField<Locale>(data, 'locale'),
           softWrap: runtime.unpackOptionalField<bool>(data, 'softWrap'),
           overflow: runtime.unpackOptionalField<TextOverflow>(data, 'overflow'),
           textScaler: runtime.unpackOptionalField<TextScaler>(
@@ -39,6 +40,10 @@ class FlutText {
           textWidthBasis: runtime.unpackOptionalField<TextWidthBasis>(
             data,
             'textWidthBasis',
+          ),
+          textHeightBehavior: runtime.unpackOptionalField<TextHeightBehavior>(
+            data,
+            'textHeightBehavior',
           ),
           selectionColor: runtime.unpackOptionalField<Color>(
             data,
@@ -59,6 +64,7 @@ class FlutText {
             data,
             'textDirection',
           ),
+          locale: runtime.unpackOptionalField<Locale>(data, 'locale'),
           softWrap: runtime.unpackOptionalField<bool>(data, 'softWrap'),
           overflow: runtime.unpackOptionalField<TextOverflow>(data, 'overflow'),
           textScaler: runtime.unpackOptionalField<TextScaler>(
@@ -77,6 +83,10 @@ class FlutText {
           textWidthBasis: runtime.unpackOptionalField<TextWidthBasis>(
             data,
             'textWidthBasis',
+          ),
+          textHeightBehavior: runtime.unpackOptionalField<TextHeightBehavior>(
+            data,
+            'textHeightBehavior',
           ),
           selectionColor: runtime.unpackOptionalField<Color>(
             data,

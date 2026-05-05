@@ -10,6 +10,7 @@ from .icons import Icons
 from .scaffold import Scaffold
 from .scrollbar import Scrollbar
 from .text_theme import TextTheme
+from .text_selection_theme import TextSelectionTheme, TextSelectionThemeData
 from .theme import Theme
 from .theme_data import ThemeData, VisualDensity, MaterialTapTargetSize
 from .card import Card
@@ -27,6 +28,9 @@ from .icon_button import IconButton
 from .progress_indicator import CircularProgressIndicator, LinearProgressIndicator
 from .divider import Divider
 from .selectable_text import SelectableText
+from .selection_area import SelectionArea
+from .text_selection_toolbar import TextSelectionToolbar
+from .adaptive_text_selection_toolbar import AdaptiveTextSelectionToolbar
 from .text_button import TextButton
 from .outlined_button import OutlinedButton
 from .list_tile import ListTile, ListTileControlAffinity

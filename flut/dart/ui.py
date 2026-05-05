@@ -2048,6 +2048,11 @@ class TextDirection(FlutEnumObject):
     ltr: "TextDirection"
 
 
+class TextAffinity(FlutEnumObject):
+    upstream: "TextAffinity"
+    downstream: "TextAffinity"
+
+
 class BlendMode(FlutEnumObject):
     clear: "BlendMode"
     src: "BlendMode"

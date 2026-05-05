@@ -1,10 +1,19 @@
 import 'dart:ui';
 
-import 'package:flutter/gestures.dart' show DeviceGestureSettings;
+import 'package:flutter/gestures.dart'
+    show
+        DeviceGestureSettings,
+        GestureRecognizer,
+        LongPressDownDetails,
+        LongPressGestureRecognizer,
+        TapGestureRecognizer,
+        TapMoveDetails;
+
 import 'package:flut/dart/ui.dart';
 import 'package:flut/dart/_dart.dart';
 import 'package:flut/dart/core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flut/flut/object.dart';
 import 'package:flut/flut/native.dart';
@@ -138,6 +147,18 @@ import 'package:flut/flutter/painting/text_scaler.dart';
 import 'package:flut/flutter/rendering/object.dart';
 import 'package:flut/flutter/painting/rounded_rectangle_border.dart';
 import 'package:flut/flutter/painting/circle_border.dart';
+import 'package:flut/flutter/rendering/selection.dart';
+import 'package:flut/flutter/services/text_editing.dart';
+import 'package:flut/flutter/widgets/magnifier.dart';
+import 'package:flut/flutter/widgets/text_selection.dart';
+import 'package:flut/flutter/widgets/selection_container.dart';
+import 'package:flut/flutter/widgets/default_selection_style.dart';
+import 'package:flut/flutter/widgets/selectable_region.dart';
+import 'package:flut/flutter/widgets/text_selection_toolbar_anchors.dart';
+import 'package:flut/flutter/material/adaptive_text_selection_toolbar.dart';
+import 'package:flut/flutter/material/selection_area.dart';
+import 'package:flut/flutter/material/text_selection_toolbar.dart';
+import 'package:flut/flutter/material/text_selection_theme.dart';
 import 'package:flut/flutter/painting/stadium_border.dart';
 import 'package:flut/flutter/painting/beveled_rectangle_border.dart';
 import 'package:flut/flutter/painting/continuous_rectangle_border.dart';
@@ -254,6 +275,8 @@ class FlutRuntime {
         return FlutOverlayEntry.flutCreate(this, data);
       case 'ValueNotifier':
         return FlutValueNotifier.flutCreate(this, data);
+      case 'MagnifierController':
+        return FlutMagnifierController.flutCreate(this, data);
       case 'AnimationController':
         return FlutAnimationController.flutCreate(this, data);
       case 'TabController':
@@ -270,6 +293,10 @@ class FlutRuntime {
         return FlutButtonStyle.flutCreate(this, data);
       case 'InteractiveInkFeatureFactory':
         return FlutInteractiveInkFeatureFactory.flutCreate(this, data);
+      case 'TapGestureRecognizer':
+        return FlutTapGestureRecognizer.flutCreate(this, data);
+      case 'LongPressGestureRecognizer':
+        return FlutLongPressGestureRecognizer.flutCreate(this, data);
       default:
         throw FlutRuntimeException('Unknown realtime object type: $type');
     }
@@ -334,6 +361,38 @@ class FlutRuntime {
         void closure() => callable.invoke(args: []);
         trackCallable(closure, callable.cid);
         return closure;
+      case 'GestureTapCancelCallback':
+        void closure() => callable.invoke(args: []);
+        trackCallable(closure, callable.cid);
+        return closure;
+      case 'GestureLongPressCancelCallback':
+        void closure() => callable.invoke(args: []);
+        trackCallable(closure, callable.cid);
+        return closure;
+      case 'GestureLongPressUpCallback':
+        void closure() => callable.invoke(args: []);
+        trackCallable(closure, callable.cid);
+        return closure;
+      case 'AllowedButtonsFilter':
+        bool closure(int buttons) =>
+            callable.invoke<bool>(args: [buttons]) ?? false;
+        trackCallable(closure, callable.cid);
+        return closure;
+      case 'GestureTapMoveCallback':
+        void closure(TapMoveDetails details) =>
+            callable.invoke(args: [details]);
+        trackCallable(closure, callable.cid);
+        return closure;
+      case 'GestureRecognizerFactoryConstructor':
+        GestureRecognizer closure() =>
+            callable.invoke<GestureRecognizer>(args: [])!;
+        trackCallable(closure, callable.cid);
+        return closure;
+      case 'GestureRecognizerFactoryInitializer':
+        void closure(GestureRecognizer instance) =>
+            callable.invoke(args: [instance]);
+        trackCallable(closure, callable.cid);
+        return closure;
       case 'GestureDragStartCallback':
         void closure(DragStartDetails details) =>
             callable.invoke(args: [details]);
@@ -356,6 +415,11 @@ class FlutRuntime {
         return closure;
       case 'GestureTapUpCallback':
         void closure(TapUpDetails details) => callable.invoke(args: [details]);
+        trackCallable(closure, callable.cid);
+        return closure;
+      case 'GestureLongPressDownCallback':
+        void closure(LongPressDownDetails details) =>
+            callable.invoke(args: [details]);
         trackCallable(closure, callable.cid);
         return closure;
       case 'GestureScaleStartCallback':
@@ -395,6 +459,20 @@ class FlutRuntime {
       case 'GestureLongPressEndCallback':
         void closure(LongPressEndDetails details) =>
             callable.invoke(args: [details]);
+        trackCallable(closure, callable.cid);
+        return closure;
+      case 'ToolbarBuilder':
+        Widget closure(BuildContext context, Widget child) =>
+            callable.invoke<Widget>(args: [context, child]) ?? child;
+        trackCallable(closure, callable.cid);
+        return closure;
+      case 'MagnifierBuilder':
+        Widget? closure(
+          BuildContext context,
+          MagnifierController controller,
+          ValueNotifier<MagnifierInfo> magnifierInfo,
+        ) =>
+            callable.invoke<Widget>(args: [context, controller, magnifierInfo]);
         trackCallable(closure, callable.cid);
         return closure;
       case 'ValueChanged<String>':
@@ -554,6 +632,18 @@ class FlutRuntime {
         ) => callable.invoke(args: [selection, cause]);
         trackCallable(closureSelectionChanged, callable.cid);
         return closureSelectionChanged;
+      case 'ValueChanged<SelectedContent?>':
+        void closureSelectedContent(SelectedContent? value) =>
+            callable.invoke(args: [value]);
+        trackCallable(closureSelectedContent, callable.cid);
+        return closureSelectedContent;
+      case 'SelectableRegionContextMenuBuilder':
+        Widget closureSelectableRegionContextMenu(
+          BuildContext context,
+          SelectableRegionState selectableRegionState,
+        ) => callable.invoke<Widget>(args: [context, selectableRegionState])!;
+        trackCallable(closureSelectableRegionContextMenu, callable.cid);
+        return closureSelectableRegionContextMenu;
       case 'EditableTextContextMenuBuilder':
         Widget closureContextMenu(
           BuildContext context,
@@ -561,14 +651,6 @@ class FlutRuntime {
         ) => callable.invoke<Widget>(args: [context, editableTextState])!;
         trackCallable(closureContextMenu, callable.cid);
         return closureContextMenu;
-      case 'GestureTapCancelCallback':
-        void closure() => callable.invoke(args: []);
-        trackCallable(closure, callable.cid);
-        return closure;
-      case 'GestureLongPressUpCallback':
-        void closureLongPressUp() => callable.invoke(args: []);
-        trackCallable(closureLongPressUp, callable.cid);
-        return closureLongPressUp;
       case 'PointerHoverEventListener':
         void closureHover(PointerHoverEvent event) =>
             callable.invoke(args: [event]);
@@ -631,6 +713,7 @@ class FlutRuntime {
     FlutWidgetStateColor.registerStatics(this);
     FlutForm.registerStatics(this);
     FlutOverlay.registerStatics(this);
+    FlutMagnifierController.registerStatics(this);
     FlutInheritedScope.registerStatics(this);
     FlutActions.registerStatics(this);
     FlutVisibility.registerStatics(this);
@@ -645,6 +728,8 @@ class FlutRuntime {
     FlutClipboard.registerStatics(this);
     FlutShowDialog.registerStatics(this);
     FlutShowMenu.registerStatics(this);
+    FlutSelectionContainer.registerStatics(this);
+    FlutTextSelectionTheme.registerStatics(this);
   }
 
   void triggerAction(int actionId, {Map<String, dynamic>? payload}) {
@@ -857,6 +942,25 @@ class FlutRuntime {
           as T;
     }
 
+    if (T == Set<PointerDeviceKind>) {
+      return value
+              .map((c) => decodeObject<PointerDeviceKind>(c))
+              .nonNulls
+              .toSet()
+          as T;
+    }
+
+    if (T == Map<Type, GestureRecognizerFactory>) {
+      final result = <Type, GestureRecognizerFactory>{};
+      for (final c in value) {
+        final factory = decodeObject<GestureRecognizerFactory>(c);
+        if (factory != null) {
+          result[factory.constructor().runtimeType] = factory;
+        }
+      }
+      return result as T;
+    }
+
     return null;
   }
 
@@ -1001,6 +1105,12 @@ class FlutRuntime {
         return FlutTextStyle.flutDecode(this, data);
       case 'TextOverflow':
         return const FlutTextOverflow().flutDecode(data);
+      case 'TextAffinity':
+        return const FlutTextAffinity().flutDecode(data);
+      case 'SelectionChangedCause':
+        return const FlutSelectionChangedCause().flutDecode(data);
+      case 'TextSelection':
+        return FlutTextSelection.flutDecode(this, data);
       case 'IconData':
         return FlutIconData.flutDecode(this, data);
       case 'TextTheme':
@@ -1103,8 +1213,73 @@ class FlutRuntime {
         return const FlutOrientation().flutDecode(data);
       case 'DeviceGestureSettings':
         return FlutDeviceGestureSettings.flutDecode(this, data);
+      case 'GestureRecognizerFactory':
+        return FlutGestureRecognizerFactory.flutDecode(this, data);
+      case 'GestureRecognizerFactoryWithHandlers':
+        return FlutGestureRecognizerFactoryWithHandlers.flutDecode(this, data);
+      case 'TapMoveDetails':
+        return FlutTapMoveDetails.flutDecode(this, data);
+      case 'LongPressDownDetails':
+        return FlutLongPressDownDetails.flutDecode(this, data);
       case 'TextScaler':
         return FlutTextScaler.flutDecode(this, data);
+      case 'TextMagnifierConfiguration':
+        return FlutTextMagnifierConfiguration.flutDecode(this, data);
+      case 'MagnifierInfo':
+        return FlutMagnifierInfo.flutDecode(this, data);
+      case 'SelectedContent':
+        return FlutSelectedContent.flutDecode(this, data);
+      case 'SelectedContentRange':
+        return FlutSelectedContentRange.flutDecode(this, data);
+      case 'SelectionResult':
+        return const FlutSelectionResult().flutDecode(data);
+      case 'SelectionEventType':
+        return const FlutSelectionEventType().flutDecode(data);
+      case 'TextGranularity':
+        return const FlutTextGranularity().flutDecode(data);
+      case 'SelectionExtendDirection':
+        return const FlutSelectionExtendDirection().flutDecode(data);
+      case 'SelectionStatus':
+        return const FlutSelectionStatus().flutDecode(data);
+      case 'TextSelectionHandleType':
+        return const FlutTextSelectionHandleType().flutDecode(data);
+      case 'SelectionPoint':
+        return FlutSelectionPoint.flutDecode(this, data);
+      case 'SelectionGeometry':
+        return FlutSelectionGeometry.flutDecode(this, data);
+      case 'SelectAllSelectionEvent':
+        return FlutSelectAllSelectionEvent.flutDecode(this, data);
+      case 'ClearSelectionEvent':
+        return FlutClearSelectionEvent.flutDecode(this, data);
+      case 'SelectWordSelectionEvent':
+        return FlutSelectWordSelectionEvent.flutDecode(this, data);
+      case 'SelectParagraphSelectionEvent':
+        return FlutSelectParagraphSelectionEvent.flutDecode(this, data);
+      case 'SelectionEdgeUpdateEvent':
+        return FlutSelectionEdgeUpdateEvent.flutDecode(this, data);
+      case 'GranularlyExtendSelectionEvent':
+        return FlutGranularlyExtendSelectionEvent.flutDecode(this, data);
+      case 'DirectionallyExtendSelectionEvent':
+        return FlutDirectionallyExtendSelectionEvent.flutDecode(this, data);
+      case 'TextSelectionToolbarAnchors':
+        return FlutTextSelectionToolbarAnchors.flutDecode(this, data);
+      case 'TextSelectionControls':
+        return FlutTextSelectionControls.flutDecode(this, data);
+      case 'TextSelectionHandleControls':
+        return FlutTextSelectionHandleControls.flutDecode(this, data);
+      case 'EmptyTextSelectionControls':
+        return FlutEmptyTextSelectionControls.flutDecode(this, data);
+      case 'SelectionRegistrar':
+        return FlutSelectionRegistrar.flutDecode(this, data);
+      case 'SelectionContainerDelegate':
+        return FlutSelectionContainerDelegate.flutDecode(this, data);
+      case 'MultiSelectableSelectionContainerDelegate':
+        return FlutMultiSelectableSelectionContainerDelegate.flutDecode(
+          this,
+          data,
+        );
+      case 'StaticSelectionContainerDelegate':
+        return FlutStaticSelectionContainerDelegate.flutDecode(this, data);
       case 'MaterialTapTargetSize':
         return const FlutMaterialTapTargetSize().flutDecode(data);
       case 'TargetPlatform':
@@ -1162,6 +1337,28 @@ class FlutRuntime {
         return FlutText.flutDecode(this, data);
       case 'SelectableText':
         return FlutSelectableText.flutDecode(this, data);
+      case 'SelectionArea':
+        return FlutSelectionArea.flutDecode(this, data);
+      case 'RichText':
+        return FlutRichText.flutDecode(this, data);
+      case 'SelectionContainer':
+        return FlutSelectionContainer.flutDecode(this, data);
+      case 'SelectionRegistrarScope':
+        return FlutSelectionRegistrarScope.flutDecode(this, data);
+      case 'DefaultSelectionStyle':
+        return FlutDefaultSelectionStyle.flutDecode(this, data);
+      case 'TextSelectionTheme':
+        return FlutTextSelectionTheme.flutDecode(this, data);
+      case 'TextSelectionThemeData':
+        return FlutTextSelectionThemeData.flutDecode(this, data);
+      case 'SelectableRegion':
+        return FlutSelectableRegion.flutDecode(this, data);
+      case 'SelectableRegionSelectionStatus':
+        return const FlutSelectableRegionSelectionStatus().flutDecode(data);
+      case 'TextSelectionToolbar':
+        return FlutTextSelectionToolbar.flutDecode(this, data);
+      case 'AdaptiveTextSelectionToolbar':
+        return FlutAdaptiveTextSelectionToolbar.flutDecode(this, data);
       case 'Center':
         return FlutCenter.flutDecode(this, data);
       case 'Padding':
@@ -1234,6 +1431,8 @@ class FlutRuntime {
         return FlutMouseRegion.flutDecode(this, data);
       case 'GestureDetector':
         return FlutGestureDetector.flutDecode(this, data);
+      case 'RawGestureDetector':
+        return FlutRawGestureDetector.flutDecode(this, data);
       case 'Draggable':
         return FlutDraggable.flutDecode(this, data);
       case 'DragTarget':
@@ -1545,6 +1744,7 @@ class FlutRuntime {
       case 'OverlayState':
       case 'OverlayEntry':
       case 'ValueNotifier':
+      case 'MagnifierController':
       case 'AnimationController':
       case 'TabController':
       case 'MenuController':
@@ -1554,6 +1754,8 @@ class FlutRuntime {
       case 'WidgetStatesController':
       case 'ButtonStyle':
       case 'InteractiveInkFeatureFactory':
+      case 'TapGestureRecognizer':
+      case 'LongPressGestureRecognizer':
         throw FlutRuntimeException(
           '$type is a realtime object. '
           'It must be created via createObject and resolved by OID.',
@@ -1605,6 +1807,28 @@ class FlutRuntime {
       final wrapper = wrapObject<FlutInteractiveInkFeatureFactory>(
         value,
         (oid) => FlutInteractiveInkFeatureFactory.createFromObject(
+          runtime: this,
+          oid: oid,
+          target: value,
+        ),
+      );
+      return wrapper.flutEncode();
+    }
+    if (value is TapGestureRecognizer) {
+      final wrapper = wrapObject<FlutTapGestureRecognizer>(
+        value,
+        (oid) => FlutTapGestureRecognizer.createFromObject(
+          runtime: this,
+          oid: oid,
+          target: value,
+        ),
+      );
+      return wrapper.flutEncode();
+    }
+    if (value is LongPressGestureRecognizer) {
+      final wrapper = wrapObject<FlutLongPressGestureRecognizer>(
+        value,
+        (oid) => FlutLongPressGestureRecognizer.createFromObject(
           runtime: this,
           oid: oid,
           target: value,
@@ -1665,6 +1889,54 @@ class FlutRuntime {
     }
     if (value is TextTheme) return FlutTextTheme(value).flutEncode();
     if (value is TextStyle) return FlutTextStyle(value).flutEncode();
+    if (value is TextSelection) return FlutTextSelection(value).flutEncode();
+    if (value is SelectedContent) {
+      return FlutSelectedContent(value).flutEncode();
+    }
+    if (value is SelectedContentRange) {
+      return FlutSelectedContentRange(value).flutEncode();
+    }
+    if (value is SelectionPoint) return FlutSelectionPoint(value).flutEncode();
+    if (value is SelectionGeometry) {
+      return FlutSelectionGeometry(value).flutEncode();
+    }
+    if (value is SelectAllSelectionEvent) {
+      return FlutSelectAllSelectionEvent(value).flutEncode();
+    }
+    if (value is ClearSelectionEvent) {
+      return FlutClearSelectionEvent(value).flutEncode();
+    }
+    if (value is SelectWordSelectionEvent) {
+      return FlutSelectWordSelectionEvent(value).flutEncode();
+    }
+    if (value is SelectParagraphSelectionEvent) {
+      return FlutSelectParagraphSelectionEvent(value).flutEncode();
+    }
+    if (value is SelectionEdgeUpdateEvent) {
+      return FlutSelectionEdgeUpdateEvent(value).flutEncode();
+    }
+    if (value is GranularlyExtendSelectionEvent) {
+      return FlutGranularlyExtendSelectionEvent(value).flutEncode();
+    }
+    if (value is DirectionallyExtendSelectionEvent) {
+      return FlutDirectionallyExtendSelectionEvent(value).flutEncode();
+    }
+    if (value is TextMagnifierConfiguration) {
+      return FlutTextMagnifierConfiguration(value).flutEncode();
+    }
+    if (value is MagnifierInfo) return FlutMagnifierInfo(value).flutEncode();
+    if (value is TextSelectionToolbarAnchors) {
+      return FlutTextSelectionToolbarAnchors(value).flutEncode();
+    }
+    if (value is EmptyTextSelectionControls) {
+      return FlutEmptyTextSelectionControls(value).flutEncode();
+    }
+    if (value is StaticSelectionContainerDelegate) {
+      return FlutStaticSelectionContainerDelegate(value).flutEncode();
+    }
+    if (value is TextSelectionThemeData) {
+      return FlutTextSelectionThemeData(value).flutEncode();
+    }
     if (value is MediaQueryData) return FlutMediaQueryData(value).flutEncode();
     if (value is DeviceGestureSettings) {
       return FlutDeviceGestureSettings(value).flutEncode();
@@ -1683,6 +1955,9 @@ class FlutRuntime {
     if (value is LongPressStartDetails) {
       return FlutLongPressStartDetails(value).flutEncode();
     }
+    if (value is LongPressDownDetails) {
+      return FlutLongPressDownDetails(value).flutEncode();
+    }
     if (value is LongPressMoveUpdateDetails) {
       return FlutLongPressMoveUpdateDetails(value).flutEncode();
     }
@@ -1691,6 +1966,7 @@ class FlutRuntime {
     }
     if (value is TapDownDetails) return FlutTapDownDetails(value).flutEncode();
     if (value is TapUpDetails) return FlutTapUpDetails(value).flutEncode();
+    if (value is TapMoveDetails) return FlutTapMoveDetails(value).flutEncode();
     if (value is ScaleStartDetails) {
       return FlutScaleStartDetails(value).flutEncode();
     }
@@ -1844,6 +2120,18 @@ class FlutRuntime {
       return wrapper.flutEncode();
     }
 
+    if (value is SelectableRegionState) {
+      final wrapper = wrapObject<FlutSelectableRegionState>(
+        value,
+        (oid) => FlutSelectableRegionState.createFromObject(
+          runtime: this,
+          oid: oid,
+          target: value,
+        ),
+      );
+      return wrapper.flutEncode();
+    }
+
     if (value is FormState) {
       final wrapper = wrapObject<FlutFormState>(
         value,
@@ -1952,6 +2240,18 @@ class FlutRuntime {
       return wrapper.flutEncode();
     }
 
+    if (value is MagnifierController) {
+      final wrapper = wrapObject<FlutMagnifierController>(
+        value,
+        (oid) => FlutMagnifierController.createFromObject(
+          runtime: this,
+          oid: oid,
+          target: value,
+        ),
+      );
+      return wrapper.flutEncode();
+    }
+
     if (value is TabController) {
       final wrapper = wrapObject<FlutTabController>(
         value,
@@ -2011,6 +2311,18 @@ class FlutRuntime {
     }
     if (value is ColorSpace) {
       return const FlutColorSpace().flutEncode(value);
+    }
+    if (value is TextAffinity) {
+      return const FlutTextAffinity().flutEncode(value);
+    }
+    if (value is SelectionChangedCause) {
+      return const FlutSelectionChangedCause().flutEncode(value);
+    }
+    if (value is SelectionStatus) {
+      return const FlutSelectionStatus().flutEncode(value);
+    }
+    if (value is SelectableRegionSelectionStatus) {
+      return const FlutSelectableRegionSelectionStatus().flutEncode(value);
     }
 
     if (value is RouteSettings) return FlutRouteSettings(value).flutEncode();

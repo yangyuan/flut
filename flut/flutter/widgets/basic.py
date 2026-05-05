@@ -13,9 +13,11 @@ from flut.flutter.painting.alignment import Alignment, AlignmentDirectional
 from flut.flutter.painting.basic_types import Axis, VerticalDirection
 from flut.flutter.painting.border_radius import BorderRadius, BorderRadiusGeometry
 from flut.flutter.painting.box_fit import BoxFit
+from flut.flutter.painting.text_painter import TextOverflow, TextWidthBasis
+from flut.flutter.painting.text_scaler import TextScaler
 from flut.flutter.rendering.stack import StackFit
 from flut.flutter.services.mouse_cursor import MouseCursor
-from flut.dart.ui import Clip, Offset, Size, TextBaseline, TextDirection
+from flut.dart.ui import Clip, Offset, Size, TextAlign, TextBaseline, TextDirection
 from flut.flutter.rendering.custom_paint import CustomPainter
 from flut.flutter.widgets.framework import BuildContext, Widget
 
@@ -45,6 +47,68 @@ class Center(Widget):
             result["heightFactor"] = _flut_pack_value(self.heightFactor)
         if self.child is not None:
             result["child"] = _flut_pack_value(self.child)
+        return result
+
+
+class RichText(Widget):
+    _flut_type = "RichText"
+
+    def __init__(
+        self,
+        *,
+        text: "InlineSpan",
+        key: Optional["Key"] = None,
+        textAlign: TextAlign = TextAlign.start,
+        textDirection: Optional[TextDirection] = None,
+        softWrap: bool = True,
+        overflow: TextOverflow = TextOverflow.clip,
+        textScaler: TextScaler = TextScaler.noScaling,
+        maxLines: Optional[int] = None,
+        locale: Optional["Locale"] = None,
+        strutStyle: Optional["StrutStyle"] = None,
+        textWidthBasis: TextWidthBasis = TextWidthBasis.parent,
+        textHeightBehavior: Optional["TextHeightBehavior"] = None,
+        selectionRegistrar: Optional["SelectionRegistrar"] = None,
+        selectionColor: Optional["Color"] = None,
+    ) -> None:
+        super().__init__(key=key)
+        self.text = text
+        self.textAlign = textAlign
+        self.textDirection = textDirection
+        self.softWrap = softWrap
+        self.overflow = overflow
+        self.textScaler = textScaler
+        self.maxLines = maxLines
+        self.locale = locale
+        self.strutStyle = strutStyle
+        self.textWidthBasis = textWidthBasis
+        self.textHeightBehavior = textHeightBehavior
+        self.selectionRegistrar = selectionRegistrar
+        self.selectionColor = selectionColor
+
+    @override
+    def _flut_pack(self) -> dict[str, object]:
+        result = self._flut_base_props()
+        result["text"] = _flut_pack_value(self.text)
+        result["textAlign"] = _flut_pack_value(self.textAlign)
+        if self.textDirection is not None:
+            result["textDirection"] = _flut_pack_value(self.textDirection)
+        result["softWrap"] = _flut_pack_value(self.softWrap)
+        result["overflow"] = _flut_pack_value(self.overflow)
+        result["textScaler"] = _flut_pack_value(self.textScaler)
+        if self.maxLines is not None:
+            result["maxLines"] = _flut_pack_value(self.maxLines)
+        if self.locale is not None:
+            result["locale"] = _flut_pack_value(self.locale)
+        if self.strutStyle is not None:
+            result["strutStyle"] = _flut_pack_value(self.strutStyle)
+        result["textWidthBasis"] = _flut_pack_value(self.textWidthBasis)
+        if self.textHeightBehavior is not None:
+            result["textHeightBehavior"] = _flut_pack_value(self.textHeightBehavior)
+        if self.selectionRegistrar is not None:
+            result["selectionRegistrar"] = _flut_pack_value(self.selectionRegistrar)
+        if self.selectionColor is not None:
+            result["selectionColor"] = _flut_pack_value(self.selectionColor)
         return result
 
 

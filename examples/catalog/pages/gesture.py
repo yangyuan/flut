@@ -12,6 +12,8 @@ from flut.flutter.widgets import (
     Stack,
     Positioned,
     GestureDetector,
+    GestureRecognizerFactoryWithHandlers,
+    RawGestureDetector,
     Align,
     Center,
     ClipRRect,
@@ -23,12 +25,16 @@ from flut.flutter.widgets import (
     MouseRegion,
     WidgetStatePropertyAll,
 )
+from flut.flutter.gestures import (
+    LongPressGestureRecognizer,
+    TapGestureRecognizer,
+    Velocity,
+)
 from flut.flutter.rendering import (
     CrossAxisAlignment,
     MainAxisAlignment,
     HitTestBehavior,
 )
-from flut.flutter.gestures import Velocity
 from flut.flutter.material import (
     Colors,
     Theme,
@@ -2333,6 +2339,499 @@ class _MouseRegionHoverDemoState(State[_MouseRegionHoverDemo]):
         )
 
 
+class _TapMoveDemo(StatefulWidget):
+    def createState(self):
+        return _TapMoveDemoState()
+
+
+class _TapMoveDemoState(State[_TapMoveDemo]):
+
+    def initState(self):
+        self.last_event = "Press and slide on the box"
+        self.move_count = 0
+
+    def _on_tap_down(self, details):
+        def update():
+            self.last_event = (
+                f"onTapDown ({details.globalPosition.dx:.0f}, "
+                f"{details.globalPosition.dy:.0f})"
+            )
+            self.move_count = 0
+
+        self.setState(update)
+
+    def _on_tap_move(self, details):
+        def update():
+            self.move_count += 1
+            kind = details.kind._flut_value if details.kind else "?"
+            self.last_event = (
+                f"onTapMove #{self.move_count} kind={kind} "
+                f"delta=({details.delta.dx:+.1f}, {details.delta.dy:+.1f})"
+            )
+
+        self.setState(update)
+
+    def _on_tap_up(self, details):
+        def update():
+            self.last_event = f"onTapUp after {self.move_count} move events"
+
+        self.setState(update)
+
+    def build(self, context):
+        scheme = Theme.of(context).colorScheme
+        is_dark = scheme.brightness == Brightness.dark
+        box_color = Color(0xFF4527A0) if is_dark else Color(0xFF7E57C2)
+
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                GestureDetector(
+                    onTapDown=self._on_tap_down,
+                    onTapMove=self._on_tap_move,
+                    onTapUp=self._on_tap_up,
+                    child=Container(
+                        width=220.0,
+                        height=100.0,
+                        decoration=BoxDecoration(
+                            color=box_color,
+                            borderRadius=BorderRadius.circular(8),
+                        ),
+                        child=Align(
+                            alignment=Alignment.center,
+                            child=Text(
+                                "Press, slide, release",
+                                style=TextStyle(
+                                    color=Colors.white,
+                                    fontWeight=FontWeight.bold,
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                SizedBox(height=12),
+                Text(
+                    self.last_event,
+                    style=TextStyle(
+                        fontSize=13,
+                        fontFamily=CODE_FONT_FAMILY,
+                        color=Colors.grey,
+                    ),
+                ),
+            ],
+        )
+
+
+class _OnSecondaryTapDemo(StatefulWidget):
+    def createState(self):
+        return _OnSecondaryTapDemoState()
+
+
+class _OnSecondaryTapDemoState(State[_OnSecondaryTapDemo]):
+
+    def initState(self):
+        self.count = 0
+
+    def _on_secondary_tap(self):
+        def update():
+            self.count += 1
+
+        self.setState(update)
+
+    def build(self, context):
+        scheme = Theme.of(context).colorScheme
+        is_dark = scheme.brightness == Brightness.dark
+        box_color = Color(0xFF4E342E) if is_dark else Color(0xFF8D6E63)
+
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                GestureDetector(
+                    onSecondaryTap=self._on_secondary_tap,
+                    child=Container(
+                        width=180.0,
+                        height=80.0,
+                        decoration=BoxDecoration(
+                            color=box_color,
+                            borderRadius=BorderRadius.circular(8),
+                        ),
+                        child=Align(
+                            alignment=Alignment.center,
+                            child=Text(
+                                "Right-click me",
+                                style=TextStyle(
+                                    color=Colors.white,
+                                    fontWeight=FontWeight.bold,
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                SizedBox(height=12),
+                Text(
+                    f"onSecondaryTap fired {self.count} time(s)",
+                    style=TextStyle(
+                        fontSize=13,
+                        fontFamily=CODE_FONT_FAMILY,
+                        color=Colors.grey,
+                    ),
+                ),
+            ],
+        )
+
+
+class _LongPressDownDemo(StatefulWidget):
+    def createState(self):
+        return _LongPressDownDemoState()
+
+
+class _LongPressDownDemoState(State[_LongPressDownDemo]):
+
+    def initState(self):
+        self.events = []
+
+    def _push(self, text):
+        def update():
+            self.events.append(text)
+            if len(self.events) > 6:
+                self.events = self.events[-6:]
+
+        self.setState(update)
+
+    def _on_long_press_down(self, details):
+        kind = details.kind._flut_value if details.kind else "?"
+        self._push(
+            f"onLongPressDown kind={kind} "
+            f"({details.globalPosition.dx:.0f}, {details.globalPosition.dy:.0f})"
+        )
+
+    def _on_long_press_cancel(self):
+        self._push("onLongPressCancel")
+
+    def _on_long_press_start(self, details):
+        self._push(
+            f"onLongPressStart ({details.globalPosition.dx:.0f}, "
+            f"{details.globalPosition.dy:.0f})"
+        )
+
+    def _on_long_press_end(self, details):
+        self._push(
+            f"onLongPressEnd ({details.globalPosition.dx:.0f}, "
+            f"{details.globalPosition.dy:.0f})"
+        )
+
+    def build(self, context):
+        scheme = Theme.of(context).colorScheme
+        is_dark = scheme.brightness == Brightness.dark
+        box_color = Color(0xFFAD1457) if is_dark else Color(0xFFEC407A)
+
+        event_widgets = []
+        for e in self.events:
+            event_widgets.append(
+                Text(
+                    e,
+                    style=TextStyle(
+                        fontSize=12,
+                        fontFamily=CODE_FONT_FAMILY,
+                        color=Colors.grey,
+                    ),
+                )
+            )
+        if not event_widgets:
+            event_widgets.append(
+                Text(
+                    "Press and hold (or press then release quickly to cancel)",
+                    style=TextStyle(fontSize=13, color=Colors.grey),
+                )
+            )
+
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                GestureDetector(
+                    onLongPressDown=self._on_long_press_down,
+                    onLongPressCancel=self._on_long_press_cancel,
+                    onLongPressStart=self._on_long_press_start,
+                    onLongPressEnd=self._on_long_press_end,
+                    child=Container(
+                        width=220.0,
+                        height=100.0,
+                        decoration=BoxDecoration(
+                            color=box_color,
+                            borderRadius=BorderRadius.circular(8),
+                        ),
+                        child=Align(
+                            alignment=Alignment.center,
+                            child=Text(
+                                "Press & hold",
+                                style=TextStyle(
+                                    color=Colors.white,
+                                    fontWeight=FontWeight.bold,
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                SizedBox(height=12),
+                Column(
+                    crossAxisAlignment=CrossAxisAlignment.start,
+                    children=event_widgets,
+                ),
+            ],
+        )
+
+
+class _SecondaryTertiaryLongPressDemo(StatefulWidget):
+    def createState(self):
+        return _SecondaryTertiaryLongPressDemoState()
+
+
+class _SecondaryTertiaryLongPressDemoState(State[_SecondaryTertiaryLongPressDemo]):
+
+    def initState(self):
+        self.secondary_count = 0
+        self.tertiary_count = 0
+        self.last = ""
+
+    def _on_secondary_long_press_down(self, details):
+        def update():
+            self.last = (
+                f"onSecondaryLongPressDown "
+                f"({details.globalPosition.dx:.0f}, {details.globalPosition.dy:.0f})"
+            )
+
+        self.setState(update)
+
+    def _on_secondary_long_press_start(self, details):
+        def update():
+            self.secondary_count += 1
+            self.last = f"onSecondaryLongPressStart #{self.secondary_count}"
+
+        self.setState(update)
+
+    def _on_secondary_long_press_end(self, details):
+        def update():
+            self.last = "onSecondaryLongPressEnd"
+
+        self.setState(update)
+
+    def _on_secondary_long_press_cancel(self):
+        def update():
+            self.last = "onSecondaryLongPressCancel"
+
+        self.setState(update)
+
+    def _on_tertiary_long_press_down(self, details):
+        def update():
+            self.last = (
+                f"onTertiaryLongPressDown "
+                f"({details.globalPosition.dx:.0f}, {details.globalPosition.dy:.0f})"
+            )
+
+        self.setState(update)
+
+    def _on_tertiary_long_press_start(self, details):
+        def update():
+            self.tertiary_count += 1
+            self.last = f"onTertiaryLongPressStart #{self.tertiary_count}"
+
+        self.setState(update)
+
+    def _on_tertiary_long_press_end(self, details):
+        def update():
+            self.last = "onTertiaryLongPressEnd"
+
+        self.setState(update)
+
+    def _on_tertiary_long_press_cancel(self):
+        def update():
+            self.last = "onTertiaryLongPressCancel"
+
+        self.setState(update)
+
+    def build(self, context):
+        scheme = Theme.of(context).colorScheme
+        is_dark = scheme.brightness == Brightness.dark
+        secondary_color = Color(0xFF1565C0) if is_dark else Color(0xFF42A5F5)
+        tertiary_color = Color(0xFF2E7D32) if is_dark else Color(0xFF66BB6A)
+
+        secondary_box = GestureDetector(
+            onSecondaryLongPressDown=self._on_secondary_long_press_down,
+            onSecondaryLongPressStart=self._on_secondary_long_press_start,
+            onSecondaryLongPressEnd=self._on_secondary_long_press_end,
+            onSecondaryLongPressCancel=self._on_secondary_long_press_cancel,
+            child=Container(
+                width=160.0,
+                height=80.0,
+                decoration=BoxDecoration(
+                    color=secondary_color,
+                    borderRadius=BorderRadius.circular(8),
+                ),
+                child=Align(
+                    alignment=Alignment.center,
+                    child=Text(
+                        f"Secondary hold ({self.secondary_count})",
+                        style=TextStyle(
+                            color=Colors.white,
+                            fontWeight=FontWeight.bold,
+                            fontSize=12,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        tertiary_box = GestureDetector(
+            onTertiaryLongPressDown=self._on_tertiary_long_press_down,
+            onTertiaryLongPressStart=self._on_tertiary_long_press_start,
+            onTertiaryLongPressEnd=self._on_tertiary_long_press_end,
+            onTertiaryLongPressCancel=self._on_tertiary_long_press_cancel,
+            child=Container(
+                width=160.0,
+                height=80.0,
+                decoration=BoxDecoration(
+                    color=tertiary_color,
+                    borderRadius=BorderRadius.circular(8),
+                ),
+                child=Align(
+                    alignment=Alignment.center,
+                    child=Text(
+                        f"Tertiary hold ({self.tertiary_count})",
+                        style=TextStyle(
+                            color=Colors.white,
+                            fontWeight=FontWeight.bold,
+                            fontSize=12,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                Row(
+                    children=[
+                        secondary_box,
+                        SizedBox(width=12),
+                        tertiary_box,
+                    ],
+                ),
+                SizedBox(height=12),
+                Text(
+                    self.last or "Right-click-and-hold or middle-click-and-hold a box.",
+                    style=TextStyle(
+                        fontSize=13,
+                        fontFamily=CODE_FONT_FAMILY,
+                        color=Colors.grey,
+                    ),
+                ),
+            ],
+        )
+
+
+class _RawGestureDetectorDemo(StatefulWidget):
+    def createState(self):
+        return _RawGestureDetectorDemoState()
+
+
+class _RawGestureDetectorDemoState(State[_RawGestureDetectorDemo]):
+    def initState(self):
+        self.tap_count = 0
+        self.long_press_count = 0
+        self.tap_init_count = 0
+        self.long_press_init_count = 0
+        self.last = "Tap or long-press the box"
+
+    def _on_tap(self):
+        def update():
+            self.tap_count += 1
+            self.last = f"onTap (#{self.tap_count})"
+
+        self.setState(update)
+
+    def _on_long_press(self):
+        def update():
+            self.long_press_count += 1
+            self.last = f"onLongPress (#{self.long_press_count})"
+
+        self.setState(update)
+
+    def _build_tap_recognizer(self):
+        return TapGestureRecognizer()
+
+    def _init_tap_recognizer(self, instance):
+        instance.onTap = self._on_tap
+        self.tap_init_count += 1
+
+    def _build_long_press_recognizer(self):
+        return LongPressGestureRecognizer()
+
+    def _init_long_press_recognizer(self, instance):
+        instance.onLongPress = self._on_long_press
+        self.long_press_init_count += 1
+
+    def build(self, context):
+        scheme = Theme.of(context).colorScheme
+        is_dark = scheme.brightness == Brightness.dark
+        box_color = Color(0xFF00838F) if is_dark else Color(0xFF26C6DA)
+
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                RawGestureDetector(
+                    behavior=HitTestBehavior.opaque,
+                    gestures={
+                        TapGestureRecognizer: GestureRecognizerFactoryWithHandlers(
+                            self._build_tap_recognizer,
+                            self._init_tap_recognizer,
+                        ),
+                        LongPressGestureRecognizer: GestureRecognizerFactoryWithHandlers(
+                            self._build_long_press_recognizer,
+                            self._init_long_press_recognizer,
+                        ),
+                    },
+                    child=Container(
+                        width=220.0,
+                        height=100.0,
+                        decoration=BoxDecoration(
+                            color=box_color,
+                            borderRadius=BorderRadius.circular(8),
+                        ),
+                        child=Align(
+                            alignment=Alignment.center,
+                            child=Text(
+                                "Raw recognizers",
+                                style=TextStyle(
+                                    color=Colors.white,
+                                    fontWeight=FontWeight.bold,
+                                ),
+                            ),
+                        ),
+                    ),
+                ),
+                SizedBox(height=12),
+                Text(
+                    self.last,
+                    style=TextStyle(
+                        fontSize=13,
+                        fontFamily=CODE_FONT_FAMILY,
+                        color=Colors.grey,
+                    ),
+                ),
+                SizedBox(height=4),
+                Text(
+                    f"initializer calls — tap: {self.tap_init_count}, "
+                    f"long-press: {self.long_press_init_count}",
+                    style=TextStyle(
+                        fontSize=12,
+                        fontFamily=CODE_FONT_FAMILY,
+                        color=Colors.grey,
+                    ),
+                ),
+            ],
+        )
+
+
 class GesturePage(StatelessWidget):
     def build(self, context):
         return CatalogPage(
@@ -2553,6 +3052,162 @@ class GesturePage(StatelessWidget):
                             "    details.globalPosition\n\n"
                             "def on_tertiary_up(details):\n"
                             "    details.globalPosition"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="GestureDetector onTapMove",
+                    description=(
+                        "onTapMove fires while the pointer slides between onTapDown "
+                        "and onTapUp. The TapMoveDetails object exposes kind, "
+                        "globalPosition, localPosition, and a per-step delta."
+                    ),
+                    instruction=(
+                        "Press inside the purple box and slide the pointer without "
+                        "releasing. Each move tick is logged with its kind and delta."
+                    ),
+                    visible=_TapMoveDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "GestureDetector(\n"
+                            "    onTapDown=on_tap_down,\n"
+                            "    onTapMove=on_tap_move,\n"
+                            "    onTapUp=on_tap_up,\n"
+                            "    child=Container(...),\n"
+                            ")\n\n"
+                            "def on_tap_move(details: TapMoveDetails):\n"
+                            "    details.kind\n"
+                            "    details.globalPosition\n"
+                            "    details.delta"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="GestureDetector onSecondaryTap",
+                    description=(
+                        "onSecondaryTap is the bare 'right-click happened' callback, "
+                        "fired when a secondary-button tap completes (no details "
+                        "object). Use it when you only care that a right-click "
+                        "occurred, independent of position tracking."
+                    ),
+                    instruction=(
+                        "Right-click the brown box. The counter increments once per "
+                        "completed secondary tap."
+                    ),
+                    visible=_OnSecondaryTapDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "GestureDetector(\n"
+                            "    onSecondaryTap=lambda: ...,\n"
+                            "    child=Container(...),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="GestureDetector long-press lifecycle (down/cancel)",
+                    description=(
+                        "onLongPressDown fires the moment a long-press contact lands "
+                        "(LongPressDownDetails carries kind, globalPosition, "
+                        "localPosition). onLongPressCancel fires if the gesture is "
+                        "abandoned before the long-press timer triggers. "
+                        "onLongPressStart / onLongPressEnd bracket the recognized "
+                        "long-press."
+                    ),
+                    instruction=(
+                        "Press and hold the pink box to see Down → Start → End. "
+                        "Press and quickly release (or move outside) to see "
+                        "Down → Cancel."
+                    ),
+                    visible=_LongPressDownDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "GestureDetector(\n"
+                            "    onLongPressDown=on_lp_down,\n"
+                            "    onLongPressCancel=on_lp_cancel,\n"
+                            "    onLongPressStart=on_lp_start,\n"
+                            "    onLongPressEnd=on_lp_end,\n"
+                            "    child=Container(...),\n"
+                            ")\n\n"
+                            "def on_lp_down(details: LongPressDownDetails):\n"
+                            "    details.kind\n"
+                            "    details.globalPosition\n\n"
+                            "def on_lp_cancel():\n"
+                            "    pass"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="Secondary & tertiary long press",
+                    description=(
+                        "GestureDetector exposes the full long-press lifecycle "
+                        "(Down / Cancel / Start / End) for the secondary and "
+                        "tertiary mouse buttons too. Each variant fires "
+                        "independently from the primary callbacks."
+                    ),
+                    instruction=(
+                        "Right-click and hold the blue box for secondary callbacks. "
+                        "Middle-click and hold the green box for tertiary callbacks. "
+                        "The status line below shows the most recent event."
+                    ),
+                    visible=_SecondaryTertiaryLongPressDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "GestureDetector(\n"
+                            "    onSecondaryLongPressDown=on_sec_down,\n"
+                            "    onSecondaryLongPressStart=on_sec_start,\n"
+                            "    onSecondaryLongPressEnd=on_sec_end,\n"
+                            "    onSecondaryLongPressCancel=on_sec_cancel,\n"
+                            "    onTertiaryLongPressDown=on_ter_down,\n"
+                            "    onTertiaryLongPressStart=on_ter_start,\n"
+                            "    onTertiaryLongPressEnd=on_ter_end,\n"
+                            "    onTertiaryLongPressCancel=on_ter_cancel,\n"
+                            "    child=Container(...),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="RawGestureDetector + recognizers",
+                    description=(
+                        "RawGestureDetector exposes Flutter's lower-level "
+                        "Map<Type, GestureRecognizerFactory> API. Each entry "
+                        "is a GestureRecognizerFactoryWithHandlers carrying "
+                        "two callbacks: a constructor that creates the bare "
+                        "recognizer, and an initializer that wires its "
+                        "callbacks. Flutter invokes the initializer on every "
+                        "rebuild so callback identities can refresh without "
+                        "rebuilding the recognizer."
+                    ),
+                    instruction=(
+                        "Tap or long-press the cyan box. The top line shows "
+                        "the latest event; the bottom line shows how many "
+                        "times each initializer has been invoked."
+                    ),
+                    visible=_RawGestureDetectorDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "RawGestureDetector(\n"
+                            "    behavior=HitTestBehavior.opaque,\n"
+                            "    gestures={\n"
+                            "        TapGestureRecognizer:\n"
+                            "            GestureRecognizerFactoryWithHandlers(\n"
+                            "                lambda: TapGestureRecognizer(),\n"
+                            "                lambda r: setattr(r, 'onTap', on_tap),\n"
+                            "            ),\n"
+                            "        LongPressGestureRecognizer:\n"
+                            "            GestureRecognizerFactoryWithHandlers(\n"
+                            "                lambda: LongPressGestureRecognizer(),\n"
+                            "                lambda r: setattr(r, 'onLongPress', on_long_press),\n"
+                            "            ),\n"
+                            "    },\n"
+                            "    child=Container(...),\n"
+                            ")"
                         ),
                     ),
                 ),

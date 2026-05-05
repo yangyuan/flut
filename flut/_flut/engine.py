@@ -746,10 +746,10 @@ def call_dart_static(class_name: str, method_name: str, *args, **kwargs):
         raise RuntimeError("Engine is not initialized.")
     data = {
         "name": f"{class_name}.{method_name}",
-        "args": list(args),
+        "args": [_flut_pack_value(arg) for arg in args],
     }
     if kwargs:
-        data["kwargs"] = kwargs
+        data["kwargs"] = {key: _flut_pack_value(value) for key, value in kwargs.items()}
     result = engine.call_dart("static", data)
     if result and "_flut_error" in result:
         raise RuntimeError(
@@ -893,6 +893,7 @@ class FlutRealtimeObject(FlutObject):
     def __init__(self):
         super().__init__()
         self._flut_oid = None
+        self._flut_dart_owned = False
         self._flut_owned_callables = set()
         self._flut_owned_callable_keys = {}
 
@@ -912,6 +913,7 @@ class FlutRealtimeObject(FlutObject):
     def _flut_create(self, *, oid=None, props=None, bindings=None):
         if oid is not None:
             self._flut_oid = oid
+            self._flut_dart_owned = True
             FlutRealtimeObject._oid_registry[oid] = weakref.ref(self)
             return
         init_data = dict(props) if props else {}
@@ -1185,6 +1187,8 @@ class FlutRealtimeObject(FlutObject):
 
     def __del__(self):
         try:
+            if getattr(self, "_flut_dart_owned", False):
+                return
             owned = getattr(self, "_flut_owned_callables", ())
             for cid in owned:
                 engine = _engine

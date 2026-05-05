@@ -2,6 +2,20 @@ import 'package:flutter/services.dart';
 import 'package:flut/flut/runtime.dart';
 import 'package:flut/flut/object.dart';
 
+class FlutSelectionChangedCause extends FlutEnumObject<SelectionChangedCause> {
+  const FlutSelectionChangedCause()
+    : super('SelectionChangedCause', const {
+        'tap': SelectionChangedCause.tap,
+        'doubleTap': SelectionChangedCause.doubleTap,
+        'longPress': SelectionChangedCause.longPress,
+        'forcePress': SelectionChangedCause.forcePress,
+        'keyboard': SelectionChangedCause.keyboard,
+        'toolbar': SelectionChangedCause.toolbar,
+        'drag': SelectionChangedCause.drag,
+        'stylusHandwriting': SelectionChangedCause.stylusHandwriting,
+      });
+}
+
 class FlutTextInputAction extends FlutEnumObject<TextInputAction> {
   const FlutTextInputAction()
     : super('TextInputAction', const {

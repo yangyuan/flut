@@ -33,14 +33,45 @@ from .basic import (
     SliverToBoxAdapter,
     CustomPaint,
     IgnorePointer,
+    RichText,
 )
 from .spacer import Spacer
 from .text import Text
 from .widget_span import WidgetSpan
+from .magnifier import (
+    MagnifierController,
+    MagnifierInfo,
+    TextMagnifierConfiguration,
+)
+from .text_selection_toolbar_anchors import TextSelectionToolbarAnchors
+from .text_selection import (
+    EmptyTextSelectionControls,
+    TextSelectionControls,
+    TextSelectionHandleControls,
+)
+from .selection_container import (
+    MultiSelectableSelectionContainerDelegate,
+    SelectionContainer,
+    SelectionContainerDelegate,
+    SelectionRegistrar,
+    SelectionRegistrarScope,
+    StaticSelectionContainerDelegate,
+)
+from .default_selection_style import DefaultSelectionStyle
+from .selectable_region import (
+    SelectableRegion,
+    SelectableRegionSelectionStatus,
+    SelectableRegionState,
+)
 from .container import Container
 from .icon import Icon
 from .icon_data import IconData
-from .gesture_detector import GestureDetector
+from .gesture_detector import (
+    GestureDetector,
+    GestureRecognizerFactory,
+    GestureRecognizerFactoryWithHandlers,
+    RawGestureDetector,
+)
 from .scroll_view import (
     ListView,
     CustomScrollView,

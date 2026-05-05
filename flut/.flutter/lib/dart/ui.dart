@@ -340,6 +340,14 @@ class FlutTextDirection extends FlutEnumObject<TextDirection> {
       });
 }
 
+class FlutTextAffinity extends FlutEnumObject<TextAffinity> {
+  const FlutTextAffinity()
+    : super('TextAffinity', const {
+        'upstream': TextAffinity.upstream,
+        'downstream': TextAffinity.downstream,
+      });
+}
+
 class FlutFontStyle extends FlutEnumObject<FontStyle> {
   const FlutFontStyle()
     : super('FontStyle', const {

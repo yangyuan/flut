@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flut/flut/runtime.dart';
+import 'package:flutter/rendering.dart';
 
 class FlutCenter {
   FlutCenter._();
@@ -37,6 +38,44 @@ class FlutIgnorePointer {
       key: runtime.decodeKey(data),
       ignoring: runtime.unpackRequiredField<bool>(data, 'ignoring'),
       child: runtime.unpackOptionalField<Widget>(data, 'child'),
+    );
+  }
+}
+
+class FlutRichText {
+  FlutRichText._();
+
+  static RichText? flutDecode(FlutRuntime runtime, Map<String, dynamic> data) {
+    return RichText(
+      key: runtime.decodeKey(data),
+      text: runtime.unpackRequiredField<InlineSpan>(data, 'text'),
+      textAlign: runtime.unpackRequiredField<TextAlign>(data, 'textAlign'),
+      textDirection: runtime.unpackOptionalField<TextDirection>(
+        data,
+        'textDirection',
+      ),
+      softWrap: runtime.unpackRequiredField<bool>(data, 'softWrap'),
+      overflow: runtime.unpackRequiredField<TextOverflow>(data, 'overflow'),
+      textScaler: runtime.unpackRequiredField<TextScaler>(data, 'textScaler'),
+      maxLines: runtime.unpackOptionalField<int>(data, 'maxLines'),
+      locale: runtime.unpackOptionalField<Locale>(data, 'locale'),
+      strutStyle: runtime.unpackOptionalField<StrutStyle>(data, 'strutStyle'),
+      textWidthBasis: runtime.unpackRequiredField<TextWidthBasis>(
+        data,
+        'textWidthBasis',
+      ),
+      textHeightBehavior: runtime.unpackOptionalField<TextHeightBehavior>(
+        data,
+        'textHeightBehavior',
+      ),
+      selectionRegistrar: runtime.unpackOptionalField<SelectionRegistrar>(
+        data,
+        'selectionRegistrar',
+      ),
+      selectionColor: runtime.unpackOptionalField<Color>(
+        data,
+        'selectionColor',
+      ),
     );
   }
 }

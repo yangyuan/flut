@@ -20,6 +20,17 @@ class TextInputAction(FlutEnumObject):
     newline: "TextInputAction"
 
 
+class SelectionChangedCause(FlutEnumObject):
+    tap: "SelectionChangedCause"
+    doubleTap: "SelectionChangedCause"
+    longPress: "SelectionChangedCause"
+    forcePress: "SelectionChangedCause"
+    keyboard: "SelectionChangedCause"
+    toolbar: "SelectionChangedCause"
+    drag: "SelectionChangedCause"
+    stylusHandwriting: "SelectionChangedCause"
+
+
 class _TextInputType(FlutValueObject):
     _flut_type = "TextInputType"
 
