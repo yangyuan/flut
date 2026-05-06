@@ -2,6 +2,15 @@ import 'package:flutter/widgets.dart';
 import 'package:flut/flut/object.dart';
 import 'package:flut/flut/runtime.dart';
 
+class FlutClipboardStatus extends FlutEnumObject<ClipboardStatus> {
+  const FlutClipboardStatus()
+    : super('ClipboardStatus', const {
+        'pasteable': ClipboardStatus.pasteable,
+        'unknown': ClipboardStatus.unknown,
+        'notPasteable': ClipboardStatus.notPasteable,
+      });
+}
+
 class FlutTextSelectionControls extends FlutValueObject {
   const FlutTextSelectionControls() : super('TextSelectionControls');
 

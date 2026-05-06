@@ -45,10 +45,12 @@ from .magnifier import (
 )
 from .text_selection_toolbar_anchors import TextSelectionToolbarAnchors
 from .text_selection import (
+    ClipboardStatus,
     EmptyTextSelectionControls,
     TextSelectionControls,
     TextSelectionHandleControls,
 )
+from .context_menu_button_item import ContextMenuButtonType, ContextMenuButtonItem
 from .selection_container import (
     MultiSelectableSelectionContainerDelegate,
     SelectionContainer,
@@ -92,7 +94,7 @@ from .focus_traversal import (
     FocusTraversalGroup,
     FocusTraversalOrder,
 )
-from .editable_text import TextEditingController
+from .editable_text import EditableTextState, TextEditingController
 from .scroll_controller import ScrollController
 from .scroll_position import ScrollPosition
 from .media_query import MediaQuery, MediaQueryData

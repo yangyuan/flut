@@ -586,6 +586,26 @@ def flut_unpack(data) -> Optional[object]:
             from flut.flutter.widgets.selectable_region import SelectableRegionState
 
             return SelectableRegionState._flut_unpack(data)
+        case "EditableTextState":
+            from flut.flutter.widgets.editable_text import EditableTextState
+
+            return EditableTextState._flut_unpack(data)
+        case "ClipboardStatus":
+            from flut.flutter.widgets.text_selection import ClipboardStatus
+
+            return ClipboardStatus._flut_unpack(data)
+        case "ContextMenuButtonType":
+            from flut.flutter.widgets.context_menu_button_item import (
+                ContextMenuButtonType,
+            )
+
+            return ContextMenuButtonType._flut_unpack(data)
+        case "ContextMenuButtonItem":
+            from flut.flutter.widgets.context_menu_button_item import (
+                ContextMenuButtonItem,
+            )
+
+            return ContextMenuButtonItem._flut_unpack(data)
         case "TapGestureRecognizer":
             from flut.flutter.gestures.tap import TapGestureRecognizer
 

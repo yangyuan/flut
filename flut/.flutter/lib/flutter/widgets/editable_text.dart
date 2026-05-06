@@ -1,6 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flut/flut/runtime.dart';
+import 'package:flut/flut/object.dart';
+import 'package:flut/flut/error.dart';
 import 'package:flut/flutter/foundation/change_notifier.dart';
+
+class FlutEditableTextState with FlutRealtimeObject<EditableTextState> {
+  FlutEditableTextState.createFromObject({
+    required FlutRuntime runtime,
+    required int oid,
+    required EditableTextState target,
+  }) {
+    initRealtimeFromObject(
+      runtime: runtime,
+      oid: oid,
+      type: 'EditableTextState',
+      target: target,
+    );
+  }
+
+  @override
+  dynamic getRawProperty(String property) {
+    throw FlutUnknownPropertyException('EditableTextState', property);
+  }
+
+  @override
+  bool setProperty(String property, dynamic value) {
+    throw FlutUnknownPropertyException('EditableTextState', property);
+  }
+
+  @override
+  dynamic callMethod(
+    String method,
+    List<dynamic> args,
+    Map<String, dynamic> kwargs,
+  ) {
+    throw FlutUnknownMethodException(method);
+  }
+}
 
 class _FlutTextEditingController extends TextEditingController {
   final FlutRuntime _runtime;

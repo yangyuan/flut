@@ -1,4 +1,9 @@
+from flut._flut.engine import FlutRealtimeObject
 from flut.flutter.foundation.change_notifier import Listenable, ValueNotifier
+
+
+class EditableTextState(FlutRealtimeObject):
+    _flut_type = "EditableTextState"
 
 
 class TextEditingController(ValueNotifier):

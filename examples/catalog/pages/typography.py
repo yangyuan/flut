@@ -1,6 +1,7 @@
 from flut.flutter.painting import TextOverflow
 from utils import CODE_FONT_FAMILY
 from flut.dart import Color, TextAlign
+from flut.dart.ui import Offset
 from flut.flutter.widgets import (
     StatefulWidget,
     State,
@@ -18,8 +19,11 @@ from flut.flutter.widgets import (
     SelectableRegion,
     StaticSelectionContainerDelegate,
     TextMagnifierConfiguration,
+    TextSelectionToolbarAnchors,
     DefaultSelectionStyle,
     Builder,
+    ContextMenuButtonItem,
+    ContextMenuButtonType,
 )
 from flut.flutter.rendering import CrossAxisAlignment
 from flut.flutter.material import (
@@ -27,6 +31,7 @@ from flut.flutter.material import (
     Theme,
     SelectableText,
     SelectionArea,
+    AdaptiveTextSelectionToolbar,
     TextSelectionTheme,
     TextSelectionThemeData,
 )
@@ -709,6 +714,177 @@ class _TextSelectionThemeDemo(StatelessWidget):
                     ],
                 ),
             ),
+        )
+
+
+class _AdaptiveToolbarButtonItemsDemo(StatefulWidget):
+    def createState(self):
+        return _AdaptiveToolbarButtonItemsDemoState()
+
+
+class _AdaptiveToolbarButtonItemsDemoState(State[_AdaptiveToolbarButtonItemsDemo]):
+    def initState(self):
+        self.last_action = "(no toolbar button pressed yet)"
+
+    def _make_handler(self, name):
+        def handler():
+            def update():
+                self.last_action = f"{name} pressed"
+
+            self.setState(update)
+
+        return handler
+
+    def _build_toolbar(self, ctx, state):
+        return AdaptiveTextSelectionToolbar.buttonItems(
+            anchors=TextSelectionToolbarAnchors(
+                primaryAnchor=Offset(220, 220),
+            ),
+            buttonItems=[
+                ContextMenuButtonItem(
+                    type=ContextMenuButtonType.copy,
+                    onPressed=self._make_handler("Copy"),
+                ),
+                ContextMenuButtonItem(
+                    type=ContextMenuButtonType.selectAll,
+                    onPressed=self._make_handler("Select All"),
+                ),
+                ContextMenuButtonItem(
+                    label="Cheer",
+                    onPressed=self._make_handler("Cheer"),
+                ),
+            ],
+        )
+
+    def build(self, context):
+        return Column(
+            crossAxisAlignment=CrossAxisAlignment.start,
+            children=[
+                SelectionArea(
+                    contextMenuBuilder=self._build_toolbar,
+                    child=Container(
+                        padding=EdgeInsets.all(12),
+                        decoration=BoxDecoration(
+                            color=Colors.indigo.withValues(alpha=0.06),
+                            borderRadius=BorderRadius.circular(8),
+                        ),
+                        child=Text(
+                            "Drag to select, then right-click. The toolbar is "
+                            "built from a Python list of ContextMenuButtonItem "
+                            "via AdaptiveTextSelectionToolbar.buttonItems. The "
+                            "first two items use ContextMenuButtonType.copy / "
+                            "selectAll for platform-correct labels; the third "
+                            "supplies its own label.",
+                            style=TextStyle(fontSize=13),
+                        ),
+                    ),
+                ),
+                SizedBox(height=8),
+                Text(
+                    self.last_action,
+                    style=TextStyle(
+                        fontSize=12,
+                        fontFamily=CODE_FONT_FAMILY,
+                        color=Colors.grey,
+                    ),
+                ),
+            ],
+        )
+
+
+class _AdaptiveToolbarStaticsDemo(StatelessWidget):
+    def build(self, context):
+        types = [
+            ("cut", ContextMenuButtonType.cut),
+            ("copy", ContextMenuButtonType.copy),
+            ("paste", ContextMenuButtonType.paste),
+            ("selectAll", ContextMenuButtonType.selectAll),
+            ("delete", ContextMenuButtonType.delete),
+            ("lookUp", ContextMenuButtonType.lookUp),
+            ("searchWeb", ContextMenuButtonType.searchWeb),
+            ("share", ContextMenuButtonType.share),
+            ("liveTextInput", ContextMenuButtonType.liveTextInput),
+        ]
+
+        def render(inner_ctx):
+            label_rows = []
+            for name, value in types:
+                item = ContextMenuButtonItem(type=value)
+                label = AdaptiveTextSelectionToolbar.getButtonLabel(inner_ctx, item)
+                label_rows.append(
+                    Padding(
+                        padding=EdgeInsets.symmetric(vertical=2),
+                        child=Row(
+                            crossAxisAlignment=CrossAxisAlignment.start,
+                            children=[
+                                SizedBox(
+                                    width=140.0,
+                                    child=Text(
+                                        f"{name}:",
+                                        style=TextStyle(
+                                            fontSize=12,
+                                            fontFamily=CODE_FONT_FAMILY,
+                                            color=Colors.grey,
+                                        ),
+                                    ),
+                                ),
+                                Expanded(
+                                    child=Text(
+                                        repr(label),
+                                        style=TextStyle(fontSize=12),
+                                    ),
+                                ),
+                            ],
+                        ),
+                    )
+                )
+            label_rows.append(
+                Padding(
+                    padding=EdgeInsets.symmetric(vertical=2),
+                    child=Row(
+                        crossAxisAlignment=CrossAxisAlignment.start,
+                        children=[
+                            SizedBox(
+                                width=140.0,
+                                child=Text(
+                                    "custom (label='Hi'):",
+                                    style=TextStyle(
+                                        fontSize=12,
+                                        fontFamily=CODE_FONT_FAMILY,
+                                        color=Colors.grey,
+                                    ),
+                                ),
+                            ),
+                            Expanded(
+                                child=Text(
+                                    repr(
+                                        AdaptiveTextSelectionToolbar.getButtonLabel(
+                                            inner_ctx,
+                                            ContextMenuButtonItem(
+                                                type=ContextMenuButtonType.custom,
+                                                label="Hi",
+                                            ),
+                                        )
+                                    ),
+                                    style=TextStyle(fontSize=12),
+                                ),
+                            ),
+                        ],
+                    ),
+                )
+            )
+            return Column(
+                crossAxisAlignment=CrossAxisAlignment.start,
+                children=label_rows,
+            )
+
+        return Container(
+            padding=EdgeInsets.all(12),
+            decoration=BoxDecoration(
+                color=Colors.grey.withValues(alpha=0.05),
+                borderRadius=BorderRadius.circular(8),
+            ),
+            child=Builder(builder=render),
         )
 
 
@@ -1497,6 +1673,88 @@ class TypographyPage(StatelessWidget):
                             "data.cursorColor  # Color(...)\n"
                             "data.selectionColor  # Color(...)\n"
                             "data.selectionHandleColor  # Color(...)"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="AdaptiveTextSelectionToolbar.buttonItems + ContextMenuButtonItem",
+                    description=(
+                        "AdaptiveTextSelectionToolbar.buttonItems builds a "
+                        "platform-adaptive selection toolbar from a Python list "
+                        "of ContextMenuButtonItem. Each item carries a "
+                        "ContextMenuButtonType (used to look up the localized "
+                        "label) and an optional VoidCallback that fires when "
+                        "the item is tapped."
+                    ),
+                    instruction=(
+                        "Drag to select inside the indigo block, then "
+                        "right-click to open the toolbar. Tapping any item "
+                        "updates the line below with the action name."
+                    ),
+                    visible=_AdaptiveToolbarButtonItemsDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "SelectionArea(\n"
+                            "    contextMenuBuilder=lambda ctx, state: (\n"
+                            "        AdaptiveTextSelectionToolbar.buttonItems(\n"
+                            "            anchors=TextSelectionToolbarAnchors(\n"
+                            "                primaryAnchor=Offset(220, 220),\n"
+                            "            ),\n"
+                            "            buttonItems=[\n"
+                            "                ContextMenuButtonItem(\n"
+                            "                    type=ContextMenuButtonType.copy,\n"
+                            "                    onPressed=lambda: ...,\n"
+                            "                ),\n"
+                            "                ContextMenuButtonItem(\n"
+                            "                    label='Cheer',\n"
+                            "                    onPressed=lambda: ...,\n"
+                            "                ),\n"
+                            "            ],\n"
+                            "        )\n"
+                            "    ),\n"
+                            "    child=Text('Selectable content'),\n"
+                            ")"
+                        ),
+                    ),
+                ),
+                SplitViewTile(
+                    title="AdaptiveTextSelectionToolbar.getButtonLabel",
+                    description=(
+                        "AdaptiveTextSelectionToolbar.getButtonLabel(context, "
+                        "item) returns the platform-localized label for a "
+                        "ContextMenuButtonItem. When the item supplies its own "
+                        "label, that string is returned directly; otherwise "
+                        "the result is resolved through "
+                        "MaterialLocalizations / CupertinoLocalizations based "
+                        "on Theme.of(context).platform."
+                    ),
+                    instruction=(
+                        "Each row shows a ContextMenuButtonType and the label "
+                        "returned for it on the current platform. The last "
+                        "row uses ContextMenuButtonType.custom with an "
+                        "explicit label, which short-circuits the platform "
+                        "lookup."
+                    ),
+                    visible=_AdaptiveToolbarStaticsDemo(),
+                    code=CodeArea(
+                        language="python",
+                        code=(
+                            "label = AdaptiveTextSelectionToolbar.getButtonLabel(\n"
+                            "    context,\n"
+                            "    ContextMenuButtonItem(\n"
+                            "        type=ContextMenuButtonType.copy,\n"
+                            "    ),\n"
+                            ")\n\n"
+                            "# When the item provides a label, it is returned\n"
+                            "# verbatim (the platform lookup is skipped):\n"
+                            "AdaptiveTextSelectionToolbar.getButtonLabel(\n"
+                            "    context,\n"
+                            "    ContextMenuButtonItem(\n"
+                            "        type=ContextMenuButtonType.custom,\n"
+                            "        label='Hi',\n"
+                            "    ),\n"
+                            ")"
                         ),
                     ),
                 ),

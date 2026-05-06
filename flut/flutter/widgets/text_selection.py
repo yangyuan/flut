@@ -1,9 +1,15 @@
 from typing import Callable, Optional, override
 
-from flut._flut.engine import FlutAbstractObject
+from flut._flut.engine import FlutAbstractObject, FlutEnumObject
 from flut.dart.ui import Offset, Rect, Size
 from flut.flutter.rendering.selection import TextSelectionHandleType
 from flut.flutter.widgets.framework import BuildContext, Widget
+
+
+class ClipboardStatus(FlutEnumObject):
+    pasteable: "ClipboardStatus"
+    unknown: "ClipboardStatus"
+    notPasteable: "ClipboardStatus"
 
 
 class TextSelectionControls(FlutAbstractObject):

@@ -154,6 +154,7 @@ import 'package:flut/flutter/widgets/text_selection.dart';
 import 'package:flut/flutter/widgets/selection_container.dart';
 import 'package:flut/flutter/widgets/default_selection_style.dart';
 import 'package:flut/flutter/widgets/selectable_region.dart';
+import 'package:flut/flutter/widgets/context_menu_button_item.dart';
 import 'package:flut/flutter/widgets/text_selection_toolbar_anchors.dart';
 import 'package:flut/flutter/material/adaptive_text_selection_toolbar.dart';
 import 'package:flut/flutter/material/selection_area.dart';
@@ -730,6 +731,7 @@ class FlutRuntime {
     FlutShowMenu.registerStatics(this);
     FlutSelectionContainer.registerStatics(this);
     FlutTextSelectionTheme.registerStatics(this);
+    FlutAdaptiveTextSelectionToolbar.registerStatics(this);
   }
 
   void triggerAction(int actionId, {Map<String, dynamic>? payload}) {
@@ -918,6 +920,14 @@ class FlutRuntime {
     if (T == List<PopupMenuEntry<dynamic>>) {
       return value
               .map((c) => decodeObject<PopupMenuEntry<dynamic>>(c))
+              .nonNulls
+              .toList()
+          as T;
+    }
+
+    if (T == List<ContextMenuButtonItem>) {
+      return value
+              .map((c) => decodeObject<ContextMenuButtonItem>(c))
               .nonNulls
               .toList()
           as T;
@@ -1269,6 +1279,12 @@ class FlutRuntime {
         return FlutTextSelectionHandleControls.flutDecode(this, data);
       case 'EmptyTextSelectionControls':
         return FlutEmptyTextSelectionControls.flutDecode(this, data);
+      case 'ClipboardStatus':
+        return const FlutClipboardStatus().flutDecode(data);
+      case 'ContextMenuButtonType':
+        return const FlutContextMenuButtonType().flutDecode(data);
+      case 'ContextMenuButtonItem':
+        return FlutContextMenuButtonItem.flutDecode(this, data);
       case 'SelectionRegistrar':
         return FlutSelectionRegistrar.flutDecode(this, data);
       case 'SelectionContainerDelegate':
@@ -2132,6 +2148,18 @@ class FlutRuntime {
       return wrapper.flutEncode();
     }
 
+    if (value is EditableTextState) {
+      final wrapper = wrapObject<FlutEditableTextState>(
+        value,
+        (oid) => FlutEditableTextState.createFromObject(
+          runtime: this,
+          oid: oid,
+          target: value,
+        ),
+      );
+      return wrapper.flutEncode();
+    }
+
     if (value is FormState) {
       final wrapper = wrapObject<FlutFormState>(
         value,
@@ -2327,6 +2355,15 @@ class FlutRuntime {
 
     if (value is RouteSettings) return FlutRouteSettings(value).flutEncode();
     if (value is ClipboardData) return FlutClipboardData(value).flutEncode();
+    if (value is ClipboardStatus) {
+      return const FlutClipboardStatus().flutEncode(value);
+    }
+    if (value is ContextMenuButtonType) {
+      return const FlutContextMenuButtonType().flutEncode(value);
+    }
+    if (value is ContextMenuButtonItem) {
+      return FlutContextMenuButtonItem(value).flutEncode();
+    }
 
     if (value is MaterialPageRoute) {
       final wrapper = wrapObject<FlutMaterialPageRoute>(
