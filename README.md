@@ -22,7 +22,7 @@ Because Flut follows Flutter's API closely, Flutter examples and AI-generated Fl
 
 Please take a look at the [catalog app](https://github.com/yangyuan/flut/tree/master/examples/catalog), and [Rocky](https://github.com/yangyuan/rocky) — a Python-based desktop AI agent.
 
-![Flut Catalog](https://raw.githubusercontent.com/yangyuan/flut/master/examples/catalog/screenshot.png)
+![Rocky](https://raw.githubusercontent.com/yangyuan/rocky/master/docs/screenshot.png)
 
 ### True Flutter
 
