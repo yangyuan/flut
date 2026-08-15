@@ -177,7 +177,7 @@ def _get_platform_tag() -> str:
     if sys.platform.startswith("win"):
         return "win_arm64" if arch == "arm64" else "win_amd64"
     elif sys.platform == "darwin":
-        return "macosx_10_14_universal2"
+        return "macosx_12_0_universal2"
     elif sys.platform.startswith("linux"):
         return "manylinux2014_aarch64" if arch == "arm64" else "manylinux1_x86_64"
     else:

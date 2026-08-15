@@ -19,8 +19,7 @@ class FlutWidgetState extends FlutEnumObject<WidgetState> {
 }
 
 class FlutWidgetStatesConstraint
-    with FlutAbstractObject
-    implements WidgetStatesConstraint {
+    with FlutAbstractObject, WidgetStatesConstraint {
   @override
   final FlutRuntime runtime;
   final int isSatisfiedById;

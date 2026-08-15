@@ -198,6 +198,8 @@ class FlutterDesktopEngineProperties(ctypes.Structure):
         ("dart_entrypoint_argv", ctypes.POINTER(ctypes.c_char_p)),
         ("gpu_preference", ctypes.c_int),
         ("ui_thread_policy", ctypes.c_int),
+        ("accessibility_mode", ctypes.c_int),
+        ("impeller_switch", ctypes.c_int),
     ]
 
 
@@ -421,6 +423,8 @@ class FlutWindowsNative(FlutNative):
         self._props.dart_entrypoint_argv = None
         self._props.gpu_preference = 0
         self._props.ui_thread_policy = 1
+        self._props.accessibility_mode = 0
+        self._props.impeller_switch = 0
 
         def on_native_callback(request_ptr):
             try:
